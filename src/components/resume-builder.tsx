@@ -30,50 +30,60 @@ export function ResumeBuilder() {
     setIsDownloading(true);
     
     try {
-      // Temporarily set the preview to its ideal print size for canvas capture
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      // A4 aspect ratio
+      const a4Ratio = pdfHeight / pdfWidth;
+      const printWidth = 800; // a fixed width for consistent rendering
+      const printHeight = printWidth * a4Ratio;
+
       const originalStyle = {
         width: input.style.width,
         height: input.style.height,
         transform: input.style.transform,
+        boxShadow: input.style.boxShadow,
+        border: input.style.border,
       };
-      input.style.width = `800px`; // A good resolution for A4
-      input.style.height = `1120px`; // Maintain A4 aspect ratio
+
+      // Set styles for printing
+      input.style.width = `${printWidth}px`;
+      input.style.height = 'auto'; // allow content to flow
       input.style.transform = 'scale(1)';
+      input.style.boxShadow = 'none';
+      input.style.border = 'none';
 
-      const canvas = await html2canvas(input, {
-        scale: 2, // Higher scale for better quality
-        useCORS: true,
-        logging: false,
-      });
+      const totalHeight = input.scrollHeight;
+      const numPages = Math.ceil(totalHeight / printHeight);
 
+      for (let i = 0; i < numPages; i++) {
+        const canvas = await html2canvas(input, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          width: printWidth,
+          height: printHeight,
+          y: i * printHeight, // Capture the correct vertical slice of the content
+          windowWidth: printWidth,
+          windowHeight: printHeight,
+        });
+
+        const imgData = canvas.toDataURL('image/png');
+        
+        if (i > 0) {
+          pdf.addPage();
+        }
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      }
+      
       // Revert styles
       input.style.width = originalStyle.width;
       input.style.height = originalStyle.height;
       input.style.transform = originalStyle.transform;
-      
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
+      input.style.boxShadow = originalStyle.boxShadow;
+      input.style.border = originalStyle.border;
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      let heightLeft = pdfHeight;
-      let position = 0;
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pdf.internal.pageSize.getHeight();
-
-      while (heightLeft > 0) {
-        position = -pdf.internal.pageSize.getHeight() + (pdfHeight - heightLeft);
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pdf.internal.pageSize.getHeight();
-      }
-      
       pdf.save('resume.pdf');
       toast({
         title: "Success!",

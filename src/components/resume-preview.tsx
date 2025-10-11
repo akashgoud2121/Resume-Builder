@@ -21,7 +21,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       id="resume-preview"
       className={cn(
         "aspect-[8.5/11] w-full max-w-[800px] bg-white text-gray-800 p-8 shadow-lg rounded-lg origin-top scale-[0.7] md:scale-100 lg:scale-[0.8] xl:scale-100",
-        "transition-transform duration-300"
+        "transition-transform duration-300 print:shadow-none print:scale-100 print:rounded-none"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}
     >
@@ -52,7 +52,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         <div className="mb-6">
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Experience</h2>
           {experience.map(exp => (
-            <div key={exp.id} className="mb-4">
+            <div key={exp.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{exp.title}</h3>
                 <p className="text-sm font-light">{exp.startDate} - {exp.endDate}</p>
@@ -67,10 +67,10 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       )}
 
       {education.length > 0 && education[0]?.school && (
-        <div>
+        <div className="break-inside-avoid">
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>
           {education.map(edu => (
-            <div key={edu.id} className="flex justify-between items-baseline mb-2">
+            <div key={edu.id} className="flex justify-between items-baseline mb-2 break-inside-avoid">
               <div>
                 <h3 className="text-md font-bold">{edu.school}</h3>
                 <p className="text-sm">{edu.degree}</p>

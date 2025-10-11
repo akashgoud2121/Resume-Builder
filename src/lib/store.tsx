@@ -12,30 +12,26 @@ interface ResumeContextType {
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
 export function ResumeProvider({ children }: { children: React.ReactNode }) {
-  const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [resumeData, setResumeData] = useState<ResumeData>(() => {
+    if (typeof window === 'undefined') {
+      return initialResumeData;
+    }
+    try {
+      const storedData = localStorage.getItem('resumeData');
+      return storedData ? JSON.parse(storedData) : initialResumeData;
+    } catch (error) {
+      console.error("Failed to parse resume data from localStorage", error);
+      return initialResumeData;
+    }
+  });
 
   useEffect(() => {
     try {
-      const storedData = localStorage.getItem('resumeData');
-      if (storedData) {
-        setResumeData(JSON.parse(storedData));
-      }
+      localStorage.setItem('resumeData', JSON.stringify(resumeData));
     } catch (error) {
-      console.error("Failed to parse resume data from localStorage", error);
+      console.error("Failed to save resume data to localStorage", error);
     }
-    setIsLoaded(true);
-  }, []);
-
-  useEffect(() => {
-    if (isLoaded) {
-      try {
-        localStorage.setItem('resumeData', JSON.stringify(resumeData));
-      } catch (error) {
-        console.error("Failed to save resume data to localStorage", error);
-      }
-    }
-  }, [resumeData, isLoaded]);
+  }, [resumeData]);
 
   return (
     <ResumeContext.Provider value={{ resumeData, setResumeData }}>

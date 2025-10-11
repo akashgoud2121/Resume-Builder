@@ -129,10 +129,10 @@ export function ResumeBuilder() {
         </div>
       </header>
       <main className="flex-1 md:grid md:grid-cols-10">
-        <div className="md:col-span-7 lg:col-span-7 xl:col-span-7 2xl:col-span-8 h-full overflow-y-auto p-4 md:p-6 no-print">
+        <div className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print">
           <ResumeForm />
         </div>
-        <div id="resume-preview-container" className="hidden md:col-span-3 lg:col-span-3 xl:col-span-3 2xl:col-span-2 md:flex h-full flex-col items-center justify-start bg-muted/40 p-6">
+        <div id="resume-preview-container" className="hidden md:col-span-4 md:flex h-full flex-col items-center justify-start bg-muted/40 p-6">
           <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
           <ResumePreview ref={resumePreviewRef} />
         </div>

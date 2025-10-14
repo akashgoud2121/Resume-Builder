@@ -1,17 +1,26 @@
 "use client";
 
+import React, { useState } from 'react';
 import { useResume } from '@/lib/store';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import type { Education, Experience } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from './ui/dialog';
+import { generateSummary } from '@/ai/flows/generate-summary-flow';
+import { useToast } from '@/hooks/use-toast';
 
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
+  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
+  const [aiDetails, setAiDetails] = useState('');
+  const [generatedSummary, setGeneratedSummary] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [e.target.name]: e.target.value } }));
@@ -54,6 +63,43 @@ export function ResumeForm() {
     }));
   };
 
+  const handleGenerateSummary = async () => {
+    if (!aiDetails.trim()) {
+      toast({
+        title: "Details are empty",
+        description: "Please provide some details to generate a summary.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsGenerating(true);
+    setGeneratedSummary('');
+    try {
+      const result = await generateSummary({ details: aiDetails });
+      if (result.summary) {
+        setGeneratedSummary(result.summary);
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Generation Failed",
+        description: "Something went wrong while generating the summary.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleUseSummary = () => {
+    setResumeData(prev => ({ ...prev, summary: generatedSummary }));
+    setIsAiDialogOpen(false);
+    toast({
+      title: "Summary Updated!",
+      description: "The AI-generated summary has been added to your resume.",
+    });
+  };
+
   const formSections = [
     {
       value: "contact",
@@ -84,7 +130,52 @@ export function ResumeForm() {
       title: "Professional Summary",
       content: (
         <div className="space-y-2">
-          <Label htmlFor="summary">Summary/Objective</Label>
+          <div className="flex justify-between items-center">
+            <Label htmlFor="summary">Summary/Objective</Label>
+            <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Generate with AI
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[625px]">
+                <DialogHeader>
+                  <DialogTitle>Generate Professional Summary</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="ai-details">
+                      Provide some key details (e.g., your desired role, top 2-3 skills, years of experience, and a career goal).
+                    </Label>
+                    <Textarea
+                      id="ai-details"
+                      value={aiDetails}
+                      onChange={(e) => setAiDetails(e.target.value)}
+                      placeholder="e.g., Aspiring Product Manager with 5 years in tech, skilled in agile methodologies and user research, aiming to build innovative products."
+                      rows={4}
+                    />
+                  </div>
+                  <Button onClick={handleGenerateSummary} disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    Generate Summary
+                  </Button>
+                  {generatedSummary && (
+                    <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                      <Label>Generated Summary:</Label>
+                      <p className="text-sm">{generatedSummary}</p>
+                    </div>
+                  )}
+                </div>
+                <DialogFooter>
+                  <Button variant="secondary" onClick={() => setIsAiDialogOpen(false)}>Cancel</Button>
+                  <Button onClick={handleUseSummary} disabled={!generatedSummary}>
+                    Use This Summary
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
           <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="A brief summary of your career goals and qualifications..." rows={5} />
         </div>
       )

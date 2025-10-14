@@ -26,7 +26,8 @@ export function ResumeBuilder() {
     if (storedKey) {
       setApiKey(storedKey);
     } else {
-      setIsSettingsOpen(true);
+      // Intentionally not opening the dialog by default anymore to ensure
+      // the user can see the button and trigger it themselves.
     }
   }, []);
 
@@ -37,8 +38,6 @@ export function ResumeBuilder() {
       description: 'Your Google AI API key has been saved.',
     });
     setIsSettingsOpen(false);
-    // This is a good place to re-initialize the AI client if needed,
-    // for this app we pass it on each call.
   };
 
   const handleDownloadPdf = async () => {
@@ -55,9 +54,9 @@ export function ResumeBuilder() {
     setIsDownloading(true);
     
     try {
+      // A4 dimensions in mm
       const a4_width_mm = 210;
       const a4_height_mm = 297;
-      const a4_ratio = a4_height_mm / a4_width_mm;
       
       // We'll render the content in a fixed-width container off-screen to ensure consistency
       const print_container = document.createElement('div');
@@ -68,6 +67,7 @@ export function ResumeBuilder() {
       print_container.style.background = 'white';
       
       const contentClone = input.cloneNode(true) as HTMLElement;
+      // Reset transformations for accurate rendering
       contentClone.style.transform = 'none';
       contentClone.style.boxShadow = 'none';
       contentClone.style.borderRadius = '0';
@@ -79,8 +79,10 @@ export function ResumeBuilder() {
         scale: 2, // Higher scale for better quality
         useCORS: true,
         logging: false,
-        width: 800,
-        windowWidth: 800,
+        width: print_container.offsetWidth,
+        height: print_container.offsetHeight,
+        windowWidth: print_container.offsetWidth,
+        windowHeight: print_container.offsetHeight,
       });
       
       document.body.removeChild(print_container);
@@ -90,42 +92,34 @@ export function ResumeBuilder() {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
-      const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
-      const ratio = canvasWidth / canvasHeight;
-      const pdfRatio = pdfWidth / pdfHeight;
+      const canvasWidth = canvas.width;
       
-      let imgWidth, imgHeight;
+      const ratio = canvasHeight / canvasWidth;
+      let totalPDFPages = Math.ceil(canvasHeight / (canvasWidth * (a4_height_mm / a4_width_mm)));
+      if (totalPDFPages < 1) totalPDFPages = 1;
 
-      if (ratio > pdfRatio) {
-          imgWidth = pdfWidth;
-          imgHeight = pdfWidth / ratio;
-      } else {
-          imgHeight = pdfHeight;
-          imgWidth = pdfHeight * ratio;
-      }
-      
-      const totalPDFPages = Math.ceil(canvasHeight / (canvasWidth * (pdfHeight / pdfWidth)));
-      const pageCanvas = document.createElement('canvas');
-      const pageCtx = pageCanvas.getContext('2d');
-      const pageHeight = canvas.width * (pdfHeight/pdfWidth);
-      pageCanvas.width = canvas.width;
-      pageCanvas.height = pageHeight;
 
-      for (let page = 0; page < totalPDFPages; page++) {
-        if (page > 0) pdf.addPage();
-        const sourceY = page * pageHeight;
+      for (let i = 0; i < totalPDFPages; i++) {
+        if (i > 0) {
+            pdf.addPage();
+        }
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvasWidth;
+        // The height of the part of the canvas to draw on the current PDF page
+        const pageCanvasHeight = canvasWidth * (pdfHeight / pdfWidth);
+        pageCanvas.height = pageCanvasHeight;
         
-        pageCtx?.drawImage(canvas, 0, sourceY, canvas.width, pageHeight, 0, 0, pageCanvas.width, pageCanvas.height);
+        const pageCtx = pageCanvas.getContext('2d');
+        if (!pageCtx) continue;
+
+        // Calculate the source Y position on the main canvas
+        const sY = i * pageCanvasHeight;
         
-        pdf.addImage(
-          pageCanvas.toDataURL('image/png', 1.0),
-          'PNG',
-          0,
-          0,
-          pdfWidth,
-          pdfHeight
-        );
+        // Draw the relevant part of the main canvas onto the page-specific canvas
+        pageCtx.drawImage(canvas, 0, sY, canvasWidth, pageCanvasHeight, 0, 0, canvasWidth, pageCanvasHeight);
+
+        pdf.addImage(pageCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
       }
       
       pdf.save('resume.pdf');
@@ -211,10 +205,10 @@ export function ResumeBuilder() {
         </div>
       </header>
       <main className="flex-1 md:grid md:grid-cols-10">
-        <div className="md:col-span-4 h-full overflow-y-auto p-4 md:p-6 no-print">
+        <div className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print">
           <ResumeForm />
         </div>
-        <div id="resume-preview-container" className="hidden md:col-span-6 md:flex h-full flex-col items-center justify-start bg-muted/40 p-6">
+        <div id="resume-preview-container" className="hidden md:col-span-4 md:flex h-full flex-col items-center justify-start bg-muted/40 p-6">
           <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
           <ResumePreview ref={resumePreviewRef} />
         </div>

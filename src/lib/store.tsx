@@ -12,26 +12,39 @@ interface ResumeContextType {
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
 export function ResumeProvider({ children }: { children: React.ReactNode }) {
-  const [resumeData, setResumeData] = useState<ResumeData>(() => {
-    if (typeof window === 'undefined') {
-      return initialResumeData;
-    }
-    try {
-      const storedData = localStorage.getItem('resumeData');
-      return storedData ? JSON.parse(storedData) : initialResumeData;
-    } catch (error) {
-      console.error("Failed to parse resume data from localStorage", error);
-      return initialResumeData;
-    }
-  });
+  const [resumeData, setResumeData] = useState<ResumeData>(initialResumeData);
+  const [isClient, setIsClient] = useState(false);
 
+  // This effect runs once on the client to indicate it has mounted.
   useEffect(() => {
-    try {
-      localStorage.setItem('resumeData', JSON.stringify(resumeData));
-    } catch (error) {
-      console.error("Failed to save resume data to localStorage", error);
+    setIsClient(true);
+  }, []);
+
+  // This effect loads data from localStorage once the client has mounted.
+  useEffect(() => {
+    if (isClient) {
+      try {
+        const storedData = localStorage.getItem('resumeData');
+        if (storedData) {
+          setResumeData(JSON.parse(storedData));
+        }
+      } catch (error) {
+        console.error("Failed to parse resume data from localStorage", error);
+        // Stick with initialResumeData if parsing fails
+      }
     }
-  }, [resumeData]);
+  }, [isClient]);
+
+  // This effect saves data to localStorage whenever it changes.
+  useEffect(() => {
+    if (isClient) {
+      try {
+        localStorage.setItem('resumeData', JSON.stringify(resumeData));
+      } catch (error) {
+        console.error("Failed to save resume data to localStorage", error);
+      }
+    }
+  }, [resumeData, isClient]);
 
   return (
     <ResumeContext.Provider value={{ resumeData, setResumeData }}>

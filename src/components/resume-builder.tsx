@@ -25,9 +25,6 @@ export function ResumeBuilder() {
     const storedKey = localStorage.getItem('google-ai-api-key');
     if (storedKey) {
       setApiKey(storedKey);
-    } else {
-      // Intentionally not opening the dialog by default anymore to ensure
-      // the user can see the button and trigger it themselves.
     }
   }, []);
 
@@ -56,7 +53,6 @@ export function ResumeBuilder() {
     try {
       // A4 dimensions in mm
       const a4_width_mm = 210;
-      const a4_height_mm = 297;
       
       // We'll render the content in a fixed-width container off-screen to ensure consistency
       const print_container = document.createElement('div');
@@ -95,10 +91,8 @@ export function ResumeBuilder() {
       const canvasHeight = canvas.height;
       const canvasWidth = canvas.width;
       
-      const ratio = canvasHeight / canvasWidth;
-      let totalPDFPages = Math.ceil(canvasHeight / (canvasWidth * (a4_height_mm / a4_width_mm)));
-      if (totalPDFPages < 1) totalPDFPages = 1;
-
+      const ratio = pdfHeight/pdfWidth;
+      const totalPDFPages = Math.ceil(canvasHeight / (canvasWidth * ratio));
 
       for (let i = 0; i < totalPDFPages; i++) {
         if (i > 0) {
@@ -106,17 +100,14 @@ export function ResumeBuilder() {
         }
         const pageCanvas = document.createElement('canvas');
         pageCanvas.width = canvasWidth;
-        // The height of the part of the canvas to draw on the current PDF page
-        const pageCanvasHeight = canvasWidth * (pdfHeight / pdfWidth);
+        const pageCanvasHeight = canvasWidth * ratio;
         pageCanvas.height = pageCanvasHeight;
         
         const pageCtx = pageCanvas.getContext('2d');
         if (!pageCtx) continue;
 
-        // Calculate the source Y position on the main canvas
         const sY = i * pageCanvasHeight;
         
-        // Draw the relevant part of the main canvas onto the page-specific canvas
         pageCtx.drawImage(canvas, 0, sY, canvasWidth, pageCanvasHeight, 0, 0, canvasWidth, pageCanvasHeight);
 
         pdf.addImage(pageCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');

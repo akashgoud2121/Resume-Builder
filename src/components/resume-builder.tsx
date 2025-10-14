@@ -25,6 +25,8 @@ export function ResumeBuilder() {
     const storedKey = localStorage.getItem('google-ai-api-key');
     if (storedKey) {
       setApiKey(storedKey);
+    } else {
+      setIsSettingsOpen(true);
     }
   }, []);
 
@@ -56,48 +58,74 @@ export function ResumeBuilder() {
       const a4_width_mm = 210;
       const a4_height_mm = 297;
       const a4_ratio = a4_height_mm / a4_width_mm;
-      const print_width_px = 800; // A consistent width for rendering
-      const print_height_px = print_width_px * a4_ratio;
+      
+      // We'll render the content in a fixed-width container off-screen to ensure consistency
+      const print_container = document.createElement('div');
+      print_container.style.position = 'fixed';
+      print_container.style.left = '-9999px';
+      print_container.style.top = '0';
+      print_container.style.width = '800px'; // A standard width for consistent rendering
+      print_container.style.background = 'white';
+      
+      const contentClone = input.cloneNode(true) as HTMLElement;
+      contentClone.style.transform = 'none';
+      contentClone.style.boxShadow = 'none';
+      contentClone.style.borderRadius = '0';
+      
+      print_container.appendChild(contentClone);
+      document.body.appendChild(print_container);
 
-      const canvas = await html2canvas(input, {
+      const canvas = await html2canvas(print_container, {
         scale: 2, // Higher scale for better quality
         useCORS: true,
         logging: false,
-        width: print_width_px,
-        windowWidth: print_width_px,
+        width: 800,
+        windowWidth: 800,
       });
+      
+      document.body.removeChild(print_container);
 
-      const total_content_height_px = canvas.height;
-      const num_pages = Math.ceil(total_content_height_px / print_height_px);
+      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const ratio = canvasWidth / canvasHeight;
+      const pdfRatio = pdfWidth / pdfHeight;
+      
+      let imgWidth, imgHeight;
 
-      for (let i = 0; i < num_pages; i++) {
-        if (i > 0) {
-          pdf.addPage();
-        }
+      if (ratio > pdfRatio) {
+          imgWidth = pdfWidth;
+          imgHeight = pdfWidth / ratio;
+      } else {
+          imgHeight = pdfHeight;
+          imgWidth = pdfHeight * ratio;
+      }
+      
+      const totalPDFPages = Math.ceil(canvasHeight / (canvasWidth * (pdfHeight / pdfWidth)));
+      const pageCanvas = document.createElement('canvas');
+      const pageCtx = pageCanvas.getContext('2d');
+      const pageHeight = canvas.width * (pdfHeight/pdfWidth);
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = pageHeight;
+
+      for (let page = 0; page < totalPDFPages; page++) {
+        if (page > 0) pdf.addPage();
+        const sourceY = page * pageHeight;
         
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = print_width_px;
-        pageCanvas.height = print_height_px;
-        const pageCtx = pageCanvas.getContext('2d');
-
-        if (pageCtx) {
-          // Draw the slice of the total canvas onto the page-sized canvas
-          pageCtx.drawImage(
-            canvas,
-            0, // sourceX
-            i * print_height_px, // sourceY
-            print_width_px, // sourceWidth
-            print_height_px, // sourceHeight
-            0, // destX
-            0, // destY
-            print_width_px, // destWidth
-            print_height_px // destHeight
-          );
-          
-          const imgData = pageCanvas.toDataURL('image/png');
-          pdf.addImage(imgData, 'PNG', 0, 0, a4_width_mm, a4_height_mm);
-        }
+        pageCtx?.drawImage(canvas, 0, sourceY, canvas.width, pageHeight, 0, 0, pageCanvas.width, pageCanvas.height);
+        
+        pdf.addImage(
+          pageCanvas.toDataURL('image/png', 1.0),
+          'PNG',
+          0,
+          0,
+          pdfWidth,
+          pdfHeight
+        );
       }
       
       pdf.save('resume.pdf');
@@ -137,7 +165,7 @@ export function ResumeBuilder() {
               <DialogHeader>
                 <DialogTitle>Settings</DialogTitle>
                 <DialogDescription>
-                  Provide your own Google AI API key to use the AI features.
+                  Provide your own Google AI API key to use the AI features. This key is stored only in your browser.
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-2">
@@ -183,10 +211,10 @@ export function ResumeBuilder() {
         </div>
       </header>
       <main className="flex-1 md:grid md:grid-cols-10">
-        <div className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print">
+        <div className="md:col-span-4 h-full overflow-y-auto p-4 md:p-6 no-print">
           <ResumeForm />
         </div>
-        <div id="resume-preview-container" className="hidden md:col-span-4 md:flex h-full flex-col items-center justify-start bg-muted/40 p-6">
+        <div id="resume-preview-container" className="hidden md:col-span-6 md:flex h-full flex-col items-center justify-start bg-muted/40 p-6">
           <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
           <ResumePreview ref={resumePreviewRef} />
         </div>

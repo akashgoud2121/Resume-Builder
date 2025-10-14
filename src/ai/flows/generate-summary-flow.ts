@@ -5,7 +5,7 @@
  * - generateSummary - A function that takes user details and returns a professional summary.
  */
 
-import { genkit, GenerationCommonConfig, configureGenkit } from 'genkit';
+import { genkit } from 'genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 import { GenerateSummaryInputSchema, GenerateSummaryOutputSchema, type GenerateSummaryInput, type GenerateSummaryOutput } from '@/ai/schemas';
 
@@ -34,7 +34,7 @@ const generateSummaryFlow = async (input: GenerateSummaryInput) => {
       : (await import('@/ai/genkit')).ai;
 
     const { output } = await aiInstance.generate({
-        model: 'googleai/gemini-2.5-flash',
+        model: 'gemini-1.5-flash',
         prompt: prompt.prompt,
         input: promptData,
         output: prompt.output,

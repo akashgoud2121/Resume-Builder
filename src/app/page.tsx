@@ -71,8 +71,8 @@ export default function Home() {
           </Button>
         </div>
       </header>
-      <main className="flex-1">
-        <div className="container flex h-full max-w-4xl flex-col items-center justify-center text-center">
+      <main className="flex-1 flex items-center justify-center">
+        <div className="container max-w-4xl text-center">
           <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
             Create Your Perfect Resume
           </h1>

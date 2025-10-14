@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2 } from 'lucide-react';
 import type { Education, Experience } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { useToast } from '@/hooks/use-toast';
 
@@ -64,6 +64,16 @@ export function ResumeForm() {
   };
 
   const handleGenerateSummary = async () => {
+    const apiKey = localStorage.getItem('google-ai-api-key');
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please set your Google AI API key in the settings first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!aiDetails.trim()) {
       toast({
         title: "Details are empty",
@@ -75,7 +85,7 @@ export function ResumeForm() {
     setIsGenerating(true);
     setGeneratedSummary('');
     try {
-      const result = await generateSummary({ details: aiDetails });
+      const result = await generateSummary({ details: aiDetails, apiKey });
       if (result.summary) {
         setGeneratedSummary(result.summary);
       }
@@ -83,7 +93,7 @@ export function ResumeForm() {
       console.error(error);
       toast({
         title: "Generation Failed",
-        description: "Something went wrong while generating the summary.",
+        description: "Something went wrong while generating the summary. Check your API key and try again.",
         variant: "destructive",
       });
     } finally {
@@ -142,11 +152,14 @@ export function ResumeForm() {
               <DialogContent className="sm:max-w-[625px]">
                 <DialogHeader>
                   <DialogTitle>Generate Professional Summary</DialogTitle>
+                  <DialogDescription>
+                    Provide key details to generate an AI-powered summary. Your own API key must be set in the main settings.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="ai-details">
-                      Provide some key details (e.g., your desired role, top 2-3 skills, years of experience, and a career goal).
+                      Key details (e.g., desired role, top 2-3 skills, years of experience, a career goal)
                     </Label>
                     <Textarea
                       id="ai-details"

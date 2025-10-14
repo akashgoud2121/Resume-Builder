@@ -5,16 +5,39 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Download, Eye, Loader2, Rocket } from 'lucide-react';
+import { Download, Eye, Loader2, Rocket, Settings } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [apiKey, setApiKey] = useState('');
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    const storedKey = localStorage.getItem('google-ai-api-key');
+    if (storedKey) {
+      setApiKey(storedKey);
+    }
+  }, []);
+
+  const handleSaveApiKey = () => {
+    localStorage.setItem('google-ai-api-key', apiKey);
+    toast({
+      title: 'API Key Saved',
+      description: 'Your Google AI API key has been saved.',
+    });
+    setIsSettingsOpen(false);
+    // This is a good place to re-initialize the AI client if needed,
+    // for this app we pass it on each call.
+  };
 
   const handleDownloadPdf = async () => {
     const input = resumePreviewRef.current;
@@ -30,60 +53,53 @@ export function ResumeBuilder() {
     setIsDownloading(true);
     
     try {
+      const a4_width_mm = 210;
+      const a4_height_mm = 297;
+      const a4_ratio = a4_height_mm / a4_width_mm;
+      const print_width_px = 800; // A consistent width for rendering
+      const print_height_px = print_width_px * a4_ratio;
+
+      const canvas = await html2canvas(input, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true,
+        logging: false,
+        width: print_width_px,
+        windowWidth: print_width_px,
+      });
+
+      const total_content_height_px = canvas.height;
+      const num_pages = Math.ceil(total_content_height_px / print_height_px);
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      // A4 aspect ratio
-      const a4Ratio = pdfHeight / pdfWidth;
-      const printWidth = 800; // a fixed width for consistent rendering
-      const printHeight = printWidth * a4Ratio;
 
-      const originalStyle = {
-        width: input.style.width,
-        height: input.style.height,
-        transform: input.style.transform,
-        boxShadow: input.style.boxShadow,
-        border: input.style.border,
-      };
-
-      // Set styles for printing
-      input.style.width = `${printWidth}px`;
-      input.style.height = 'auto'; // allow content to flow
-      input.style.transform = 'scale(1)';
-      input.style.boxShadow = 'none';
-      input.style.border = 'none';
-
-      const totalHeight = input.scrollHeight;
-      const numPages = Math.ceil(totalHeight / printHeight);
-
-      for (let i = 0; i < numPages; i++) {
-        const canvas = await html2canvas(input, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          width: printWidth,
-          height: printHeight,
-          y: i * printHeight, // Capture the correct vertical slice of the content
-          windowWidth: printWidth,
-          windowHeight: printHeight,
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        
+      for (let i = 0; i < num_pages; i++) {
         if (i > 0) {
           pdf.addPage();
         }
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = print_width_px;
+        pageCanvas.height = print_height_px;
+        const pageCtx = pageCanvas.getContext('2d');
+
+        if (pageCtx) {
+          // Draw the slice of the total canvas onto the page-sized canvas
+          pageCtx.drawImage(
+            canvas,
+            0, // sourceX
+            i * print_height_px, // sourceY
+            print_width_px, // sourceWidth
+            print_height_px, // sourceHeight
+            0, // destX
+            0, // destY
+            print_width_px, // destWidth
+            print_height_px // destHeight
+          );
+          
+          const imgData = pageCanvas.toDataURL('image/png');
+          pdf.addImage(imgData, 'PNG', 0, 0, a4_width_mm, a4_height_mm);
+        }
       }
       
-      // Revert styles
-      input.style.width = originalStyle.width;
-      input.style.height = originalStyle.height;
-      input.style.transform = originalStyle.transform;
-      input.style.boxShadow = originalStyle.boxShadow;
-      input.style.border = originalStyle.border;
-
       pdf.save('resume.pdf');
       toast({
         title: "Success!",
@@ -110,6 +126,34 @@ export function ResumeBuilder() {
           <span className="font-headline text-xl">ResumeRocket</span>
         </Link>
         <div className="flex items-center gap-4">
+          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Settings</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Settings</DialogTitle>
+                <DialogDescription>
+                  Provide your own Google AI API key to use the AI features.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2">
+                <Label htmlFor="api-key">Google AI API Key</Label>
+                <Input
+                  id="api-key"
+                  type="password"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="Enter your API key"
+                />
+              </div>
+              <Button onClick={handleSaveApiKey}>Save Key</Button>
+            </DialogContent>
+          </Dialog>
+
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>

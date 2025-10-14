@@ -6,6 +6,7 @@ import { z } from 'genkit';
 
 export const GenerateSummaryInputSchema = z.object({
   details: z.string().describe('Key highlights, skills, and career goals to include in the summary.'),
+  apiKey: z.string().optional().describe('Optional Google AI API key.'),
 });
 export type GenerateSummaryInput = z.infer<typeof GenerateSummaryInputSchema>;
 

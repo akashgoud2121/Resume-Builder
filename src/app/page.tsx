@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Rocket, Settings } from 'lucide-react';
+import { Rocket, Settings, GraduationCap } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -71,16 +71,17 @@ export default function Home() {
           </Button>
         </div>
       </header>
-      <main className="flex-1 flex items-center justify-center">
-        <div className="container max-w-4xl text-center">
+      <main className="flex-1 flex flex-col items-center justify-center text-center">
+        <div className="container max-w-4xl">
+           <GraduationCap className="h-16 w-16 mx-auto text-primary mb-4" />
           <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            Create Your Perfect Resume
+            Your Career Journey Starts Here
           </h1>
-          <p className="mt-4 text-lg text-muted-foreground md:text-xl">
-            Build a professional resume in minutes.
+          <p className="mt-4 text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
+            Build a standout resume for internships, part-time jobs, and your first career step. It&apos;s fast, easy, and completely free.
           </p>
           <Button asChild size="lg" className="mt-8">
-            <Link href="/build">Start Building Now</Link>
+            <Link href="/build">Create My Resume</Link>
           </Button>
         </div>
       </main>

@@ -2,11 +2,9 @@
 "use client";
 
 import React, { useRef, useState } from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Download, Eye, Loader2, Rocket } from 'lucide-react';
+import { Download, Eye, Loader2, Rocket, Printer } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import { useToast } from '@/hooks/use-toast';
@@ -17,98 +15,8 @@ export function ResumeBuilder() {
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
 
-  const handleDownloadPdf = async () => {
-    const input = resumePreviewRef.current;
-    if (!input) {
-      toast({
-        title: "Error",
-        description: "Could not find the resume preview to download.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsDownloading(true);
-    
-    try {
-      // A4 dimensions in mm
-      const a4_width_mm = 210;
-      
-      // We'll render the content in a fixed-width container off-screen to ensure consistency
-      const print_container = document.createElement('div');
-      print_container.style.position = 'fixed';
-      print_container.style.left = '-9999px';
-      print_container.style.top = '0';
-      print_container.style.width = '800px'; // A standard width for consistent rendering
-      print_container.style.background = 'white';
-      
-      const contentClone = input.cloneNode(true) as HTMLElement;
-      // Reset transformations for accurate rendering
-      contentClone.style.transform = 'none';
-      contentClone.style.boxShadow = 'none';
-      contentClone.style.borderRadius = '0';
-      
-      print_container.appendChild(contentClone);
-      document.body.appendChild(print_container);
-
-      const canvas = await html2canvas(print_container, {
-        scale: 2, // Higher scale for better quality
-        useCORS: true,
-        logging: false,
-        width: print_container.offsetWidth,
-        height: print_container.offsetHeight,
-        windowWidth: print_container.offsetWidth,
-        windowHeight: print_container.offsetHeight,
-      });
-      
-      document.body.removeChild(print_container);
-
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const canvasHeight = canvas.height;
-      const canvasWidth = canvas.width;
-      
-      const ratio = pdfHeight/pdfWidth;
-      const totalPDFPages = Math.ceil(canvasHeight / (canvasWidth * ratio));
-
-      for (let i = 0; i < totalPDFPages; i++) {
-        if (i > 0) {
-            pdf.addPage();
-        }
-        const pageCanvas = document.createElement('canvas');
-        pageCanvas.width = canvasWidth;
-        const pageCanvasHeight = canvasWidth * ratio;
-        pageCanvas.height = pageCanvasHeight;
-        
-        const pageCtx = pageCanvas.getContext('2d');
-        if (!pageCtx) continue;
-
-        const sY = i * pageCanvasHeight;
-        
-        pageCtx.drawImage(canvas, 0, sY, canvasWidth, pageCanvasHeight, 0, 0, canvasWidth, pageCanvasHeight);
-
-        pdf.addImage(pageCanvas.toDataURL('image/png', 1.0), 'PNG', 0, 0, pdfWidth, pdfHeight, undefined, 'FAST');
-      }
-      
-      pdf.save('resume.pdf');
-      toast({
-        title: "Success!",
-        description: "Your resume has been downloaded.",
-      });
-
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Download Failed",
-        description: "Something went wrong while generating the PDF.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDownloading(false);
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
@@ -137,12 +45,8 @@ export function ResumeBuilder() {
               </SheetContent>
             </Sheet>
           </div>
-          <Button onClick={handleDownloadPdf} disabled={isDownloading}>
-            {isDownloading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <Download className="mr-2 h-4 w-4" />
-            )}
+          <Button onClick={handlePrint}>
+              <Printer className="mr-2 h-4 w-4" />
             Download PDF
           </Button>
         </div>
@@ -151,7 +55,7 @@ export function ResumeBuilder() {
         <div className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print">
           <ResumeForm />
         </div>
-        <div id="resume-preview-container" className="hidden md:col-span-4 md:block h-full bg-muted/40 p-6 overflow-y-auto">
+        <div id="resume-preview-container" className="hidden md:col-span-4 md:block h-full bg-muted/40 p-6 overflow-y-auto print:!block">
           <div className="flex flex-col items-center">
             <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
             <ResumePreview ref={resumePreviewRef} />

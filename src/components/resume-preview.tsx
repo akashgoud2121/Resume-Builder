@@ -64,7 +64,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       ref={ref}
       id="resume-preview"
       className={cn(
-        "aspect-[8.5/11] w-full max-w-[800px] bg-white text-gray-800 p-8 shadow-lg rounded-lg transform-gpu",
+        "aspect-[8.5/11] w-full max-w-[800px] bg-white text-gray-800 p-8 shadow-lg rounded-lg",
         "transition-transform duration-300 print:shadow-none print:scale-100 print:rounded-none"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}
@@ -84,21 +84,21 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       </div>
 
       {summary && (
-        <div className="mb-6">
+        <div className="mb-6 break-inside-avoid">
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Summary</h2>
           <p className="text-sm text-justify">{summary}</p>
         </div>
       )}
 
       {skills && (
-        <div className="mb-6">
+        <div className="mb-6 break-inside-avoid">
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
             <p className="text-sm">{skills}</p>
         </div>
       )}
       
       {experience.length > 0 && experience.some(e => e.title) && (
-        <div className="mb-6">
+        <div className="mb-6 break-inside-avoid">
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Work Experience</h2>
           {experience.map(exp => exp.title && (
             <div key={exp.id} className="mb-4 break-inside-avoid">
@@ -116,7 +116,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       )}
 
       {projects.length > 0 && projects.some(p => p.title) && (
-        <div className="mb-6">
+        <div className="mb-6 break-inside-avoid">
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Projects</h2>
           {projects.map(proj => proj.title && (
             <div key={proj.id} className="mb-4 break-inside-avoid">
@@ -139,7 +139,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           const entries = groupedEducation[category];
           if (!entries || entries.length === 0) return null;
           return (
-            <div key={category} className="mb-4">
+            <div key={category} className="mb-4 break-inside-avoid">
                <h3 className="text-md font-bold text-gray-600 mb-2">{categoryTitles[category]}</h3>
                {entries.map(edu => (
                  <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">

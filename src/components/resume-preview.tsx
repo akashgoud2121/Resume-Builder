@@ -17,9 +17,6 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { contact, summary, education, experience, projects, skills } = resumeData;
 
   const renderDescription = (text: string) => {
-    // This regex splits the text by newlines or by hyphens that start a bullet point.
-    // It handles cases where AI generates bullet points in a single line.
-    // The filter removes any empty strings that result from the split.
     const bulletPoints = text
       .split(/\n|(?=- )/)
       .filter(line => line.trim() !== '');

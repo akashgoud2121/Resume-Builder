@@ -77,9 +77,12 @@
   body {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
+    background: white;
+    padding: 0;
+    margin: 0;
   }
   .no-print {
-    display: none;
+    display: none !important;
   }
   #resume-preview-container {
     display: block !important;
@@ -88,16 +91,22 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: white;
     padding: 0;
     margin: 0;
     z-index: 9999;
+    background-color: white !important;
+    overflow: visible;
   }
   #resume-preview {
     border: none !important;
     box-shadow: none !important;
     transform: scale(1) !important;
     width: 100% !important;
-    height: 100% !important;
+    height: auto !important;
+    max-width: 100% !important;
+    margin: 0;
+    padding: 1.5rem;
+    border-radius: 0 !important;
+    background-color: white !important;
   }
 }

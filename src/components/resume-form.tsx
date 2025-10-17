@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Trash2, Sparkles, Loader2 } from 'lucide-react';
+import { PlusCircle, Trash2, Sparkles, Loader2, Copy } from 'lucide-react';
 import type { Education, Experience } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
@@ -22,6 +22,8 @@ export function ResumeForm() {
   const [generatedSummary, setGeneratedSummary] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
+
+  const templateText = "I am a final-year Computer Science student specializing in web development. I've built two projects using React and Node.js. I'm proficient in JavaScript and Python and I am seeking a front-end developer internship to apply my skills.";
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [e.target.name]: e.target.value } }));
@@ -111,6 +113,15 @@ export function ResumeForm() {
     });
   };
 
+  const handleCopyTemplate = () => {
+    navigator.clipboard.writeText(templateText).then(() => {
+      toast({
+        title: "Template Copied!",
+        description: "Paste it in the text area below to get started.",
+      });
+    });
+  };
+
   const formSections = [
     {
       value: "contact",
@@ -163,14 +174,21 @@ export function ResumeForm() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="ai-details">
+                     <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative">
+                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyTemplate}>
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                        <p className="font-semibold text-muted-foreground mb-1">Example Template:</p>
+                        <p>{templateText}</p>
+                    </div>
+                    <Label htmlFor="ai-details" className="mt-4 block">
                       Your key details
                     </Label>
                     <Textarea
                       id="ai-details"
                       value={aiDetails}
                       onChange={(e) => setAiDetails(e.target.value)}
-                      placeholder="For example: I am a final-year Computer Science student specializing in web development. I've built two projects using React and Node.js. I'm proficient in JavaScript and Python and I am seeking a front-end developer internship to apply my skills."
+                      placeholder="Paste and edit the template above, or write your own details here..."
                       rows={5}
                     />
                   </div>

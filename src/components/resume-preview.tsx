@@ -111,6 +111,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                    <div className="flex-grow">
                      <h4 className="text-md font-bold">{edu.school}</h4>
                      <p className="text-sm">{edu.degree}</p>
+                     {edu.grades && <p className="text-sm font-semibold">Grades: {edu.grades}</p>}
                    </div>
                    <div className="text-right flex-shrink-0 ml-4">
                      <p className="text-sm font-light">{edu.date}</p>

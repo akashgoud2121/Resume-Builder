@@ -24,6 +24,7 @@ const educationCategoryConfig = {
       degree: { label: 'Board (e.g., CBSE, ICSE) or Class', placeholder: 'e.g., CBSE Class XII' },
       date: { label: 'Year of Passing', placeholder: 'e.g., 2021' },
       city: { label: 'City / State', placeholder: 'e.g., New Delhi, Delhi' },
+      grades: { label: 'Grades / Percentage', placeholder: 'e.g., 95% or 10 CGPA' },
     }
   },
   intermediate: {
@@ -33,6 +34,7 @@ const educationCategoryConfig = {
       degree: { label: 'Group / Specialization', placeholder: 'e.g., MPC' },
       date: { label: 'Year of Passing', placeholder: 'e.g., 2023' },
       city: { label: 'City / State', placeholder: 'e.g., Hyderabad, Telangana' },
+      grades: { label: 'Grades / Percentage', placeholder: 'e.g., 98%' },
     }
   },
   higher: {
@@ -42,6 +44,7 @@ const educationCategoryConfig = {
       degree: { label: 'Degree & Major', placeholder: 'e.g., B.Tech in Computer Science' },
       date: { label: 'Expected Graduation Year', placeholder: 'e.g., May 2027' },
       city: { label: 'City / State', placeholder: 'e.g., Mumbai, Maharashtra' },
+      grades: { label: 'CGPA / Percentage', placeholder: 'e.g., 8.5 CGPA' },
     }
   }
 };
@@ -92,7 +95,7 @@ export function ResumeForm() {
   const addEntry = (section: 'education' | 'experience') => {
     setResumeData(prev => {
       const newEntry = section === 'education'
-        ? { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', date: '', city: '' }
+        ? { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', date: '', city: '', grades: '' }
         : { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
       return { ...prev, [section]: [...prev[section], newEntry] };
     });
@@ -262,7 +265,7 @@ export function ResumeForm() {
         <div className="space-y-4">
           {resumeData.education.map((edu, index) => {
             const config = educationCategoryConfig[edu.category];
-            if (!config) return null; // FIX: Prevent crash if config is not found
+            if (!config) return null;
             return (
               <Card key={edu.id} className="p-4 relative">
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
@@ -297,6 +300,10 @@ export function ResumeForm() {
                   <div className="space-y-2">
                     <Label>{config.fields.city.label}</Label>
                     <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
+                  </div>
+                   <div className="space-y-2">
+                    <Label>{config.fields.grades.label}</Label>
+                    <Input value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
                   </div>
                 </CardContent>
                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>

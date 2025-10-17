@@ -15,6 +15,7 @@ export type Education = {
   degree: string;
   date: string;
   city: string;
+  grades: string;
 };
 
 export type Experience = {

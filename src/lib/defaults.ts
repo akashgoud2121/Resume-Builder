@@ -17,6 +17,7 @@ export const initialResumeData: ResumeData = {
       degree: '',
       date: '',
       city: '',
+      grades: '',
     },
   ],
   experience: [

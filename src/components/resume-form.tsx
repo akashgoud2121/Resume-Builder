@@ -262,6 +262,7 @@ export function ResumeForm() {
         <div className="space-y-4">
           {resumeData.education.map((edu, index) => {
             const config = educationCategoryConfig[edu.category];
+            if (!config) return null; // FIX: Prevent crash if config is not found
             return (
               <Card key={edu.id} className="p-4 relative">
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">

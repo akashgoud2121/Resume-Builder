@@ -226,14 +226,14 @@ export function ResumeForm() {
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                 <div className="space-y-2">
                   <Label>School / College / University</Label>
-                  <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder="e.g., University of Delhi" />
+                  <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder="e.g., Delhi University" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Degree / Major / Field</Label>
-                  <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder="e.g., B.Tech in Computer Science" />
+                  <Label>Degree, Major or Field of Study</Label>
+                  <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder="e.g., B.Tech in Computer Science or Class XII" />
                 </div>
                 <div className="space-y-2">
-                  <Label>End Date / Year</Label>
+                  <Label>End Date or Year of Passing</Label>
                   <Input value={edu.date} onChange={e => handleGenericChange('education', index, 'date', e.target.value)} placeholder="e.g., May 2025 or 2021" />
                 </div>
                 <div className="space-y-2">
@@ -248,7 +248,7 @@ export function ResumeForm() {
               }
             </Card>
           ))}
-          <Button variant="outline" onClick={() => addEntry('education')}><PlusCircle className="mr-2 h-4 w-4" /> Add Education</Button>
+          <Button variant="outline" onClick={() => addEntry('education')}><PlusCircle className="mr-2 h-4 w-4" /> Add Another Qualification</Button>
         </div>
       )
     },
@@ -322,6 +322,8 @@ export function ResumeForm() {
     </Accordion>
   );
 }
+
+    
 
     
 

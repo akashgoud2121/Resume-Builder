@@ -17,12 +17,14 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { contact, summary, education, experience, projects, skills } = resumeData;
 
   const renderDescription = (text: string) => {
-    // Split by newline, then process each line to handle hyphens
-    return text.split('\n').flatMap(line => line.split(/(?=^-)/g)).map((line, index) => (
-        <p key={index} className="text-sm">{line}</p>
+    // Split by newline and then by hyphen to handle both formats
+    return text.split('\n').flatMap(line => 
+      line.startsWith('-') ? line.split(/(?=-)/g) : [line]
+    ).filter(line => line.trim() !== '').map((line, index) => (
+      <p key={index} className="text-sm">{line.trim()}</p>
     ));
   };
-
+  
   const contactItems = [
     contact.email,
     contact.phone,

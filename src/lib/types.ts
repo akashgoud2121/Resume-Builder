@@ -1,3 +1,4 @@
+
 export type ContactInfo = {
   name: string;
   email: string;
@@ -27,10 +28,21 @@ export type Experience = {
   description: string;
 };
 
+export type Project = {
+  id:string;
+  title: string;
+  organization: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+};
+
+
 export type ResumeData = {
   contact: ContactInfo;
   summary: string;
   education: Education[];
   experience: Experience[];
+  projects: Project[];
   skills: string;
 };

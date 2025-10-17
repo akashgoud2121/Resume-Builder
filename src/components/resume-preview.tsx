@@ -14,7 +14,7 @@ const categoryTitles: Record<EducationCategory, string> = {
 
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { resumeData } = useResume();
-  const { contact, summary, education, experience, skills } = resumeData;
+  const { contact, summary, education, experience, projects, skills } = resumeData;
 
   const renderDescription = (text: string) => {
     return text.split('\n').map((line, index) => (
@@ -79,11 +79,11 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             <p className="text-sm">{skills}</p>
         </div>
       )}
-
-      {experience.length > 0 && experience[0]?.title && (
+      
+      {experience.length > 0 && experience.some(e => e.title) && (
         <div className="mb-6">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Experience</h2>
-          {experience.map(exp => (
+          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Work Experience</h2>
+          {experience.map(exp => exp.title && (
             <div key={exp.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{exp.title}</h3>
@@ -92,6 +92,24 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
               <p className="text-sm font-semibold italic">{exp.company}</p>
               <div className="mt-1 prose prose-sm max-w-none text-gray-700">
                 {renderDescription(exp.description)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {projects.length > 0 && projects.some(p => p.title) && (
+        <div className="mb-6">
+          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Projects</h2>
+          {projects.map(proj => proj.title && (
+            <div key={proj.id} className="mb-4 break-inside-avoid">
+              <div className="flex justify-between items-baseline">
+                <h3 className="text-md font-bold">{proj.title}</h3>
+                <p className="text-sm font-light">{proj.startDate} - {proj.endDate}</p>
+              </div>
+              <p className="text-sm font-semibold italic">{proj.organization}</p>
+              <div className="mt-1 prose prose-sm max-w-none text-gray-700">
+                {renderDescription(proj.description)}
               </div>
             </div>
           ))}

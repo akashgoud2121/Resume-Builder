@@ -1,3 +1,4 @@
+
 import type { ResumeData } from './types';
 
 export const initialResumeData: ResumeData = {
@@ -20,11 +21,12 @@ export const initialResumeData: ResumeData = {
       grades: '',
     },
   ],
-  experience: [
+  experience: [],
+  projects: [
     {
-      id: `exp_${Date.now()}`,
+      id: `proj_${Date.now()}`,
       title: '',
-      company: '',
+      organization: '',
       startDate: '',
       endDate: '',
       description: '',

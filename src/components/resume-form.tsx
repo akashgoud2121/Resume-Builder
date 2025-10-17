@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy } from 'lucide-react';
-import type { Education, Experience, EducationCategory } from '@/lib/types';
+import type { Education, Experience, EducationCategory, Project } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
@@ -58,6 +58,7 @@ type AiExperienceState = {
   generatedBulletPoints: string;
   isGenerating: boolean;
   targetIndex: number | null;
+  targetType: 'experience' | 'projects';
 };
 
 export function ResumeForm() {
@@ -76,6 +77,7 @@ export function ResumeForm() {
     generatedBulletPoints: '',
     isGenerating: false,
     targetIndex: null,
+    targetType: 'experience',
   });
 
   const templateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
@@ -92,8 +94,8 @@ export function ResumeForm() {
     setResumeData(prev => ({ ...prev, skills: e.target.value }));
   };
 
-  const handleGenericChange = <T extends Education | Experience>(
-    section: 'education' | 'experience',
+  const handleGenericChange = <T extends Education | Experience | Project>(
+    section: 'education' | 'experience' | 'projects',
     index: number,
     field: keyof T,
     value: string
@@ -113,19 +115,24 @@ export function ResumeForm() {
     });
   };
 
-  const addEntry = (section: 'education' | 'experience') => {
+  const addEntry = (section: 'education' | 'experience' | 'projects') => {
     setResumeData(prev => {
-      const newEntry = section === 'education'
-        ? { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', date: '', city: '', grades: '' }
-        : { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
+      let newEntry;
+      if (section === 'education') {
+        newEntry = { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', date: '', city: '', grades: '' };
+      } else if (section === 'experience') {
+        newEntry = { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
+      } else {
+        newEntry = { id: `proj_${Date.now()}`, title: '', organization: '', startDate: '', endDate: '', description: '' };
+      }
       return { ...prev, [section]: [...prev[section], newEntry] };
     });
   };
   
-  const removeEntry = (section: 'education' | 'experience', id: string) => {
+  const removeEntry = (section: 'education' | 'experience' | 'projects', id: string) => {
     setResumeData(prev => ({
       ...prev,
-      [section]: prev[section].filter(item => item.id !== id),
+      [section]: (prev[section] as any[]).filter(item => item.id !== id),
     }));
   };
 
@@ -175,14 +182,14 @@ export function ResumeForm() {
     });
   };
   
-  const openExperienceAiDialog = (index: number) => {
-    const experience = resumeData.experience[index];
+  const openExperienceAiDialog = (type: 'experience' | 'projects', index: number) => {
+    const entry = resumeData[type][index];
     setAiExperienceState({
       ...aiExperienceState,
       isOpen: true,
       targetIndex: index,
-      projectTitle: experience.title,
-      // Clear previous results
+      targetType: type,
+      projectTitle: entry.title,
       projectDescription: '',
       technologiesUsed: '',
       generatedBulletPoints: '',
@@ -225,7 +232,7 @@ export function ResumeForm() {
   const handleUseExperience = () => {
     if (aiExperienceState.targetIndex === null || !aiExperienceState.generatedBulletPoints) return;
     
-    handleGenericChange('experience', aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
+    handleGenericChange(aiExperienceState.targetType, aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
     
     setAiExperienceState(prev => ({ ...prev, isOpen: false }));
     toast({
@@ -389,7 +396,7 @@ export function ResumeForm() {
     },
     {
         value: "experience",
-        title: "Experience / Projects",
+        title: "Work Experience",
         content: (
           <div className="space-y-4">
             {resumeData.experience.map((exp, index) => (
@@ -397,11 +404,11 @@ export function ResumeForm() {
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                       <div className="space-y-2">
                           <Label>Job Title/Role</Label>
-                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Web Dev Project or Software Intern" />
+                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
                       </div>
                       <div className="space-y-2">
-                          <Label>Company/Organization</Label>
-                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Personal Project or Tech Corp" />
+                          <Label>Company</Label>
+                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
                       </div>
                       <div className="space-y-2">
                           <Label>Start Date</Label>
@@ -413,13 +420,13 @@ export function ResumeForm() {
                       </div>
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
-                            <Label>Bullet Points / Description</Label>
-                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog(index)}>
+                            <Label>Description</Label>
+                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
                               <Sparkles className="mr-2 h-4 w-4" />
                               Generate with AI
                             </Button>
                           </div>
-                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} />
+                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
                       </div>
                   </CardContent>
                   <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
@@ -428,6 +435,50 @@ export function ResumeForm() {
                 </Card>
             ))}
             <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+          </div>
+        )
+    },
+    {
+        value: "projects",
+        title: "Projects",
+        content: (
+          <div className="space-y-4">
+            {resumeData.projects.map((proj, index) => (
+                <Card key={proj.id} className="p-4 relative">
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                      <div className="space-y-2">
+                          <Label>Project Title</Label>
+                          <Input value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Organization/Context</Label>
+                          <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., Personal Project, Coursework" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Start Date</Label>
+                          <Input value={proj.startDate} onChange={e => handleGenericChange('projects', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>End Date</Label>
+                          <Input value={proj.endDate} onChange={e => handleGenericChange('projects', index, 'endDate', e.target.value)} placeholder="Feb 2024" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Label>Bullet Points / Description</Label>
+                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('projects', index)}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate with AI
+                            </Button>
+                          </div>
+                          <Textarea value={proj.description} onChange={e => handleGenericChange('projects', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} />
+                      </div>
+                  </CardContent>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('projects', proj.id)}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
+                </Card>
+            ))}
+            <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
              <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
                 <DialogContent className="sm:max-w-[625px]">
                     <DialogHeader>
@@ -504,7 +555,7 @@ export function ResumeForm() {
   ];
 
   return (
-    <Accordion type="multiple" defaultValue={["contact", "summary", "education", "experience", "skills"]} className="w-full space-y-4">
+    <Accordion type="multiple" defaultValue={["contact", "summary", "education", "experience", "projects", "skills"]} className="w-full space-y-4">
       {formSections.map(section => (
         <AccordionItem key={section.value} value={section.value} className="border-none">
           <Card>

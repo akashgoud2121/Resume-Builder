@@ -241,11 +241,9 @@ export function ResumeForm() {
                   <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder="e.g., New Delhi, Delhi" />
                 </div>
               </CardContent>
-              {resumeData.education.length > 1 &&
-                <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              }
+              <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </Card>
           ))}
           <Button variant="outline" onClick={() => addEntry('education')}><PlusCircle className="mr-2 h-4 w-4" /> Add Another Qualification</Button>
@@ -322,9 +320,3 @@ export function ResumeForm() {
     </Accordion>
   );
 }
-
-    
-
-    
-
-    

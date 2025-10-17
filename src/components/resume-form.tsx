@@ -132,6 +132,10 @@ export function ResumeForm() {
             <Label htmlFor="linkedin">LinkedIn URL</Label>
             <Input id="linkedin" name="linkedin" value={resumeData.contact.linkedin} onChange={handleContactChange} placeholder="linkedin.com/in/johndoe" />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="github">GitHub URL</Label>
+            <Input id="github" name="github" value={resumeData.contact.github} onChange={handleContactChange} placeholder="github.com/johndoe" />
+          </div>
         </div>
       )
     },

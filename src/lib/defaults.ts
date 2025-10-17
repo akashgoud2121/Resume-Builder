@@ -6,6 +6,7 @@ export const initialResumeData: ResumeData = {
     email: '',
     phone: '',
     linkedin: '',
+    github: '',
   },
   summary: '',
   education: [

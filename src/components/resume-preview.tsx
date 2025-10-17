@@ -31,6 +31,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           {contact.email && <p>{contact.email}</p>}
           {contact.phone && <p>{contact.phone}</p>}
           {contact.linkedin && <p>{contact.linkedin}</p>}
+          {contact.github && <p>{contact.github}</p>}
         </div>
       </div>
 

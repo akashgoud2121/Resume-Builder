@@ -27,4 +27,4 @@ export type GenerateExperienceInput = z.infer<typeof GenerateExperienceInputSche
 export const GenerateExperienceOutputSchema = z.object({
     bulletPoints: z.string().describe('The generated bullet points for the experience or project, formatted with hyphens. Each point should follow the STAR or XYZ format.'),
 });
-export type GenerateExperienceOutput = z-infer<typeof GenerateExperienceOutputSchema>;
+export type GenerateExperienceOutput = z.infer<typeof GenerateExperienceOutputSchema>;

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { forwardRef } from 'react';
@@ -58,7 +59,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             <React.Fragment key={index}>
               <p>{item}</p>
               {index < contactItems.length - 1 && (
-                <span className="text-gray-400">|</span>
+                <span className="text-gray-400 mx-1">|</span>
               )}
             </React.Fragment>
           ))}

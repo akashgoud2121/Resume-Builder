@@ -6,8 +6,11 @@ export type ContactInfo = {
   github: string;
 };
 
+export type EducationCategory = 'schooling' | 'intermediate' | 'higher';
+
 export type Education = {
   id: string;
+  category: EducationCategory;
   school: string;
   degree: string;
   date: string;
@@ -15,7 +18,7 @@ export type Education = {
 };
 
 export type Experience = {
-  id: string;
+  id:string;
   title: string;
   company: string;
   startDate: string;

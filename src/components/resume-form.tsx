@@ -9,11 +9,42 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy } from 'lucide-react';
-import type { Education, Experience } from '@/lib/types';
+import type { Education, Experience, EducationCategory } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+
+const educationCategoryConfig = {
+  schooling: {
+    title: 'Schooling (Class X/XII)',
+    fields: {
+      school: { label: 'School Name', placeholder: 'e.g., Delhi Public School' },
+      degree: { label: 'Board (e.g., CBSE, ICSE) or Class', placeholder: 'e.g., CBSE Class XII' },
+      date: { label: 'Year of Passing', placeholder: 'e.g., 2021' },
+      city: { label: 'City / State', placeholder: 'e.g., New Delhi, Delhi' },
+    }
+  },
+  intermediate: {
+    title: 'Intermediate / Diploma',
+    fields: {
+      school: { label: 'College / Institute Name', placeholder: 'e.g., Sri Chaitanya Junior College' },
+      degree: { label: 'Group / Specialization', placeholder: 'e.g., MPC' },
+      date: { label: 'Year of Passing', placeholder: 'e.g., 2023' },
+      city: { label: 'City / State', placeholder: 'e.g., Hyderabad, Telangana' },
+    }
+  },
+  higher: {
+    title: 'Higher Education (University)',
+    fields: {
+      school: { label: 'University / College Name', placeholder: 'e.g., Indian Institute of Technology Bombay' },
+      degree: { label: 'Degree & Major', placeholder: 'e.g., B.Tech in Computer Science' },
+      date: { label: 'Expected Graduation Year', placeholder: 'e.g., May 2027' },
+      city: { label: 'City / State', placeholder: 'e.g., Mumbai, Maharashtra' },
+    }
+  }
+};
 
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
@@ -50,10 +81,18 @@ export function ResumeForm() {
     });
   };
 
+  const handleEducationCategoryChange = (index: number, value: EducationCategory) => {
+    setResumeData(prev => {
+      const newEducation = [...prev.education];
+      newEducation[index] = { ...newEducation[index], category: value };
+      return { ...prev, education: newEducation };
+    });
+  };
+
   const addEntry = (section: 'education' | 'experience') => {
     setResumeData(prev => {
       const newEntry = section === 'education'
-        ? { id: `edu_${Date.now()}`, school: '', degree: '', date: '', city: '' }
+        ? { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', date: '', city: '' }
         : { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
       return { ...prev, [section]: [...prev[section], newEntry] };
     });
@@ -221,31 +260,50 @@ export function ResumeForm() {
       title: "Education",
       content: (
         <div className="space-y-4">
-          {resumeData.education.map((edu, index) => (
-            <Card key={edu.id} className="p-4 relative">
-              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                <div className="space-y-2">
-                  <Label>School / College / University</Label>
-                  <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder="e.g., Delhi University" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Degree, Major or Field of Study</Label>
-                  <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder="e.g., B.Tech in Computer Science or Class XII" />
-                </div>
-                <div className="space-y-2">
-                  <Label>End Date or Year of Passing</Label>
-                  <Input value={edu.date} onChange={e => handleGenericChange('education', index, 'date', e.target.value)} placeholder="e.g., May 2025 or 2021" />
-                </div>
-                <div className="space-y-2">
-                  <Label>City / State</Label>
-                  <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder="e.g., New Delhi, Delhi" />
-                </div>
-              </CardContent>
-              <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </Card>
-          ))}
+          {resumeData.education.map((edu, index) => {
+            const config = educationCategoryConfig[edu.category];
+            return (
+              <Card key={edu.id} className="p-4 relative">
+                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                  <div className="sm:col-span-2 space-y-2">
+                    <Label>Education Category</Label>
+                    <Select
+                      value={edu.category}
+                      onValueChange={(value: EducationCategory) => handleEducationCategoryChange(index, value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="schooling">Schooling (Class X/XII)</SelectItem>
+                        <SelectItem value="intermediate">Intermediate/Diploma</SelectItem>
+                        <SelectItem value="higher">Higher Education (University)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{config.fields.school.label}</Label>
+                    <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{config.fields.degree.label}</Label>
+                    <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{config.fields.date.label}</Label>
+                    <Input value={edu.date} onChange={e => handleGenericChange('education', index, 'date', e.target.value)} placeholder={config.fields.date.placeholder} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{config.fields.city.label}</Label>
+                    <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
+                  </div>
+                </CardContent>
+                <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </Card>
+            );
+          })}
           <Button variant="outline" onClick={() => addEntry('education')}><PlusCircle className="mr-2 h-4 w-4" /> Add Another Qualification</Button>
         </div>
       )

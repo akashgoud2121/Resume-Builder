@@ -3,7 +3,13 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { Separator } from './ui/separator';
+import { EducationCategory } from '@/lib/types';
+
+const categoryTitles: Record<EducationCategory, string> = {
+  higher: 'Higher Education',
+  intermediate: 'Intermediate / Diploma',
+  schooling: 'Schooling',
+};
 
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { resumeData } = useResume();
@@ -21,6 +27,19 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     contact.linkedin,
     contact.github
   ].filter(Boolean);
+
+  const groupedEducation = education.reduce((acc, edu) => {
+    const category = edu.category || 'higher';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    if (edu.school) { // Only add if there is a school name
+      acc[category].push(edu);
+    }
+    return acc;
+  }, {} as Record<EducationCategory, typeof education>);
+
+  const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling'];
 
   return (
     <div
@@ -77,24 +96,31 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           ))}
         </div>
       )}
-
-      {education.length > 0 && education[0]?.school && (
-        <div className="break-inside-avoid">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>
-          {education.map(edu => (
-            <div key={edu.id} className="flex justify-between items-baseline mb-2 break-inside-avoid">
-              <div>
-                <h3 className="text-md font-bold">{edu.school}</h3>
-                <p className="text-sm">{edu.degree}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-light">{edu.date}</p>
-                <p className="text-sm font-light">{edu.city}</p>
-              </div>
+      
+      <div className="break-inside-avoid">
+        {education.some(e => e.school) && <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>}
+        {educationOrder.map(category => {
+          const entries = groupedEducation[category];
+          if (!entries || entries.length === 0) return null;
+          return (
+            <div key={category} className="mb-4">
+               <h3 className="text-md font-bold text-gray-600 mb-2">{categoryTitles[category]}</h3>
+               {entries.map(edu => (
+                 <div key={edu.id} className="flex justify-between items-baseline mb-2 break-inside-avoid">
+                   <div>
+                     <h4 className="text-md font-bold">{edu.school}</h4>
+                     <p className="text-sm">{edu.degree}</p>
+                   </div>
+                   <div className="text-right">
+                     <p className="text-sm font-light">{edu.date}</p>
+                     <p className="text-sm font-light">{edu.city}</p>
+                   </div>
+                 </div>
+               ))}
             </div>
-          ))}
-        </div>
-      )}
+          )
+        })}
+      </div>
     </div>
   );
 });

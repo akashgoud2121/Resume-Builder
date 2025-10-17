@@ -12,6 +12,7 @@ export const initialResumeData: ResumeData = {
   education: [
     {
       id: `edu_${Date.now()}`,
+      category: 'higher',
       school: '',
       degree: '',
       date: '',

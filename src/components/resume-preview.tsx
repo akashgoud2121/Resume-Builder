@@ -17,7 +17,8 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { contact, summary, education, experience, projects, skills } = resumeData;
 
   const renderDescription = (text: string) => {
-    return text.split('\n').map((line, index) => (
+    // Split by newline, then process each line to handle hyphens
+    return text.split('\n').flatMap(line => line.split(/(?=^-)/g)).map((line, index) => (
         <p key={index} className="text-sm">{line}</p>
     ));
   };

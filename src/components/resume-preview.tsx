@@ -57,7 +57,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         <div className="flex justify-center items-center gap-x-3 gap-y-1 mt-2 text-sm flex-wrap">
           {contactItems.map((item, index) => (
             <React.Fragment key={index}>
-              <p>{item}</p>
+              <span>{item}</span>
               {index < contactItems.length - 1 && (
                 <span className="text-gray-400 mx-1">|</span>
               )}
@@ -107,12 +107,12 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             <div key={category} className="mb-4">
                <h3 className="text-md font-bold text-gray-600 mb-2">{categoryTitles[category]}</h3>
                {entries.map(edu => (
-                 <div key={edu.id} className="flex justify-between items-baseline mb-2 break-inside-avoid">
-                   <div>
+                 <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
+                   <div className="flex-grow">
                      <h4 className="text-md font-bold">{edu.school}</h4>
                      <p className="text-sm">{edu.degree}</p>
                    </div>
-                   <div className="text-right">
+                   <div className="text-right flex-shrink-0 ml-4">
                      <p className="text-sm font-light">{edu.date}</p>
                      <p className="text-sm font-light">{edu.city}</p>
                    </div>

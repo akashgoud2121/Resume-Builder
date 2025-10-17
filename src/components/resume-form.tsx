@@ -23,7 +23,7 @@ export function ResumeForm() {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  const templateText = "I am a final-year Computer Science student specializing in web development. I've built two projects using React and Node.js. I'm proficient in JavaScript and Python and I am seeking a front-end developer internship to apply my skills.";
+  const templateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [e.target.name]: e.target.value } }));

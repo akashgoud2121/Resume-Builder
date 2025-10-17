@@ -5,37 +5,16 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Download, Eye, Loader2, Rocket, Settings } from 'lucide-react';
+import { Download, Eye, Loader2, Rocket } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [isDownloading, setIsDownloading] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [apiKey, setApiKey] = useState('');
   const { toast } = useToast();
-
-  React.useEffect(() => {
-    const storedKey = localStorage.getItem('google-ai-api-key');
-    if (storedKey) {
-      setApiKey(storedKey);
-    }
-  }, []);
-
-  const handleSaveApiKey = () => {
-    localStorage.setItem('google-ai-api-key', apiKey);
-    toast({
-      title: 'API Key Saved',
-      description: 'Your Google AI API key has been saved.',
-    });
-    setIsSettingsOpen(false);
-  };
 
   const handleDownloadPdf = async () => {
     const input = resumePreviewRef.current;
@@ -139,34 +118,6 @@ export function ResumeBuilder() {
           <span className="font-headline text-xl">ResumeRocket</span>
         </Link>
         <div className="flex items-center gap-4">
-          <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="icon">
-                <Settings className="h-5 w-5" />
-                <span className="sr-only">Settings</span>
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Settings</DialogTitle>
-                <DialogDescription>
-                  Provide your own Google AI API key to use the AI features. This key is stored only in your browser.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-2">
-                <Label htmlFor="api-key">Google AI API Key</Label>
-                <Input
-                  id="api-key"
-                  type="password"
-                  value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Enter your API key"
-                />
-              </div>
-              <Button onClick={handleSaveApiKey}>Save Key</Button>
-            </DialogContent>
-          </Dialog>
-
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>

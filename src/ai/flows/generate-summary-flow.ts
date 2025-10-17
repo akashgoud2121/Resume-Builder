@@ -5,20 +5,11 @@
  * - generateSummary - A function that takes user details and returns a professional summary.
  */
 
-import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
+import { ai } from '@/ai/genkit';
 import { GenerateSummaryInputSchema, GenerateSummaryOutputSchema, type GenerateSummaryInput, type GenerateSummaryOutput } from '@/ai/schemas';
 
 export async function generateSummary(input: GenerateSummaryInput): Promise<GenerateSummaryOutput> {
-  const { apiKey, ...promptData } = input;
-    
-  // If a user-provided API key exists, create a temporary Genkit instance
-  // configured with that key. Otherwise, use the default AI instance.
-  const aiInstance = apiKey
-    ? genkit({ plugins: [googleAI({ apiKey })] })
-    : (await import('@/ai/genkit')).ai;
-
-  const prompt = aiInstance.definePrompt({
+  const prompt = ai.definePrompt({
     name: 'generateSummaryPrompt',
     input: { schema: GenerateSummaryInputSchema },
     output: { schema: GenerateSummaryOutputSchema },
@@ -29,7 +20,7 @@ Key Details:
 `,
   });
 
-  const generateSummaryFlow = aiInstance.defineFlow(
+  const generateSummaryFlow = ai.defineFlow(
     {
       name: 'generateSummaryFlow',
       inputSchema: GenerateSummaryInputSchema,
@@ -41,5 +32,5 @@ Key Details:
     }
   );
 
-  return generateSummaryFlow(promptData);
+  return generateSummaryFlow(input);
 }

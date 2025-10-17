@@ -130,16 +130,6 @@ export function ResumeForm() {
   };
 
   const handleGenerateSummary = async () => {
-    const apiKey = localStorage.getItem('google-ai-api-key');
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please set your Google AI API key in the settings first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!summaryAiDetails.trim()) {
       toast({
         title: "Details are empty",
@@ -151,7 +141,7 @@ export function ResumeForm() {
     setIsGeneratingSummary(true);
     setGeneratedSummary('');
     try {
-      const result = await generateSummary({ details: summaryAiDetails, apiKey });
+      const result = await generateSummary({ details: summaryAiDetails });
       if (result.summary) {
         setGeneratedSummary(result.summary);
       }
@@ -159,7 +149,7 @@ export function ResumeForm() {
       console.error(error);
       toast({
         title: "Generation Failed",
-        description: "Something went wrong while generating the summary. Check your API key and try again.",
+        description: "Something went wrong while generating the summary. Check your server configuration and try again.",
         variant: "destructive",
       });
     } finally {
@@ -200,16 +190,6 @@ export function ResumeForm() {
   };
 
   const handleGenerateExperience = async () => {
-    const apiKey = localStorage.getItem('google-ai-api-key');
-    if (!apiKey) {
-      toast({
-        title: "API Key Required",
-        description: "Please set your Google AI API key in the settings first.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     if (!aiExperienceState.projectDescription.trim() || !aiExperienceState.technologiesUsed.trim()) {
       toast({
         title: "Details are missing",
@@ -226,7 +206,6 @@ export function ResumeForm() {
         projectTitle: aiExperienceState.projectTitle,
         projectDescription: aiExperienceState.projectDescription,
         technologiesUsed: aiExperienceState.technologiesUsed,
-        apiKey,
       });
       if (result.bulletPoints) {
         setAiExperienceState(prev => ({ ...prev, generatedBulletPoints: result.bulletPoints }));
@@ -235,7 +214,7 @@ export function ResumeForm() {
       console.error(error);
       toast({
         title: "Generation Failed",
-        description: "Something went wrong while generating the description. Check your API key and try again.",
+        description: "Something went wrong while generating the description. Check your server configuration and try again.",
         variant: "destructive",
       });
     } finally {

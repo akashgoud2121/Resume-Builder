@@ -20,12 +20,23 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     // This regex splits the text by newlines or by hyphens that start a bullet point.
     // It handles cases where AI generates bullet points in a single line.
     // The filter removes any empty strings that result from the split.
-    return text
+    const bulletPoints = text
       .split(/\n|(?=- )/)
-      .filter(line => line.trim() !== '')
-      .map((line, index) => (
-        <p key={index} className="text-sm">{line.trim()}</p>
-      ));
+      .filter(line => line.trim() !== '');
+
+    if (bulletPoints.length === 0 || (bulletPoints.length === 1 && !bulletPoints[0].startsWith('-'))) {
+       return <p className="text-sm">{text}</p>;
+    }
+    
+    return (
+        <ul className="list-disc list-outside pl-4 space-y-1">
+            {bulletPoints.map((line, index) => (
+            <li key={index} className="text-sm pl-2">
+                {line.trim().replace(/^- /, '')}
+            </li>
+            ))}
+        </ul>
+    );
   };
   
   const contactItems = [

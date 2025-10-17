@@ -17,12 +17,15 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { contact, summary, education, experience, projects, skills } = resumeData;
 
   const renderDescription = (text: string) => {
-    // Split by newline and then by hyphen to handle both formats
-    return text.split('\n').flatMap(line => 
-      line.startsWith('-') ? line.split(/(?=-)/g) : [line]
-    ).filter(line => line.trim() !== '').map((line, index) => (
-      <p key={index} className="text-sm">{line.trim()}</p>
-    ));
+    // This regex splits the text by newlines or by hyphens that start a bullet point.
+    // It handles cases where AI generates bullet points in a single line.
+    // The filter removes any empty strings that result from the split.
+    return text
+      .split(/\n|(?=- )/)
+      .filter(line => line.trim() !== '')
+      .map((line, index) => (
+        <p key={index} className="text-sm">{line.trim()}</p>
+      ));
   };
   
   const contactItems = [

@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, type Dispatch, type SetStateAction } from 'react';
 import type { ResumeData } from './types';
 import { initialResumeData } from './defaults';
+import { defaultsDeep } from './utils';
 
 interface ResumeContextType {
   resumeData: ResumeData;
@@ -26,7 +27,9 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
       try {
         const storedData = localStorage.getItem('resumeData');
         if (storedData) {
-          setResumeData(JSON.parse(storedData));
+          const parsedData = JSON.parse(storedData);
+          // Deep merge parsed data with initial data to ensure all fields are present
+          setResumeData(defaultsDeep(parsedData, initialResumeData));
         }
       } catch (error) {
         console.error("Failed to parse resume data from localStorage", error);

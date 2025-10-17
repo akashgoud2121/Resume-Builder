@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from 'react';
@@ -193,7 +194,7 @@ export function ResumeForm() {
               </DialogContent>
             </Dialog>
           </div>
-          <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="A brief summary of your career goals and qualifications..." rows={5} />
+          <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="Write a 2-3 sentence objective. Mention your field of study, key skills, and what you're looking for (e.g., 'a challenging software engineering internship')." rows={5} />
         </div>
       )
     },

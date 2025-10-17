@@ -13,6 +13,7 @@ import type { Education, Experience, EducationCategory } from '@/lib/types';
 import { Card, CardContent } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
+import { generateExperience } from '@/ai/flows/generate-experience-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
@@ -49,13 +50,33 @@ const educationCategoryConfig = {
   }
 };
 
+type AiExperienceState = {
+  isOpen: boolean;
+  projectTitle: string;
+  projectDescription: string;
+  technologiesUsed: string;
+  generatedBulletPoints: string;
+  isGenerating: boolean;
+  targetIndex: number | null;
+};
+
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
-  const [isAiDialogOpen, setIsAiDialogOpen] = useState(false);
-  const [aiDetails, setAiDetails] = useState('');
+  const [isSummaryAiDialogOpen, setIsSummaryAiDialogOpen] = useState(false);
+  const [summaryAiDetails, setSummaryAiDetails] = useState('');
   const [generatedSummary, setGeneratedSummary] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const { toast } = useToast();
+
+  const [aiExperienceState, setAiExperienceState] = useState<AiExperienceState>({
+    isOpen: false,
+    projectTitle: '',
+    projectDescription: '',
+    technologiesUsed: '',
+    generatedBulletPoints: '',
+    isGenerating: false,
+    targetIndex: null,
+  });
 
   const templateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
 
@@ -119,7 +140,7 @@ export function ResumeForm() {
       return;
     }
 
-    if (!aiDetails.trim()) {
+    if (!summaryAiDetails.trim()) {
       toast({
         title: "Details are empty",
         description: "Please provide some details to generate a summary.",
@@ -127,10 +148,10 @@ export function ResumeForm() {
       });
       return;
     }
-    setIsGenerating(true);
+    setIsGeneratingSummary(true);
     setGeneratedSummary('');
     try {
-      const result = await generateSummary({ details: aiDetails, apiKey });
+      const result = await generateSummary({ details: summaryAiDetails, apiKey });
       if (result.summary) {
         setGeneratedSummary(result.summary);
       }
@@ -142,13 +163,13 @@ export function ResumeForm() {
         variant: "destructive",
       });
     } finally {
-      setIsGenerating(false);
+      setIsGeneratingSummary(false);
     }
   };
 
   const handleUseSummary = () => {
     setResumeData(prev => ({ ...prev, summary: generatedSummary }));
-    setIsAiDialogOpen(false);
+    setIsSummaryAiDialogOpen(false);
     toast({
       title: "Summary Updated!",
       description: "The AI-generated summary has been added to your resume.",
@@ -163,6 +184,77 @@ export function ResumeForm() {
       });
     });
   };
+  
+  const openExperienceAiDialog = (index: number) => {
+    const experience = resumeData.experience[index];
+    setAiExperienceState({
+      ...aiExperienceState,
+      isOpen: true,
+      targetIndex: index,
+      projectTitle: experience.title,
+      // Clear previous results
+      projectDescription: '',
+      technologiesUsed: '',
+      generatedBulletPoints: '',
+    });
+  };
+
+  const handleGenerateExperience = async () => {
+    const apiKey = localStorage.getItem('google-ai-api-key');
+    if (!apiKey) {
+      toast({
+        title: "API Key Required",
+        description: "Please set your Google AI API key in the settings first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!aiExperienceState.projectDescription.trim() || !aiExperienceState.technologiesUsed.trim()) {
+      toast({
+        title: "Details are missing",
+        description: "Please provide a description and technologies used.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setAiExperienceState(prev => ({ ...prev, isGenerating: true, generatedBulletPoints: '' }));
+
+    try {
+      const result = await generateExperience({
+        projectTitle: aiExperienceState.projectTitle,
+        projectDescription: aiExperienceState.projectDescription,
+        technologiesUsed: aiExperienceState.technologiesUsed,
+        apiKey,
+      });
+      if (result.bulletPoints) {
+        setAiExperienceState(prev => ({ ...prev, generatedBulletPoints: result.bulletPoints }));
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Generation Failed",
+        description: "Something went wrong while generating the description. Check your API key and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
+    }
+  };
+
+  const handleUseExperience = () => {
+    if (aiExperienceState.targetIndex === null || !aiExperienceState.generatedBulletPoints) return;
+    
+    handleGenericChange('experience', aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
+    
+    setAiExperienceState(prev => ({ ...prev, isOpen: false }));
+    toast({
+      title: "Description Updated!",
+      description: "The AI-generated bullet points have been added.",
+    });
+  };
+
 
   const formSections = [
     {
@@ -200,7 +292,7 @@ export function ResumeForm() {
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <Label htmlFor="summary">Summary/Objective</Label>
-            <Dialog open={isAiDialogOpen} onOpenChange={setIsAiDialogOpen}>
+            <Dialog open={isSummaryAiDialogOpen} onOpenChange={setIsSummaryAiDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Sparkles className="mr-2 h-4 w-4" />
@@ -228,14 +320,14 @@ export function ResumeForm() {
                     </Label>
                     <Textarea
                       id="ai-details"
-                      value={aiDetails}
-                      onChange={(e) => setAiDetails(e.target.value)}
+                      value={summaryAiDetails}
+                      onChange={(e) => setSummaryAiDetails(e.target.value)}
                       placeholder="Paste and edit the template above, or write your own details here..."
                       rows={5}
                     />
                   </div>
-                  <Button onClick={handleGenerateSummary} disabled={isGenerating}>
-                    {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary}>
+                    {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                     Generate Objective
                   </Button>
                   {generatedSummary && (
@@ -246,7 +338,7 @@ export function ResumeForm() {
                   )}
                 </div>
                 <DialogFooter>
-                  <Button variant="secondary" onClick={() => setIsAiDialogOpen(false)}>Cancel</Button>
+                  <Button variant="secondary" onClick={() => setIsSummaryAiDialogOpen(false)}>Cancel</Button>
                   <Button onClick={handleUseSummary} disabled={!generatedSummary}>
                     Use This Objective
                   </Button>
@@ -320,39 +412,102 @@ export function ResumeForm() {
         value: "experience",
         title: "Experience / Projects",
         content: (
-            <div className="space-y-4">
+          <div className="space-y-4">
             {resumeData.experience.map((exp, index) => (
                 <Card key={exp.id} className="p-4 relative">
-                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                    <div className="space-y-2">
-                        <Label>Job Title/Role</Label>
-                        <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="Software Engineer" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Company/Organization</Label>
-                        <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="Tech Corp" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Start Date</Label>
-                        <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2022" />
-                    </div>
-                    <div className="space-y-2">
-                        <Label>End Date</Label>
-                        <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
-                    </div>
-                    <div className="sm:col-span-2 space-y-2">
-                        <Label>Bullet Points / Description</Label>
-                        <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Developed feature X, resulting in Y% improvement.&#10;- Collaborated with team Z on project A." rows={5} />
-                    </div>
-                </CardContent>
-                {resumeData.experience.length > 1 &&
-                    <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
-                    <Trash2 className="h-4 w-4" />
-                    </Button>
-                }
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                      <div className="space-y-2">
+                          <Label>Job Title/Role</Label>
+                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Web Dev Project or Software Intern" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Company/Organization</Label>
+                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Personal Project or Tech Corp" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Start Date</Label>
+                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>End Date</Label>
+                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Label>Bullet Points / Description</Label>
+                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog(index)}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate with AI
+                            </Button>
+                          </div>
+                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} />
+                      </div>
+                  </CardContent>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
                 </Card>
             ))}
             <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+             <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
+                <DialogContent className="sm:max-w-[625px]">
+                    <DialogHeader>
+                    <DialogTitle>Generate Project/Experience Description</DialogTitle>
+                    <DialogDescription>
+                        Provide some details, and AI will generate professional bullet points using the STAR method.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="space-y-2">
+                        <Label>Project Title / Role</Label>
+                        <Input
+                          value={aiExperienceState.projectTitle}
+                          readOnly
+                          disabled
+                          className="font-semibold"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Brief Description or Responsibilities</Label>
+                        <Textarea
+                          value={aiExperienceState.projectDescription}
+                          onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
+                          placeholder="e.g., 'Built a social media dashboard to track user engagement' or 'Responsible for front-end development of the checkout page'."
+                          rows={3}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Technologies Used</Label>
+                        <Input
+                          value={aiExperienceState.technologiesUsed}
+                          onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
+                          placeholder="e.g., React, TypeScript, Node.js, Firebase"
+                        />
+                      </div>
+                      <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating}>
+                        {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Generate Description
+                      </Button>
+                      {aiExperienceState.generatedBulletPoints && (
+                        <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                          <Label>Generated Bullet Points:</Label>
+                          <Textarea
+                            className="text-sm"
+                            readOnly
+                            value={aiExperienceState.generatedBulletPoints}
+                            rows={6}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <DialogFooter>
+                      <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
+                      <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
+                        Use This Description
+                      </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
             </div>
         )
     },

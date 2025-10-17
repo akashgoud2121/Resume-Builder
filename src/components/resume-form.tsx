@@ -225,20 +225,20 @@ export function ResumeForm() {
             <Card key={edu.id} className="p-4 relative">
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                 <div className="space-y-2">
-                  <Label>School Name</Label>
-                  <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder="University of Example" />
+                  <Label>School / College / University</Label>
+                  <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder="e.g., University of Delhi" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Degree/Major</Label>
-                  <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder="B.S. in Computer Science" />
+                  <Label>Degree / Major / Field</Label>
+                  <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder="e.g., B.Tech in Computer Science" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Graduation Date</Label>
-                  <Input value={edu.date} onChange={e => handleGenericChange('education', index, 'date', e.target.value)} placeholder="May 2024" />
+                  <Label>End Date / Year</Label>
+                  <Input value={edu.date} onChange={e => handleGenericChange('education', index, 'date', e.target.value)} placeholder="e.g., May 2025 or 2021" />
                 </div>
                 <div className="space-y-2">
-                  <Label>City/State</Label>
-                  <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder="Example City, ES" />
+                  <Label>City / State</Label>
+                  <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder="e.g., New Delhi, Delhi" />
                 </div>
               </CardContent>
               {resumeData.education.length > 1 &&
@@ -322,5 +322,7 @@ export function ResumeForm() {
     </Accordion>
   );
 }
+
+    
 
     

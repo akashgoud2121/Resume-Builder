@@ -157,20 +157,20 @@ export function ResumeForm() {
                 <DialogHeader>
                   <DialogTitle>Generate a Student Resume Objective</DialogTitle>
                   <DialogDescription>
-                    Create a powerful objective for internships and your first job. Your API key must be set in the main settings.
+                    To get the best result, provide details about your studies, any relevant experience (like internships or projects), your top skills, and what kind of role you're looking for.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="ai-details">
-                      Key details (e.g., your major, an internship, key skills, career goals)
+                      Your key details
                     </Label>
                     <Textarea
                       id="ai-details"
                       value={aiDetails}
                       onChange={(e) => setAiDetails(e.target.value)}
-                      placeholder="e.g., Computer Science major, proficient in Python and React, seeking a software engineering internship to apply my skills in a real-world setting."
-                      rows={4}
+                      placeholder="For example: I am a final-year Computer Science student specializing in web development. I've built two projects using React and Node.js. I'm proficient in JavaScript and Python and I am seeking a front-end developer internship to apply my skills."
+                      rows={5}
                     />
                   </div>
                   <Button onClick={handleGenerateSummary} disabled={isGenerating}>

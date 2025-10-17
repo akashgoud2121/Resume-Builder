@@ -31,7 +31,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     return (
         <ul className="list-disc list-outside pl-4 space-y-1">
             {bulletPoints.map((line, index) => (
-            <li key={index} className="text-sm pl-2">
+            <li key={index} className="text-sm pl-2 mb-1">
                 {line.trim().replace(/^- /, '')}
             </li>
             ))}
@@ -64,7 +64,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       ref={ref}
       id="resume-preview"
       className={cn(
-        "aspect-[8.5/11] w-full max-w-[800px] bg-white text-gray-800 p-8 shadow-lg rounded-lg origin-top scale-[0.7] md:scale-100 lg:scale-[0.8] xl:scale-100",
+        "aspect-[8.5/11] w-full max-w-[800px] bg-white text-gray-800 p-8 shadow-lg rounded-lg transform-gpu",
         "transition-transform duration-300 print:shadow-none print:scale-100 print:rounded-none"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}

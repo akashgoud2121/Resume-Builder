@@ -15,6 +15,13 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     ));
   };
 
+  const contactItems = [
+    contact.email,
+    contact.phone,
+    contact.linkedin,
+    contact.github
+  ].filter(Boolean);
+
   return (
     <div
       ref={ref}
@@ -27,11 +34,15 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     >
       <div className="text-center mb-6">
         {contact.name && <h1 className="text-4xl font-bold tracking-tight">{contact.name}</h1>}
-        <div className="flex justify-center items-center gap-x-4 gap-y-1 mt-2 text-sm flex-wrap">
-          {contact.email && <p>{contact.email}</p>}
-          {contact.phone && <p>{contact.phone}</p>}
-          {contact.linkedin && <p>{contact.linkedin}</p>}
-          {contact.github && <p>{contact.github}</p>}
+        <div className="flex justify-center items-center gap-x-3 gap-y-1 mt-2 text-sm flex-wrap">
+          {contactItems.map((item, index) => (
+            <React.Fragment key={index}>
+              <p>{item}</p>
+              {index < contactItems.length - 1 && (
+                <span className="text-gray-400">|</span>
+              )}
+            </React.Fragment>
+          ))}
         </div>
       </div>
 

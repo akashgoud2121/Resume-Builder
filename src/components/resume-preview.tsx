@@ -64,7 +64,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       ref={ref}
       id="resume-preview"
       className={cn(
-        "w-full max-w-[800px] bg-card text-card-foreground p-8 shadow-lg rounded-lg print:text-gray-800",
+        "w-full max-w-[800px] bg-white text-gray-900 p-8 shadow-lg rounded-lg",
         "transition-transform duration-300 print:shadow-none print:scale-100 print:rounded-none"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}
@@ -76,7 +76,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             <React.Fragment key={index}>
               <span>{item}</span>
               {index < contactItems.length - 1 && (
-                <span className="text-muted-foreground mx-1">|</span>
+                <span className="text-gray-400 mx-1">|</span>
               )}
             </React.Fragment>
           ))}
@@ -107,7 +107,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                 <p className="text-sm font-light">{exp.startDate} - {exp.endDate}</p>
               </div>
               <p className="text-sm font-semibold italic">{exp.company}</p>
-              <div className="mt-1 prose prose-sm max-w-none">
+              <div className="mt-1">
                 {renderDescription(exp.description)}
               </div>
             </div>
@@ -125,7 +125,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                 <p className="text-sm font-light">{proj.startDate} - {proj.endDate}</p>
               </div>
               <p className="text-sm font-semibold italic">{proj.organization}</p>
-              <div className="mt-1 prose prose-sm max-w-none">
+              <div className="mt-1">
                 {renderDescription(proj.description)}
               </div>
             </div>
@@ -140,7 +140,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           if (!entries || entries.length === 0) return null;
           return (
             <div key={category} className="mb-4 break-inside-avoid">
-               <h3 className="text-md font-bold text-muted-foreground mb-2">{categoryTitles[category]}</h3>
+               <h3 className="text-md font-bold text-gray-500 mb-2">{categoryTitles[category]}</h3>
                {entries.map(edu => (
                  <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
                    <div className="flex-grow">

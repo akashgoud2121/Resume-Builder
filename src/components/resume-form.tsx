@@ -80,7 +80,12 @@ export function ResumeForm() {
     targetType: 'experience',
   });
 
-  const templateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
+  const summaryTemplateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
+
+  const experienceTemplateText = {
+    description: "The goal of this project was to [describe the project's main objective, e.g., 'build a web app to help users track their daily water intake']. The app had features for [mention 1-2 key features, e.g., 'setting daily goals and sending reminders']. My main responsibility was [describe your key role, e.g., 'designing the user interface and developing the front-end components'].",
+    technologies: "React, Firebase, Chart.js, Tailwind CSS"
+  };
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [e.target.name]: e.target.value } }));
@@ -173,8 +178,8 @@ export function ResumeForm() {
     });
   };
 
-  const handleCopyTemplate = () => {
-    navigator.clipboard.writeText(templateText).then(() => {
+  const handleCopySummaryTemplate = () => {
+    navigator.clipboard.writeText(summaryTemplateText).then(() => {
       toast({
         title: "Template Copied!",
         description: "Paste it in the text area below to get started.",
@@ -241,6 +246,18 @@ export function ResumeForm() {
     });
   };
 
+  const handleCopyExperienceTemplate = () => {
+    setAiExperienceState(prev => ({
+        ...prev,
+        projectDescription: experienceTemplateText.description,
+        technologiesUsed: experienceTemplateText.technologies,
+    }));
+    toast({
+        title: "Template Copied!",
+        description: "The example text has been copied into the fields below.",
+    });
+  };
+
 
   const formSections = [
     {
@@ -295,11 +312,11 @@ export function ResumeForm() {
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                      <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative">
-                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyTemplate}>
+                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopySummaryTemplate}>
                             <Copy className="h-4 w-4" />
                         </Button>
                         <p className="font-semibold text-muted-foreground mb-1">Example Template:</p>
-                        <p>{templateText}</p>
+                        <p>{summaryTemplateText}</p>
                     </div>
                     <Label htmlFor="ai-details" className="mt-4 block">
                       Your key details
@@ -458,7 +475,7 @@ export function ResumeForm() {
                           <Label>Start Date</Label>
                           <Input value={proj.startDate} onChange={e => handleGenericChange('projects', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
                       </div>
-                      <div className="space-y-2">
+                      <div className="spacey-2">
                           <Label>End Date</Label>
                           <Input value={proj.endDate} onChange={e => handleGenericChange('projects', index, 'endDate', e.target.value)} placeholder="Feb 2024" />
                       </div>
@@ -488,6 +505,14 @@ export function ResumeForm() {
                     </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
+                      <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative mb-4">
+                          <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyExperienceTemplate}>
+                              <Copy className="h-4 w-4" />
+                          </Button>
+                          <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
+                          <p className="mb-2"><span className="font-medium">Description:</span> {experienceTemplateText.description}</p>
+                          <p><span className="font-medium">Technologies:</span> {experienceTemplateText.technologies}</p>
+                      </div>
                       <div className="space-y-2">
                         <Label>Project Title / Role</Label>
                         <Input
@@ -503,7 +528,7 @@ export function ResumeForm() {
                           value={aiExperienceState.projectDescription}
                           onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
                           placeholder="e.g., 'Built a social media dashboard to track user engagement' or 'Responsible for front-end development of the checkout page'."
-                          rows={3}
+                          rows={4}
                         />
                       </div>
                       <div className="space-y-2">
@@ -571,3 +596,5 @@ export function ResumeForm() {
     </Accordion>
   );
 }
+
+    

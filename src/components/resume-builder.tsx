@@ -1,19 +1,16 @@
 
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Download, Eye, Loader2, Rocket, Printer } from 'lucide-react';
+import { Eye, Printer, Rocket } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
-import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const { toast } = useToast();
 
   const handlePrint = () => {
     window.print();
@@ -21,7 +18,7 @@ export function ResumeBuilder() {
 
   return (
     <div className="flex min-h-screen w-full flex-col">
-      <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 sticky top-0 z-30 no-print">
+      <header className="no-print flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 sticky top-0 z-30">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Rocket className="h-6 w-6 text-primary" />
           <span className="font-headline text-xl">ResumeRocket</span>

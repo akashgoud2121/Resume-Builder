@@ -4,7 +4,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import { EducationCategory } from '@/lib/types';
+import type { EducationCategory } from '@/lib/types';
 
 const categoryTitles: Record<EducationCategory, string> = {
   higher: 'Higher Education',
@@ -24,7 +24,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       .split(/\n|(?=- )/)
       .filter(line => line.trim() !== '');
 
-    if (bulletPoints.length === 0 || (bulletPoints.length === 1 && !bulletPoints[0].startsWith('-'))) {
+    if (bulletPoints.length === 0 || (bulletPoints.length === 1 && !bulletPoints[0].trim().startsWith('-'))) {
        return <p className="text-sm">{text}</p>;
     }
     
@@ -64,7 +64,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       ref={ref}
       id="resume-preview"
       className={cn(
-        "aspect-[8.5/11] w-full max-w-[800px] bg-card text-card-foreground p-8 shadow-lg rounded-lg print:text-gray-800",
+        "w-full max-w-[800px] bg-card text-card-foreground p-8 shadow-lg rounded-lg print:text-gray-800",
         "transition-transform duration-300 print:shadow-none print:scale-100 print:rounded-none"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}

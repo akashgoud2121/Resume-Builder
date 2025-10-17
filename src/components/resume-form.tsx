@@ -155,31 +155,31 @@ export function ResumeForm() {
               </DialogTrigger>
               <DialogContent className="sm:max-w-[625px]">
                 <DialogHeader>
-                  <DialogTitle>Generate Professional Summary</DialogTitle>
+                  <DialogTitle>Generate a Student Resume Objective</DialogTitle>
                   <DialogDescription>
-                    Provide key details to generate an AI-powered summary. Your own API key must be set in the main settings.
+                    Create a powerful objective for internships and your first job. Your API key must be set in the main settings.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="space-y-2">
                     <Label htmlFor="ai-details">
-                      Key details (e.g., desired role, top 2-3 skills, years of experience, a career goal)
+                      Key details (e.g., your major, an internship, key skills, career goals)
                     </Label>
                     <Textarea
                       id="ai-details"
                       value={aiDetails}
                       onChange={(e) => setAiDetails(e.target.value)}
-                      placeholder="e.g., Aspiring Product Manager with 5 years in tech, skilled in agile methodologies and user research, aiming to build innovative products."
+                      placeholder="e.g., Computer Science major, proficient in Python and React, seeking a software engineering internship to apply my skills in a real-world setting."
                       rows={4}
                     />
                   </div>
                   <Button onClick={handleGenerateSummary} disabled={isGenerating}>
                     {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Generate Summary
+                    Generate Objective
                   </Button>
                   {generatedSummary && (
                     <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                      <Label>Generated Summary:</Label>
+                      <Label>Generated Objective:</Label>
                       <p className="text-sm">{generatedSummary}</p>
                     </div>
                   )}
@@ -187,7 +187,7 @@ export function ResumeForm() {
                 <DialogFooter>
                   <Button variant="secondary" onClick={() => setIsAiDialogOpen(false)}>Cancel</Button>
                   <Button onClick={handleUseSummary} disabled={!generatedSummary}>
-                    Use This Summary
+                    Use This Objective
                   </Button>
                 </DialogFooter>
               </DialogContent>

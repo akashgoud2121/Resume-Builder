@@ -8,7 +8,7 @@ import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
-import { Sidebar, SidebarHeader, SidebarInset, SidebarProvider, SidebarRail } from './ui/sidebar';
+import { Sidebar, SidebarProvider, SidebarRail, SidebarInset } from './ui/sidebar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
 export function ResumeBuilder() {

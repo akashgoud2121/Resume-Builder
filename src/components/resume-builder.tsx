@@ -17,8 +17,8 @@ export function ResumeBuilder() {
   };
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <header className="no-print flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 sticky top-0 z-30">
+    <div className="flex h-screen w-full flex-col">
+      <header className="no-print flex h-16 shrink-0 items-center justify-between border-b bg-card px-4 md:px-6 sticky top-0 z-30">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Rocket className="h-6 w-6 text-primary" />
           <span className="font-headline text-xl">ResumeRocket</span>
@@ -48,17 +48,17 @@ export function ResumeBuilder() {
           </Button>
         </div>
       </header>
-      <main className="flex-1 md:grid md:grid-cols-10">
-        <div className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print">
+      <div className="flex-1 md:grid md:grid-cols-10 md:gap-6 overflow-hidden">
+        <aside className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print">
           <ResumeForm />
-        </div>
-        <div id="resume-preview-container" className="hidden md:col-span-4 md:block h-full bg-muted/40 p-6 overflow-y-auto print:!block">
-          <div className="flex flex-col items-center">
+        </aside>
+        <main id="resume-preview-container" className="hidden md:col-span-4 md:block h-full bg-muted/40 overflow-y-auto print:!block">
+          <div className="flex flex-col items-center p-6 sticky top-0">
             <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
             <ResumePreview ref={resumePreviewRef} />
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

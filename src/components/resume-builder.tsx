@@ -58,7 +58,7 @@ export function ResumeBuilder() {
                 <ResumeForm />
             </div>
 
-            <main id="resume-preview-container" className="hidden md:block h-full w-full bg-secondary overflow-y-auto print:!block">
+            <main id="resume-preview-container" className="hidden md:block h-full w-full bg-secondary overflow-y-auto print:!block border-l-2 border-primary">
               <div className="flex flex-col items-center py-8 sticky top-0">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <ResumePreview ref={resumePreviewRef} />

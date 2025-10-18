@@ -49,7 +49,7 @@ export function ResumeBuilder() {
         </div>
       </header>
       <div className="flex-1 md:grid md:grid-cols-10 md:gap-6 overflow-hidden">
-        <aside className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print">
+        <aside className="md:col-span-6 h-full overflow-y-auto p-4 md:p-6 no-print no-scrollbar">
           <ResumeForm />
         </aside>
         <main id="resume-preview-container" className="hidden md:col-span-4 md:block h-full bg-muted/40 overflow-y-auto print:!block">

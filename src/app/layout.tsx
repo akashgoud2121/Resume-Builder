@@ -1,9 +1,10 @@
+
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 
 export const metadata: Metadata = {
-  title: 'ResumeRocket - Build Your Professional Resume in Minutes',
+  title: 'Resume Builder',
   description: 'Simple input forms. Instant PDF download.',
 };
 

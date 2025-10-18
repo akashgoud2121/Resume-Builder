@@ -21,7 +21,7 @@ export function ResumeBuilder() {
       <header className="no-print flex h-16 shrink-0 items-center justify-between border-b bg-card px-4 md:px-6 sticky top-0 z-30">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Rocket className="h-6 w-6 text-primary" />
-          <span className="font-headline text-xl">ResumeRocket</span>
+          <span className="font-headline text-xl">Resume Builder</span>
         </Link>
         <div className="flex items-center gap-4">
           <div className="md:hidden">

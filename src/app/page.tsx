@@ -11,7 +11,7 @@ export default function Home() {
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Rocket className="h-6 w-6 text-primary" />
-          <span className="font-headline text-xl">ResumeRocket</span>
+          <span className="font-headline text-xl">Resume Builder</span>
         </Link>
         <div className="flex items-center gap-4">
           <Button asChild>
@@ -35,7 +35,7 @@ export default function Home() {
       </main>
       <footer className="flex h-12 items-center justify-center border-t">
         <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} ResumeRocket. All Rights Reserved.
+          &copy; {new Date().getFullYear()} Resume Builder. All Rights Reserved.
         </p>
       </footer>
     </div>

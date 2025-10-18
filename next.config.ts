@@ -1,3 +1,5 @@
+
+// This is a dummy comment to try and resolve a git sync issue.
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {

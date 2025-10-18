@@ -8,7 +8,6 @@ import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
-import { Sidebar, SidebarProvider, SidebarRail, SidebarInset } from './ui/sidebar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
 export function ResumeBuilder() {
@@ -19,7 +18,6 @@ export function ResumeBuilder() {
   };
 
   return (
-    <SidebarProvider>
       <div className="flex h-screen w-full flex-col bg-background">
         <header className="no-print flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6 sticky top-0 z-30 bg-background">
           <div className="flex items-center gap-2">
@@ -55,29 +53,18 @@ export function ResumeBuilder() {
           </div>
         </header>
 
-        <div className="flex flex-1 overflow-hidden">
-          <Sidebar
-              variant="sidebar"
-              collapsible="icon"
-              className="group-data-[collapsible=icon]:border-r"
-          >
-              <div className="h-full w-full overflow-y-auto p-4 md:p-6 no-scrollbar">
-                  <ResumeForm />
-              </div>
-          </Sidebar>
+        <div className="grid md:grid-cols-2 flex-1 overflow-hidden">
+            <div className="h-full w-full overflow-y-auto p-4 md:p-6 no-scrollbar">
+                <ResumeForm />
+            </div>
 
-          <SidebarRail />
-
-          <SidebarInset>
-            <main id="resume-preview-container" className="h-full w-full bg-secondary overflow-y-auto print:!block">
+            <main id="resume-preview-container" className="hidden md:block h-full w-full bg-secondary overflow-y-auto print:!block">
               <div className="flex flex-col items-center py-8 sticky top-0">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <ResumePreview ref={resumePreviewRef} />
               </div>
             </main>
-          </SidebarInset>
         </div>
       </div>
-    </SidebarProvider>
   );
 }

@@ -5,6 +5,8 @@ import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import type { EducationCategory, SkillCategory, Certification, Achievement } from '@/lib/types';
+import { Github, Linkedin, Mail, Phone } from 'lucide-react';
+import Link from 'next/link';
 
 const categoryTitles: Record<EducationCategory, string> = {
   higher: 'Higher Education',
@@ -37,12 +39,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     );
   };
   
-  const contactItems = [
-    contact.email,
-    contact.phone,
-    contact.linkedin,
-    contact.github
-  ].filter(Boolean);
+  const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
 
   const groupedEducation = education.reduce((acc, edu) => {
     const category = edu.category || 'higher';
@@ -56,9 +53,15 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   }, {} as Record<EducationCategory, typeof education>);
 
   const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling'];
-  
-  const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
 
+  const addHttp = (url: string) => {
+    if (!url) return '';
+    if (!/^(?:f|ht)tps?:\/\//.test(url)) {
+        return `https://${url}`;
+    }
+    return url;
+  }
+  
   return (
     <div
       ref={ref}
@@ -71,15 +74,31 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     >
       <div className="text-center mb-6">
         {contact.name && <h1 className="text-4xl font-bold tracking-tight">{contact.name}</h1>}
-        <div className="flex justify-center items-center gap-x-3 gap-y-1 mt-2 text-sm flex-wrap">
-          {contactItems.map((item, index) => (
-            <React.Fragment key={index}>
-              <span>{item}</span>
-              {index < contactItems.length - 1 && (
-                <span className="text-muted-foreground mx-1">|</span>
-              )}
-            </React.Fragment>
-          ))}
+        <div className="flex justify-center items-center gap-x-4 gap-y-2 mt-2 text-sm flex-wrap">
+          {contact.email && (
+             <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 hover:text-primary hover:underline">
+               <Mail className="h-3.5 w-3.5" />
+               <span>{contact.email}</span>
+             </a>
+          )}
+          {contact.phone && (
+            <div className="flex items-center gap-1.5">
+               <Phone className="h-3.5 w-3.5" />
+               <span>{contact.phone}</span>
+            </div>
+          )}
+           {contact.linkedin && (
+             <a href={addHttp(contact.linkedin)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary hover:underline">
+                <Linkedin className="h-3.5 w-3.5" />
+               <span>{contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '')}</span>
+             </a>
+          )}
+          {contact.github && (
+             <a href={addHttp(contact.github)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary hover:underline">
+                <Github className="h-3.5 w-3.5" />
+               <span>{contact.github.replace(/^(https?:\/\/)?(www\.)?/, '')}</span>
+             </a>
+          )}
         </div>
       </div>
 
@@ -217,4 +236,3 @@ ResumePreview.displayName = "ResumePreview";
     
 
     
-

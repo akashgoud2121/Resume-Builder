@@ -28,7 +28,14 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
       try {
         const storedData = localStorage.getItem('resumeData');
         if (storedData) {
-          const parsedData = JSON.parse(storedData);
+          let parsedData = JSON.parse(storedData);
+          
+          // Backwards compatibility check for skills data structure
+          if (typeof parsedData.skills === 'string' || !Array.isArray(parsedData.skills)) {
+            // If old format is detected, reset skills to the new default structure
+            parsedData.skills = initialResumeData.skills;
+          }
+
           // Deep merge parsed data with initial data to ensure all fields are present
           setResumeData(defaultsDeep(parsedData, initialResumeData));
         }

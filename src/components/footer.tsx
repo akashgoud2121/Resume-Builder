@@ -8,9 +8,10 @@ export default function Footer() {
     <footer className="w-full border-t border-border/50 bg-secondary backdrop-blur-sm mt-12">
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 py-6 px-4 md:px-6 text-sm">
         <div className="flex flex-col items-center md:items-start space-y-3">
+          <h4 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">Powered by</h4>
           <div className="flex items-center gap-3">
             <Image
-              src="https://media.licdn.com/dms/image/v2/D560BAQFK4uppQGwRcg/company-logo_200_200/company-logo_200_200/0/1735737431638?e=1759968000&v=beta&t=K2Xh4e_oAMJ3lcIfYmknNr_I1qmAWRBTv1WgA7BIWYA"
+              src="https://media.licdn.com/dms/image/v2/D560BAQFK4uppQGwRcg/company-logo_200_200/company-logo_200_200/0/1735737431638?e=1762387200&v=beta&t=Xbh4cXQiNT16QKv_YTNoxdzEfN9TVrpbfxh4rR1sd-U"
               alt="Cognisys AI Logo"
               width={32}
               height={32}

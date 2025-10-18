@@ -93,16 +93,16 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       {hasSkills && (
         <div className="mb-6 break-inside-avoid">
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
-          {skills.map(category => category.name && category.skills && (
-            <div key={category.id} className="mb-2">
-              <h3 className="text-md font-bold mb-1">{category.name}</h3>
-              <ul className="list-disc list-inside flex flex-wrap gap-x-4">
-                {category.skills.split(',').map(skill => skill.trim()).filter(Boolean).map((skill, index) => (
-                  <li key={index} className="text-sm w-1/3">{skill}</li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="space-y-1">
+            {skills.map(category => category.name && category.skills && (
+              <div key={category.id} className="flex items-start text-sm">
+                <span className="font-bold w-48 shrink-0">{category.name}:</span>
+                <p>
+                  {category.skills.split(',').map(s => s.trim()).filter(Boolean).join(', ')}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -208,3 +208,5 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 ResumePreview.displayName = "ResumePreview";
+
+    

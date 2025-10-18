@@ -7,7 +7,6 @@ import { Eye, Printer, Rocket } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
-import { ThemeToggle } from './theme-toggle';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
 export function ResumeBuilder() {
@@ -28,7 +27,6 @@ export function ResumeBuilder() {
           </div>
 
           <div className="flex items-center gap-4">
-            <ThemeToggle />
             <div className="md:hidden">
               <Sheet>
                 <SheetTrigger asChild>

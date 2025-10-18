@@ -4,7 +4,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Rocket, GraduationCap } from 'lucide-react';
-import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function Home() {
   return (
@@ -15,7 +14,6 @@ export default function Home() {
           <span className="font-headline text-xl">Resume Builder</span>
         </Link>
         <div className="flex items-center gap-4">
-          <ThemeToggle />
           <Button asChild>
             <Link href="/build">Get Started</Link>
           </Button>
@@ -28,7 +26,7 @@ export default function Home() {
             Your Career Journey Starts Here
           </h1>
           <p className="mt-4 text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
-            Build a standout resume for internships, part-time jobs, and your first career step. It&apos;s fast, easy, and completely free.
+            Build a standout resume for internships, part-time jobs, and your first career step. It's fast, easy, and completely free.
           </p>
           <Button asChild size="lg" className="mt-8">
             <Link href="/build">Create My Resume</Link>

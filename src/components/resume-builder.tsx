@@ -8,7 +8,7 @@ import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
 import { ThemeToggle } from './theme-toggle';
-import { Sidebar, SidebarHeader, SidebarInset, SidebarProvider, SidebarTrigger } from './ui/sidebar';
+import { Sidebar, SidebarHeader, SidebarInset, SidebarProvider, SidebarRail } from './ui/sidebar';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui/sheet';
 
 export function ResumeBuilder() {
@@ -23,7 +23,6 @@ export function ResumeBuilder() {
       <div className="flex h-screen w-full flex-col bg-background">
         <header className="no-print flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6 sticky top-0 z-30 bg-background">
           <div className="flex items-center gap-2">
-            <SidebarTrigger className="md:flex" />
             <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
               <span className="font-headline text-xl font-bold">Resume Builder</span>
             </Link>
@@ -59,13 +58,15 @@ export function ResumeBuilder() {
         <div className="flex flex-1 overflow-hidden">
           <Sidebar
               variant="sidebar"
-              collapsible="icon"
+              collapsible="offcanvas"
               className="group-data-[collapsible=icon]:border-r"
           >
               <div className="h-full w-full overflow-y-auto p-4 md:p-6 no-scrollbar">
                   <ResumeForm />
               </div>
           </Sidebar>
+
+          <SidebarRail />
 
           <SidebarInset>
             <main id="resume-preview-container" className="h-full w-full bg-secondary overflow-y-auto print:!block">

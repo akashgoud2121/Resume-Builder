@@ -9,11 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy } from 'lucide-react';
-import type { Education, Experience, EducationCategory, Project } from '@/lib/types';
-import { Card, CardContent } from './ui/card';
+import type { Education, Experience, EducationCategory, Project, SkillCategory as SkillCategoryType } from '@/lib/types';
+import { Card, CardContent, CardHeader } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { generateExperience } from '@/ai/flows/generate-experience-flow';
+import { generateSkills } from '@/ai/flows/generate-skills-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
@@ -69,6 +70,10 @@ export function ResumeForm() {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const { toast } = useToast();
 
+  const [isSkillsAiDialogOpen, setIsSkillsAiDialogOpen] = useState(false);
+  const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
+
+
   const [aiExperienceState, setAiExperienceState] = useState<AiExperienceState>({
     isOpen: false,
     projectTitle: '',
@@ -95,12 +100,8 @@ export function ResumeForm() {
     setResumeData(prev => ({ ...prev, summary: e.target.value }));
   };
 
-  const handleSkillsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setResumeData(prev => ({ ...prev, skills: e.target.value }));
-  };
-
-  const handleGenericChange = <T extends Education | Experience | Project>(
-    section: 'education' | 'experience' | 'projects',
+  const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType>(
+    section: 'education' | 'experience' | 'projects' | 'skills',
     index: number,
     field: keyof T,
     value: string
@@ -120,21 +121,25 @@ export function ResumeForm() {
     });
   };
 
-  const addEntry = (section: 'education' | 'experience' | 'projects') => {
+  const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills') => {
     setResumeData(prev => {
       let newEntry;
       if (section === 'education') {
         newEntry = { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', date: '', city: '', grades: '' };
       } else if (section === 'experience') {
         newEntry = { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
-      } else {
+      } else if (section === 'projects') {
         newEntry = { id: `proj_${Date.now()}`, title: '', organization: '', startDate: '', endDate: '', description: '' };
+      } else if (section === 'skills') {
+        newEntry = { id: `skillcat_${Date.now()}`, name: 'New Category', skills: '' };
+      } else {
+        return prev;
       }
       return { ...prev, [section]: [...prev[section], newEntry] };
     });
   };
   
-  const removeEntry = (section: 'education' | 'experience' | 'projects', id: string) => {
+  const removeEntry = (section: 'education' | 'experience' | 'projects' | 'skills', id: string) => {
     setResumeData(prev => ({
       ...prev,
       [section]: (prev[section] as any[]).filter(item => item.id !== id),
@@ -258,9 +263,52 @@ export function ResumeForm() {
     });
   };
 
+  const handleGenerateSkills = async () => {
+    setIsGeneratingSkills(true);
+    try {
+      const experienceText = resumeData.experience.map(e => e.description).join('\n');
+      const projectsText = resumeData.projects.map(p => p.description).join('\n');
+      
+      const result = await generateSkills({
+        summary: resumeData.summary,
+        experience: experienceText,
+        projects: projectsText,
+      });
 
-  const formSections = [
-    {
+      if (result.skillCategories && result.skillCategories.length > 0) {
+        const newSkillCategories = result.skillCategories.map(cat => ({
+          id: `skillcat_${Date.now()}_${Math.random()}`,
+          name: cat.categoryName,
+          skills: cat.skills,
+        }));
+        setResumeData(prev => ({ ...prev, skills: newSkillCategories }));
+        toast({
+          title: "Skills Generated!",
+          description: "AI has suggested some skills based on your resume.",
+        });
+      } else {
+        toast({
+          title: "No Skills Generated",
+          description: "The AI couldn't suggest any skills. Try adding more content to your summary, experience, or projects.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+       console.error(error);
+       toast({
+        title: "Generation Failed",
+        description: "Something went wrong while generating skills. Check your server configuration and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingSkills(false);
+      setIsSkillsAiDialogOpen(false);
+    }
+  };
+
+
+  const allSections = {
+    contact: {
       value: "contact",
       title: "Contact Information",
       content: (
@@ -288,7 +336,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    {
+    summary: {
       value: "summary",
       title: "Professional Summary",
       content: (
@@ -353,7 +401,67 @@ export function ResumeForm() {
         </div>
       )
     },
-    {
+    skills: {
+      value: "skills",
+      title: "Skills",
+      content: (
+          <div className="space-y-4">
+            <div className="flex justify-end">
+                <Dialog open={isSkillsAiDialogOpen} onOpenChange={setIsSkillsAiDialogOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" size="sm">
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            AI Assist: Suggest Skills
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Generate Skills with AI</DialogTitle>
+                            <DialogDescription>
+                                The AI will analyze your summary, experience, and projects to suggest relevant technical skills, organized by category. Your existing skills will be replaced.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button variant="secondary" onClick={() => setIsSkillsAiDialogOpen(false)}>Cancel</Button>
+                            <Button onClick={handleGenerateSkills} disabled={isGeneratingSkills}>
+                                {isGeneratingSkills ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                Generate and Replace Skills
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            {resumeData.skills.map((category, index) => (
+                <Card key={category.id} className="p-4 relative">
+                  <CardContent className="grid grid-cols-1 gap-4 p-2">
+                    <div className="space-y-2">
+                      <Label>Skill Category</Label>
+                      <Input 
+                        value={category.name} 
+                        onChange={e => handleGenericChange('skills', index, 'name', e.target.value)} 
+                        placeholder="e.g., Programming Languages" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Skills</Label>
+                      <Textarea 
+                        value={category.skills} 
+                        onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)} 
+                        placeholder="e.g., JavaScript, Python, Java"
+                        rows={3}
+                      />
+                      <p className="text-sm text-muted-foreground">Separate skills with a comma.</p>
+                    </div>
+                  </CardContent>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('skills', category.id)}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
+                </Card>
+            ))}
+            <Button variant="outline" onClick={() => addEntry('skills')}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill Category</Button>
+          </div>
+      )
+    },
+    education: {
       value: "education",
       title: "Education",
       content: (
@@ -411,7 +519,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    {
+    experience: {
         value: "experience",
         title: "Work Experience",
         content: (
@@ -455,7 +563,7 @@ export function ResumeForm() {
           </div>
         )
     },
-    {
+    projects: {
         value: "projects",
         title: "Projects",
         content: (
@@ -566,35 +674,31 @@ export function ResumeForm() {
             </div>
         )
     },
-    {
-        value: "skills",
-        title: "Skills",
-        content: (
-            <div className="space-y-2">
-                <Label htmlFor="skills">Skills</Label>
-                <Input id="skills" value={resumeData.skills} onChange={handleSkillsChange} placeholder="JavaScript, React, Node.js, Python..." />
-                <p className="text-sm text-muted-foreground">Separate skills with a comma.</p>
-            </div>
-        )
-    },
-  ];
+  };
+  
+  const defaultOrder = ['contact', 'summary', 'skills', 'education', 'experience', 'projects'];
 
   return (
-    <Accordion type="multiple" defaultValue={["contact", "summary", "education", "experience", "projects", "skills"]} className="w-full space-y-4">
-      {formSections.map(section => (
-        <AccordionItem key={section.value} value={section.value} className="border-none">
-          <Card>
-            <AccordionTrigger className="p-6 text-lg font-semibold hover:no-underline">
-              {section.title}
-            </AccordionTrigger>
-            <AccordionContent className="px-6">
-                {section.content}
-            </AccordionContent>
-          </Card>
-        </AccordionItem>
-      ))}
+    <Accordion type="multiple" defaultValue={defaultOrder} className="w-full space-y-4">
+      {defaultOrder.map((sectionKey) => {
+        const section = allSections[sectionKey as keyof typeof allSections];
+        if (!section) return null;
+
+        return (
+          <AccordionItem key={section.value} value={section.value} className="border-none">
+            <Card>
+              <CardHeader className="p-6">
+                <AccordionTrigger className="text-lg font-semibold hover:no-underline p-0">
+                    {section.title}
+                </AccordionTrigger>
+              </CardHeader>
+              <AccordionContent className="px-6">
+                  {section.content}
+              </AccordionContent>
+            </Card>
+          </AccordionItem>
+        );
+      })}
     </Accordion>
   );
 }
-
-    

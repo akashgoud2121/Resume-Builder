@@ -4,7 +4,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { EducationCategory } from '@/lib/types';
+import type { EducationCategory, SkillCategory } from '@/lib/types';
 
 const categoryTitles: Record<EducationCategory, string> = {
   higher: 'Higher Education',
@@ -55,6 +55,8 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   }, {} as Record<EducationCategory, typeof education>);
 
   const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling'];
+  
+  const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
 
   return (
     <div
@@ -87,10 +89,17 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       )}
 
-      {skills && (
+      {hasSkills && (
         <div className="mb-6 break-inside-avoid">
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
-            <p className="text-sm">{skills}</p>
+            <div className="flex flex-col gap-2">
+              {skills.map(category => category.name && category.skills && (
+                <div key={category.id} className="flex items-start text-sm">
+                  <span className="font-bold w-40 shrink-0">{category.name}:</span>
+                  <span>{category.skills}</span>
+                </div>
+              ))}
+            </div>
         </div>
       )}
       

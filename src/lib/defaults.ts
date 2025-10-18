@@ -32,5 +32,21 @@ export const initialResumeData: ResumeData = {
       description: '',
     },
   ],
-  skills: '',
+  skills: [
+    {
+        id: `skillcat_${Date.now()}_1`,
+        name: 'Programming Languages',
+        skills: 'JavaScript, Python, C++',
+    },
+    {
+        id: `skillcat_${Date.now()}_2`,
+        name: 'Frameworks & Libraries',
+        skills: 'React, Node.js, Express',
+    },
+    {
+        id: `skillcat_${Date.now()}_3`,
+        name: 'Developer Tools',
+        skills: 'Git, Docker, VS Code',
+    },
+  ],
 };

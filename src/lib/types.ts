@@ -37,6 +37,12 @@ export type Project = {
   description: string;
 };
 
+export type SkillCategory = {
+    id: string;
+    name: string;
+    skills: string; // Comma-separated list of skills
+};
+
 
 export type ResumeData = {
   contact: ContactInfo;
@@ -44,5 +50,5 @@ export type ResumeData = {
   education: Education[];
   experience: Experience[];
   projects: Project[];
-  skills: string;
+  skills: SkillCategory[];
 };

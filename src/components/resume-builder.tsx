@@ -8,6 +8,7 @@ import { Eye, Printer, Rocket } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
+import { ThemeToggle } from './theme-toggle';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
@@ -24,6 +25,7 @@ export function ResumeBuilder() {
           <span className="font-headline text-xl">Resume Builder</span>
         </Link>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>

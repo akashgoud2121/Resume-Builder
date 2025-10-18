@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Rocket, GraduationCap } from 'lucide-react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function Home() {
   return (
@@ -14,6 +15,7 @@ export default function Home() {
           <span className="font-headline text-xl">Resume Builder</span>
         </Link>
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           <Button asChild>
             <Link href="/build">Get Started</Link>
           </Button>

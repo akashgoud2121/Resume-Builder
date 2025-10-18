@@ -58,7 +58,7 @@ export function ResumeBuilder() {
         <div className="flex flex-1 overflow-hidden">
           <Sidebar
               variant="sidebar"
-              collapsible="offcanvas"
+              collapsible="icon"
               className="group-data-[collapsible=icon]:border-r"
           >
               <div className="h-full w-full overflow-y-auto p-4 md:p-6 no-scrollbar">

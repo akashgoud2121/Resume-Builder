@@ -17,6 +17,7 @@ import { generateExperience } from '@/ai/flows/generate-experience-flow';
 import { generateSkills } from '@/ai/flows/generate-skills-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { ScrollArea } from './ui/scroll-area';
 
 const educationCategoryConfig = {
   schooling: {
@@ -405,44 +406,46 @@ export function ResumeForm() {
                   Generate with AI
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[625px]">
+              <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto]">
                 <DialogHeader>
                   <DialogTitle>Generate a Student Resume Objective</DialogTitle>
                   <DialogDescription>
                     To get the best result, provide details about your studies, any relevant experience (like internships or projects), your top skills, and what kind of role you're looking for.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="space-y-2">
-                     <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative">
-                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopySummaryTemplate}>
-                            <Copy className="h-4 w-4" />
-                        </Button>
-                        <p className="font-semibold text-muted-foreground mb-1">Example Template:</p>
-                        <p>{summaryTemplateText}</p>
+                <ScrollArea className="max-h-[50vh] my-4">
+                  <div className="grid gap-4 py-4 pr-6">
+                    <div className="space-y-2">
+                      <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative">
+                          <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopySummaryTemplate}>
+                              <Copy className="h-4 w-4" />
+                          </Button>
+                          <p className="font-semibold text-muted-foreground mb-1">Example Template:</p>
+                          <p>{summaryTemplateText}</p>
+                      </div>
+                      <Label htmlFor="ai-details" className="mt-4 block">
+                        Your key details
+                      </Label>
+                      <Textarea
+                        id="ai-details"
+                        value={summaryAiDetails}
+                        onChange={(e) => setSummaryAiDetails(e.target.value)}
+                        placeholder="Paste and edit the template above, or write your own details here..."
+                        rows={5}
+                      />
                     </div>
-                    <Label htmlFor="ai-details" className="mt-4 block">
-                      Your key details
-                    </Label>
-                    <Textarea
-                      id="ai-details"
-                      value={summaryAiDetails}
-                      onChange={(e) => setSummaryAiDetails(e.target.value)}
-                      placeholder="Paste and edit the template above, or write your own details here..."
-                      rows={5}
-                    />
+                    <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary}>
+                      {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                      Generate Objective
+                    </Button>
+                    {generatedSummary && (
+                      <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                        <Label>Generated Objective:</Label>
+                        <p className="text-sm">{generatedSummary}</p>
+                      </div>
+                    )}
                   </div>
-                  <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary}>
-                    {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Generate Objective
-                  </Button>
-                  {generatedSummary && (
-                    <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                      <Label>Generated Objective:</Label>
-                      <p className="text-sm">{generatedSummary}</p>
-                    </div>
-                  )}
-                </div>
+                </ScrollArea>
                 <DialogFooter>
                   <Button variant="secondary" onClick={() => setIsSummaryAiDialogOpen(false)}>Cancel</Button>
                   <Button onClick={handleUseSummary} disabled={!generatedSummary}>
@@ -660,64 +663,66 @@ export function ResumeForm() {
             ))}
             <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
              <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
-                <DialogContent className="sm:max-w-[625px]">
+                <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto]">
                     <DialogHeader>
                     <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
                     <DialogDescription>
                         Provide some details, and AI will generate professional bullet points using the STAR method.
                     </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative mb-4">
-                          <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyExperienceTemplate}>
-                              <Copy className="h-4 w-4" />
-                          </Button>
-                          <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
-                          <p className="mb-2"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
-                          <p><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Title / Name</Label>
-                        <Input
-                          value={aiExperienceState.projectTitle}
-                          readOnly
-                          disabled
-                          className="font-semibold"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
-                        <Textarea
-                          value={aiExperienceState.projectDescription}
-                          onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
-                          placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
-                          rows={4}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
-                        <Input
-                          value={aiExperienceState.technologiesUsed}
-                          onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
-                           placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
-                        />
-                      </div>
-                      <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating}>
-                        {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Generate Description
-                      </Button>
-                      {aiExperienceState.generatedBulletPoints && (
-                        <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                          <Label>Generated Bullet Points:</Label>
-                          <Textarea
-                            className="text-sm"
+                    <ScrollArea className="max-h-[50vh] my-4">
+                      <div className="grid gap-4 py-4 pr-6">
+                        <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative mb-4">
+                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyExperienceTemplate}>
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                            <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
+                            <p className="mb-2"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
+                            <p><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Title / Name</Label>
+                          <Input
+                            value={aiExperienceState.projectTitle}
                             readOnly
-                            value={aiExperienceState.generatedBulletPoints}
-                            rows={6}
+                            disabled
+                            className="font-semibold"
                           />
                         </div>
-                      )}
-                    </div>
+                        <div className="space-y-2">
+                          <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
+                          <Textarea
+                            value={aiExperienceState.projectDescription}
+                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
+                            placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
+                            rows={4}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
+                          <Input
+                            value={aiExperienceState.technologiesUsed}
+                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
+                            placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
+                          />
+                        </div>
+                        <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating}>
+                          {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                          Generate Description
+                        </Button>
+                        {aiExperienceState.generatedBulletPoints && (
+                          <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                            <Label>Generated Bullet Points:</Label>
+                            <Textarea
+                              className="text-sm"
+                              readOnly
+                              value={aiExperienceState.generatedBulletPoints}
+                              rows={6}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
                     <DialogFooter>
                       <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
                       <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
@@ -837,5 +842,7 @@ export function ResumeForm() {
     </Accordion>
   );
 }
+
+    
 
     

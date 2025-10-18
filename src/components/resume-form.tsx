@@ -277,17 +277,18 @@ export function ResumeForm() {
         technologiesUsed: aiExperienceState.technologiesUsed,
       });
       if (result.bulletPoints) {
-        setAiExperienceState(prev => ({ ...prev, generatedBulletPoints: result.bulletPoints }));
+        setAiExperienceState(prev => ({ ...prev, generatedBulletPoints: result.bulletPoints, isGenerating: false }));
+      } else {
+        setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
       }
     } catch (error) {
       console.error(error);
+       setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
       toast({
         title: "Generation Failed",
         description: "Something went wrong while generating the description. Check your server configuration and try again.",
         variant: "destructive",
       });
-    } finally {
-      setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
     }
   };
 
@@ -819,7 +820,7 @@ export function ResumeForm() {
         if (!section) return null;
 
         return (
-          <AccordionItem key={`${section.value}-item`} value={section.value} className="border-none">
+          <AccordionItem key={section.value} value={section.value} className="border-none">
             <Card className="shadow-md">
               <CardHeader className="p-4 md:p-6">
                 <AccordionTrigger className="text-lg font-semibold hover:no-underline p-0">
@@ -836,3 +837,5 @@ export function ResumeForm() {
     </Accordion>
   );
 }
+
+    

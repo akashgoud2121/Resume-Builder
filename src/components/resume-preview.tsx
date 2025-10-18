@@ -102,6 +102,32 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             </div>
         </div>
       )}
+
+      <div className="break-inside-avoid">
+        {education.some(e => e.school) && <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>}
+        {educationOrder.map(category => {
+          const entries = groupedEducation[category];
+          if (!entries || entries.length === 0) return null;
+          return (
+            <div key={category} className="mb-4 break-inside-avoid">
+               <h3 className="text-md font-bold text-gray-500 mb-2">{categoryTitles[category]}</h3>
+               {entries.map(edu => (
+                 <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
+                   <div className="flex-grow">
+                     <h4 className="text-md font-bold">{edu.school}</h4>
+                     <p className="text-sm">{edu.degree}</p>
+                     {edu.grades && <p className="text-sm font-semibold">Grades: {edu.grades}</p>}
+                   </div>
+                   <div className="text-right flex-shrink-0 ml-4">
+                     <p className="text-sm font-light">{edu.date}</p>
+                     <p className="text-sm font-light">{edu.city}</p>
+                   </div>
+                 </div>
+               ))}
+            </div>
+          )
+        })}
+      </div>
       
       {experience.length > 0 && experience.some(e => e.title) && (
         <div className="mb-6 break-inside-avoid">
@@ -139,31 +165,6 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       )}
       
-      <div className="break-inside-avoid">
-        {education.some(e => e.school) && <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>}
-        {educationOrder.map(category => {
-          const entries = groupedEducation[category];
-          if (!entries || entries.length === 0) return null;
-          return (
-            <div key={category} className="mb-4 break-inside-avoid">
-               <h3 className="text-md font-bold text-gray-500 mb-2">{categoryTitles[category]}</h3>
-               {entries.map(edu => (
-                 <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
-                   <div className="flex-grow">
-                     <h4 className="text-md font-bold">{edu.school}</h4>
-                     <p className="text-sm">{edu.degree}</p>
-                     {edu.grades && <p className="text-sm font-semibold">Grades: {edu.grades}</p>}
-                   </div>
-                   <div className="text-right flex-shrink-0 ml-4">
-                     <p className="text-sm font-light">{edu.date}</p>
-                     <p className="text-sm font-light">{edu.city}</p>
-                   </div>
-                 </div>
-               ))}
-            </div>
-          )
-        })}
-      </div>
     </div>
   );
 });

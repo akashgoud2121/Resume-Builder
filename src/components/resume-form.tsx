@@ -486,7 +486,7 @@ export function ResumeForm() {
                 </Dialog>
             </div>
             {resumeData.skills.map((category, index) => (
-                <Card key={category.id} className="p-4 relative">
+                <Card key={category.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 p-2">
                     <div className="space-y-2">
                       <Label>Skill Category</Label>
@@ -524,7 +524,7 @@ export function ResumeForm() {
             const config = educationCategoryConfig[edu.category];
             if (!config) return null;
             return (
-              <Card key={edu.id} className="p-4 relative">
+              <Card key={edu.id} className="p-4 relative bg-background shadow-none">
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                   <div className="sm:col-span-2 space-y-2">
                     <Label>Education Category</Label>
@@ -579,7 +579,7 @@ export function ResumeForm() {
         content: (
           <div className="space-y-4">
             {resumeData.experience.map((exp, index) => (
-                <Card key={exp.id} className="p-4 relative">
+                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                       <div className="space-y-2">
                           <Label>Job Title/Role</Label>
@@ -623,7 +623,7 @@ export function ResumeForm() {
         content: (
           <div className="space-y-4">
             {resumeData.projects.map((proj, index) => (
-                <Card key={proj.id} className="p-4 relative">
+                <Card key={proj.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                       <div className="space-y-2">
                           <Label>Project Title</Label>
@@ -734,7 +734,7 @@ export function ResumeForm() {
       content: (
         <div className="space-y-4">
           {resumeData.certifications.map((cert, index) => (
-            <Card key={cert.id} className="p-4 relative">
+            <Card key={cert.id} className="p-4 relative bg-background shadow-none">
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                 <div className="space-y-2">
                   <Label>Certification Name</Label>
@@ -774,7 +774,7 @@ export function ResumeForm() {
         content: (
           <div className="space-y-4">
             {resumeData.achievements.map((ach, index) => (
-              <Card key={ach.id} className="p-4 relative">
+              <Card key={ach.id} className="p-4 relative bg-background shadow-none">
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                   <div className="space-y-2">
                     <Label>Achievement / Award</Label>
@@ -820,13 +820,13 @@ export function ResumeForm() {
 
         return (
           <AccordionItem key={`${section.value}-item`} value={section.value} className="border-none">
-            <Card>
-              <CardHeader className="p-6">
+            <Card className="shadow-md">
+              <CardHeader className="p-4 md:p-6">
                 <AccordionTrigger className="text-lg font-semibold hover:no-underline p-0">
                     {section.title}
                 </AccordionTrigger>
               </CardHeader>
-              <AccordionContent className="px-6">
+              <AccordionContent className="px-4 md:px-6">
                   {section.content}
               </AccordionContent>
             </Card>

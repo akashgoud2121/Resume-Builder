@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useResume } from '@/lib/store';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
@@ -65,6 +65,7 @@ type AiExperienceState = {
 
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
+  const [userApiKey, setUserApiKey] = useState<string | null>(null);
   const [isSummaryAiDialogOpen, setIsSummaryAiDialogOpen] = useState(false);
   const [summaryAiDetails, setSummaryAiDetails] = useState('');
   const [generatedSummary, setGeneratedSummary] = useState('');
@@ -85,6 +86,11 @@ export function ResumeForm() {
     targetIndex: null,
     targetType: 'experience',
   });
+
+  useEffect(() => {
+    const key = localStorage.getItem('userApiKey');
+    setUserApiKey(key);
+  }, []);
 
   const summaryTemplateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
 
@@ -207,7 +213,7 @@ export function ResumeForm() {
     setIsGeneratingSummary(true);
     setGeneratedSummary('');
     try {
-      const result = await generateSummary({ details: summaryAiDetails });
+      const result = await generateSummary({ details: summaryAiDetails, userApiKey });
       if (result.summary) {
         setGeneratedSummary(result.summary);
       }
@@ -215,7 +221,7 @@ export function ResumeForm() {
       console.error(error);
       toast({
         title: "Generation Failed",
-        description: "Something went wrong while generating the summary. Check your server configuration and try again.",
+        description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
         variant: "destructive",
       });
     } finally {
@@ -276,6 +282,7 @@ export function ResumeForm() {
         projectTitle: aiExperienceState.projectTitle,
         projectDescription: aiExperienceState.projectDescription,
         technologiesUsed: aiExperienceState.technologiesUsed,
+        userApiKey,
       });
       if (result.bulletPoints) {
         setAiExperienceState(prev => ({ ...prev, generatedBulletPoints: result.bulletPoints, isGenerating: false }));
@@ -287,7 +294,7 @@ export function ResumeForm() {
        setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
       toast({
         title: "Generation Failed",
-        description: "Something went wrong while generating the description. Check your server configuration and try again.",
+        description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
         variant: "destructive",
       });
     }
@@ -329,6 +336,7 @@ export function ResumeForm() {
         summary: resumeData.summary,
         experience: experienceText,
         projects: projectsText,
+        userApiKey,
       });
 
       if (result.skillCategories && result.skillCategories.length > 0) {
@@ -353,7 +361,7 @@ export function ResumeForm() {
        console.error(error);
        toast({
         title: "Generation Failed",
-        description: "Something went wrong while generating skills. Check your server configuration and try again.",
+        description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
         variant: "destructive",
       });
     } finally {
@@ -842,9 +850,3 @@ export function ResumeForm() {
     </Accordion>
   );
 }
-
-    
-
-    
-
-    

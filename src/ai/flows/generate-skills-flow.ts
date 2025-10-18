@@ -5,10 +5,13 @@
  * - generateSkills - A function that takes resume context and returns categorized skills.
  */
 
-import { ai } from '@/ai/genkit';
+import { getAiClient } from '@/ai/client';
 import { GenerateSkillsInputSchema, GenerateSkillsOutputSchema, type GenerateSkillsInput, type GenerateSkillsOutput } from '@/ai/schemas';
 
-export async function generateSkills(input: GenerateSkillsInput): Promise<GenerateSkillsOutput> {
+export async function generateSkills(input: GenerateSkillsInput & { userApiKey?: string | null }): Promise<GenerateSkillsOutput> {
+  const { userApiKey, ...promptInput } = input;
+  const ai = getAiClient(userApiKey || null);
+  
   const prompt = ai.definePrompt({
     name: 'generateSkillsPrompt',
     input: { schema: GenerateSkillsInputSchema },
@@ -41,11 +44,11 @@ Projects: {{{projects}}}
       inputSchema: GenerateSkillsInputSchema,
       outputSchema: GenerateSkillsOutputSchema,
     },
-    async (input) => {
-      const { output } = await prompt(input);
+    async (flowInput) => {
+      const { output } = await prompt(flowInput);
       return output!;
     }
   );
 
-  return generateSkillsFlow(input);
+  return generateSkillsFlow(promptInput);
 }

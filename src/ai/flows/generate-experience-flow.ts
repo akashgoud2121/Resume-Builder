@@ -5,10 +5,13 @@
  * - generateExperience - A function that takes project details and returns well-crafted bullet points.
  */
 
-import { ai } from '@/ai/genkit';
+import { getAiClient } from '@/ai/client';
 import { GenerateExperienceInputSchema, GenerateExperienceOutputSchema, type GenerateExperienceInput, type GenerateExperienceOutput } from '@/ai/schemas';
 
-export async function generateExperience(input: GenerateExperienceInput): Promise<GenerateExperienceOutput> {
+export async function generateExperience(input: GenerateExperienceInput & { userApiKey?: string | null }): Promise<GenerateExperienceOutput> {
+  const { userApiKey, ...promptInput } = input;
+  const ai = getAiClient(userApiKey || null);
+
   const prompt = ai.definePrompt({
     name: 'generateExperiencePrompt',
     input: { schema: GenerateExperienceInputSchema },
@@ -31,11 +34,11 @@ Associated Skills / Technologies: {{{technologiesUsed}}}
       inputSchema: GenerateExperienceInputSchema,
       outputSchema: GenerateExperienceOutputSchema,
     },
-    async (input) => {
-      const { output } = await prompt(input);
+    async (flowInput) => {
+      const { output } = await prompt(flowInput);
       return output!;
     }
   );
 
-  return generateExperienceFlow(input);
+  return generateExperienceFlow(promptInput);
 }

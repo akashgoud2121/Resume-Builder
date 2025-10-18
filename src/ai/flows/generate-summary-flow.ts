@@ -4,11 +4,13 @@
  *
  * - generateSummary - A function that takes user details and returns a professional summary.
  */
-
-import { ai } from '@/ai/genkit';
+import { getAiClient } from '@/ai/client';
 import { GenerateSummaryInputSchema, GenerateSummaryOutputSchema, type GenerateSummaryInput, type GenerateSummaryOutput } from '@/ai/schemas';
 
-export async function generateSummary(input: GenerateSummaryInput): Promise<GenerateSummaryOutput> {
+export async function generateSummary(input: GenerateSummaryInput & { userApiKey?: string | null }): Promise<GenerateSummaryOutput> {
+  const { userApiKey, ...promptInput } = input;
+  const ai = getAiClient(userApiKey || null);
+
   const prompt = ai.definePrompt({
     name: 'generateSummaryPrompt',
     input: { schema: GenerateSummaryInputSchema },
@@ -26,11 +28,11 @@ Key Details:
       inputSchema: GenerateSummaryInputSchema,
       outputSchema: GenerateSummaryOutputSchema,
     },
-    async (input) => {
-      const { output } = await prompt(input);
+    async (flowInput) => {
+      const { output } = await prompt(flowInput);
       return output!;
     }
   );
 
-  return generateSummaryFlow(input);
+  return generateSummaryFlow(promptInput);
 }

@@ -4,6 +4,7 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Rocket, GraduationCap } from 'lucide-react';
+import Footer from '@/components/footer';
 
 export default function Home() {
   return (
@@ -33,6 +34,7 @@ export default function Home() {
           </Button>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

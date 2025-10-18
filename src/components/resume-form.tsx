@@ -826,7 +826,7 @@ export function ResumeForm() {
 
         return (
           <AccordionItem key={section.value} value={section.value} className="border-none">
-            <Card className="shadow-md">
+            <Card className="shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
               <CardHeader className="p-4 md:p-6">
                 <AccordionTrigger className="text-lg font-semibold hover:no-underline p-0">
                     {section.title}
@@ -842,6 +842,8 @@ export function ResumeForm() {
     </Accordion>
   );
 }
+
+    
 
     
 

@@ -60,7 +60,7 @@ export function ResumeBuilder() {
             </div>
 
             <main id="resume-preview-container" className="hidden md:block w-full print:!block border-l">
-              <div className="flex flex-col items-center py-8 sticky top-0">
+              <div className="flex flex-col items-center py-8 sticky top-[80px]">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <ResumePreview ref={resumePreviewRef} />
               </div>

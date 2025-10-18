@@ -13,14 +13,14 @@ export async function generateExperience(input: GenerateExperienceInput): Promis
     name: 'generateExperiencePrompt',
     input: { schema: GenerateExperienceInputSchema },
     output: { schema: GenerateExperienceOutputSchema },
-    prompt: `You are an expert resume writer who creates compelling, human-like bullet points for projects and work experience.
-Generate 3-4 bullet points for the following project/experience.
+    prompt: `You are an expert resume writer who creates compelling, human-like bullet points.
+Generate 2-3 bullet points for the provided context.
 Each bullet point MUST be in the STAR format (Situation, Task, Action, Result) or XYZ format (Accomplished [X] as measured by [Y], by doing [Z]).
 Start each bullet point with a hyphen. Do not use repetitive action verbs.
 
-Project/Role Title: {{{projectTitle}}}
-Brief Description/Responsibilities: {{{projectDescription}}}
-Technologies Used: {{{technologiesUsed}}}
+Item Title: {{{projectTitle}}}
+Context / Description: {{{projectDescription}}}
+Associated Skills / Technologies: {{{technologiesUsed}}}
 `,
   });
 

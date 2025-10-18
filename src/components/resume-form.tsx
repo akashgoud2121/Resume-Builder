@@ -87,10 +87,53 @@ export function ResumeForm() {
 
   const summaryTemplateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
 
-  const experienceTemplateText = {
-    description: "The goal of this project was to [describe the project's main objective, e.g., 'build a web app to help users track their daily water intake']. The app had features for [mention 1-2 key features, e.g., 'setting daily goals and sending reminders']. My main responsibility was [describe your key role, e.g., 'designing the user interface and developing the front-end components'].",
-    technologies: "React, Firebase, Chart.js, Tailwind CSS"
+  const templateTexts = {
+    experience: {
+        title: "Generate Work Experience Description",
+        descriptionLabel: "Brief Description of Responsibilities",
+        techLabel: "Technologies Used",
+        descriptionPlaceholder: "e.g., 'Responsible for front-end development of the checkout page and implementing payment gateway APIs.'",
+        techPlaceholder: "e.g., React, TypeScript, Node.js, Stripe API",
+        template: {
+            description: "As a software engineering intern, my primary role was to develop new features for the company's flagship e-commerce platform. I was tasked with improving the user experience of the product discovery journey and optimizing page load times.",
+            technologies: "Next.js, TypeScript, Tailwind CSS, GraphQL"
+        }
+    },
+    projects: {
+        title: "Generate Project Description",
+        descriptionLabel: "Brief Description of the Project",
+        techLabel: "Technologies Used",
+        descriptionPlaceholder: "e.g., 'Built a social media dashboard to track user engagement metrics and display data visualizations.'",
+        techPlaceholder: "e.g., React, Firebase, Chart.js, Tailwind CSS",
+        template: {
+            description: "The goal of this project was to build a web app to help users track their daily water intake. The app had features for setting daily goals and sending reminders. My main responsibility was designing the user interface and developing the front-end components.",
+            technologies: "React, Firebase, Chart.js, Tailwind CSS"
+        }
+    },
+    certifications: {
+        title: "Generate Certification Description",
+        descriptionLabel: "What did you learn or what was the certification about?",
+        techLabel: "Skills/Topics Covered",
+        descriptionPlaceholder: "e.g., 'This certification covered core Google Cloud services like Compute Engine, Cloud Storage, and Kubernetes Engine.'",
+        techPlaceholder: "e.g., VPC, IAM, BigQuery, Cloud Functions",
+        template: {
+            description: "This certification validates the ability to design, develop, and manage robust, secure, scalable, and dynamic solutions on Google Cloud. I completed a series of hands-on labs and a final exam to earn this credential.",
+            technologies: "Google App Engine, Cloud SQL, IAM, Cloud Build"
+        }
+    },
+    achievements: {
+        title: "Generate Achievement Description",
+        descriptionLabel: "Briefly describe the achievement",
+        techLabel: "Relevant Skills/Technologies (Optional)",
+        descriptionPlaceholder: "e.g., 'Won first place in a national-level hackathon by developing a mobile app for waste management.'",
+        techPlaceholder: "e.g., Flutter, Firebase, Google Maps API",
+        template: {
+            description: "Our team developed a solution for urban waste management that won 1st place out of over 500 competing teams. The project involved creating a full-stack web application with a predictive model for optimizing garbage collection routes.",
+            technologies: "Python, Flask, React, Scikit-learn, Google Maps API"
+        }
+    }
   };
+
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [e.target.name]: e.target.value } }));
@@ -216,10 +259,10 @@ export function ResumeForm() {
   };
 
   const handleGenerateExperience = async () => {
-    if (!aiExperienceState.projectDescription.trim() || !aiExperienceState.technologiesUsed.trim()) {
-      toast({
-        title: "Details are missing",
-        description: "Please provide a description and technologies used.",
+    if (!aiExperienceState.projectDescription.trim()) {
+       toast({
+        title: "Description is missing",
+        description: "Please provide a description.",
         variant: "destructive",
       });
       return;
@@ -261,10 +304,12 @@ export function ResumeForm() {
   };
 
   const handleCopyExperienceTemplate = () => {
+    if (!aiExperienceState.targetType) return;
+    const template = templateTexts[aiExperienceState.targetType].template;
     setAiExperienceState(prev => ({
         ...prev,
-        projectDescription: experienceTemplateText.description,
-        technologiesUsed: experienceTemplateText.technologies,
+        projectDescription: template.description,
+        technologiesUsed: template.technologies,
     }));
     toast({
         title: "Template Copied!",
@@ -616,7 +661,7 @@ export function ResumeForm() {
              <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
                 <DialogContent className="sm:max-w-[625px]">
                     <DialogHeader>
-                    <DialogTitle>Generate Project/Experience Description</DialogTitle>
+                    <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
                     <DialogDescription>
                         Provide some details, and AI will generate professional bullet points using the STAR method.
                     </DialogDescription>
@@ -627,11 +672,11 @@ export function ResumeForm() {
                               <Copy className="h-4 w-4" />
                           </Button>
                           <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
-                          <p className="mb-2"><span className="font-medium">Description:</span> {experienceTemplateText.description}</p>
-                          <p><span className="font-medium">Technologies:</span> {experienceTemplateText.technologies}</p>
+                          <p className="mb-2"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
+                          <p><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
                       </div>
                       <div className="space-y-2">
-                        <Label>Project Title / Role</Label>
+                        <Label>Title / Name</Label>
                         <Input
                           value={aiExperienceState.projectTitle}
                           readOnly
@@ -640,20 +685,20 @@ export function ResumeForm() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Brief Description or Responsibilities</Label>
+                        <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
                         <Textarea
                           value={aiExperienceState.projectDescription}
                           onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
-                          placeholder="e.g., 'Built a social media dashboard to track user engagement' or 'Responsible for front-end development of the checkout page'."
+                          placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
                           rows={4}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Technologies Used</Label>
+                        <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
                         <Input
                           value={aiExperienceState.technologiesUsed}
                           onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
-                          placeholder="e.g., React, TypeScript, Node.js, Firebase"
+                           placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
                         />
                       </div>
                       <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating}>

@@ -93,16 +93,18 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       {hasSkills && (
         <div className="mb-6 break-inside-avoid">
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
-          <div className="space-y-1">
-            {skills.map(category => category.name && category.skills && (
-              <div key={category.id} className="flex items-start text-sm">
-                <span className="font-bold w-48 shrink-0">{category.name}:</span>
-                <p>
+          <p className="text-sm">
+            {skills.map((category, index) => (
+              category.name && category.skills && (
+                <React.Fragment key={category.id}>
+                  <span className="font-bold">{category.name}:</span>
+                  {' '}
                   {category.skills.split(',').map(s => s.trim()).filter(Boolean).join(', ')}
-                </p>
-              </div>
+                  {index < skills.length - 1 && '. '}
+                </React.Fragment>
+              )
             ))}
-          </div>
+          </p>
         </div>
       )}
 
@@ -208,5 +210,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 ResumePreview.displayName = "ResumePreview";
+
+    
 
     

@@ -90,6 +90,16 @@ export function ResumeForm() {
   useEffect(() => {
     const key = localStorage.getItem('userApiKey');
     setUserApiKey(key);
+
+    const handleStorageChange = () => {
+        const newKey = localStorage.getItem('userApiKey');
+        setUserApiKey(newKey);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const summaryTemplateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
@@ -329,8 +339,8 @@ export function ResumeForm() {
   const handleGenerateSkills = async () => {
     setIsGeneratingSkills(true);
     try {
-      const experienceText = resumeData.experience.map(e => e.description).join('\n');
-      const projectsText = resumeData.projects.map(p => p.description).join('\n');
+      const experienceText = resumeData.experience.map(e => e.description).join('\\n');
+      const projectsText = resumeData.projects.map(p => p.description).join('\\n');
       
       const result = await generateSkills({
         summary: resumeData.summary,

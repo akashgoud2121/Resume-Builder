@@ -7,7 +7,7 @@ import { Rocket, GraduationCap } from 'lucide-react';
 
 export default function Home() {
   return (
-    <div className="flex h-screen w-full flex-col">
+    <div className="flex min-h-screen w-full flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <Rocket className="h-6 w-6 text-primary" />
@@ -33,11 +33,6 @@ export default function Home() {
           </Button>
         </div>
       </main>
-      <footer className="flex h-12 items-center justify-center border-t">
-        <p className="text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Resume Builder. All Rights Reserved.
-        </p>
-      </footer>
     </div>
   );
 }

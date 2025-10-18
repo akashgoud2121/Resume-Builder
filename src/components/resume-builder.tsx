@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, Printer } from 'lucide-react';
+import { Eye, Printer, Rocket } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
@@ -22,6 +22,7 @@ export function ResumeBuilder() {
         <header className="no-print flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6 sticky top-0 z-30 bg-background">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
+              <Rocket className="h-6 w-6 text-primary" />
               <span className="font-headline text-xl font-bold">Resume Builder</span>
             </Link>
           </div>
@@ -58,7 +59,7 @@ export function ResumeBuilder() {
                 <ResumeForm />
             </div>
 
-            <main id="resume-preview-container" className="hidden md:block h-full w-full bg-secondary overflow-y-auto print:!block border-l">
+            <main id="resume-preview-container" className="hidden md:block h-full w-full overflow-y-auto print:!block border-l">
               <div className="flex flex-col items-center py-8 sticky top-0">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <ResumePreview ref={resumePreviewRef} />

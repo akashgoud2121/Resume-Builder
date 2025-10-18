@@ -4,7 +4,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { EducationCategory, SkillCategory } from '@/lib/types';
+import type { EducationCategory, SkillCategory, Certification, Achievement } from '@/lib/types';
 
 const categoryTitles: Record<EducationCategory, string> = {
   higher: 'Higher Education',
@@ -14,9 +14,10 @@ const categoryTitles: Record<EducationCategory, string> = {
 
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { resumeData } = useResume();
-  const { contact, summary, education, experience, projects, skills } = resumeData;
+  const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
 
   const renderDescription = (text: string) => {
+    if (!text) return null;
     const bulletPoints = text
       .split(/\n|(?=- )/)
       .filter(line => line.trim() !== '');
@@ -165,6 +166,41 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       )}
       
+       {certifications.length > 0 && certifications.some(c => c.name) && (
+        <div className="mb-6 break-inside-avoid">
+          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Certifications</h2>
+          {certifications.map(cert => cert.name && (
+            <div key={cert.id} className="mb-4 break-inside-avoid">
+              <div className="flex justify-between items-baseline">
+                <h3 className="text-md font-bold">{cert.name}</h3>
+                <p className="text-sm font-light">{cert.date}</p>
+              </div>
+              <p className="text-sm font-semibold italic">{cert.issuer}</p>
+              <div className="mt-1">
+                {renderDescription(cert.description)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {achievements.length > 0 && achievements.some(a => a.name) && (
+        <div className="mb-6 break-inside-avoid">
+          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Achievements</h2>
+          {achievements.map(ach => ach.name && (
+            <div key={ach.id} className="mb-4 break-inside-avoid">
+              <div className="flex justify-between items-baseline">
+                <h3 className="text-md font-bold">{ach.name}</h3>
+                <p className="text-sm font-light">{ach.date}</p>
+              </div>
+              <p className="text-sm font-semibold italic">{ach.context}</p>
+              <div className="mt-1">
+                {renderDescription(ach.description)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 });

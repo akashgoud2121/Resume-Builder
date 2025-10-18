@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy } from 'lucide-react';
-import type { Education, Experience, EducationCategory, Project, SkillCategory as SkillCategoryType } from '@/lib/types';
+import type { Education, Experience, EducationCategory, Project, SkillCategory as SkillCategoryType, Certification, Achievement } from '@/lib/types';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
@@ -59,7 +59,7 @@ type AiExperienceState = {
   generatedBulletPoints: string;
   isGenerating: boolean;
   targetIndex: number | null;
-  targetType: 'experience' | 'projects';
+  targetType: 'experience' | 'projects' | 'achievements' | 'certifications';
 };
 
 export function ResumeForm() {
@@ -100,8 +100,8 @@ export function ResumeForm() {
     setResumeData(prev => ({ ...prev, summary: e.target.value }));
   };
 
-  const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType>(
-    section: 'education' | 'experience' | 'projects' | 'skills',
+  const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType | Certification | Achievement>(
+    section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements',
     index: number,
     field: keyof T,
     value: string
@@ -121,7 +121,7 @@ export function ResumeForm() {
     });
   };
 
-  const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills') => {
+  const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements') => {
     setResumeData(prev => {
       let newEntry;
       if (section === 'education') {
@@ -132,14 +132,19 @@ export function ResumeForm() {
         newEntry = { id: `proj_${Date.now()}`, title: '', organization: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'skills') {
         newEntry = { id: `skillcat_${Date.now()}`, name: 'New Category', skills: '' };
-      } else {
+      } else if (section === 'certifications') {
+        newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '' };
+      } else if (section === 'achievements') {
+        newEntry = { id: `ach_${Date.now()}`, name: '', context: '', date: '', description: '' };
+      }
+      else {
         return prev;
       }
       return { ...prev, [section]: [...prev[section], newEntry] };
     });
   };
   
-  const removeEntry = (section: 'education' | 'experience' | 'projects' | 'skills', id: string) => {
+  const removeEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements', id: string) => {
     setResumeData(prev => ({
       ...prev,
       [section]: (prev[section] as any[]).filter(item => item.id !== id),
@@ -192,14 +197,18 @@ export function ResumeForm() {
     });
   };
   
-  const openExperienceAiDialog = (type: 'experience' | 'projects', index: number) => {
-    const entry = resumeData[type][index];
+  const openExperienceAiDialog = (type: 'experience' | 'projects' | 'achievements' | 'certifications', index: number) => {
+    const entry = resumeData[type][index] as Experience | Project | Achievement | Certification; // Assertion for correct type
+    let title = '';
+    if ('title' in entry) title = entry.title;
+    if ('name' in entry) title = entry.name;
+    
     setAiExperienceState({
       ...aiExperienceState,
       isOpen: true,
       targetIndex: index,
       targetType: type,
-      projectTitle: entry.title,
+      projectTitle: title,
       projectDescription: '',
       technologiesUsed: '',
       generatedBulletPoints: '',
@@ -583,7 +592,7 @@ export function ResumeForm() {
                           <Label>Start Date</Label>
                           <Input value={proj.startDate} onChange={e => handleGenericChange('projects', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
                       </div>
-                      <div className="spacey-2">
+                      <div className="space-y-2">
                           <Label>End Date</Label>
                           <Input value={proj.endDate} onChange={e => handleGenericChange('projects', index, 'endDate', e.target.value)} placeholder="Feb 2024" />
                       </div>
@@ -674,9 +683,89 @@ export function ResumeForm() {
             </div>
         )
     },
+    certifications: {
+      value: "certifications",
+      title: "Certifications",
+      content: (
+        <div className="space-y-4">
+          {resumeData.certifications.map((cert, index) => (
+            <Card key={cert.id} className="p-4 relative">
+              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                <div className="space-y-2">
+                  <Label>Certification Name</Label>
+                  <Input value={cert.name} onChange={e => handleGenericChange('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Issuing Body</Label>
+                  <Input value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label>Date Issued</Label>
+                  <Input value={cert.date} onChange={e => handleGenericChange('certifications', index, 'date', e.target.value)} placeholder="e.g., May 2024" />
+                </div>
+                <div className="sm:col-span-2 space-y-2">
+                    <div className="flex justify-between items-center">
+                      <Label>Description (Optional)</Label>
+                       <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('certifications', index)}>
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          Generate with AI
+                        </Button>
+                    </div>
+                    <Textarea value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} />
+                </div>
+              </CardContent>
+              <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('certifications', cert.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </Card>
+          ))}
+          <Button variant="outline" onClick={() => addEntry('certifications')}><PlusCircle className="mr-2 h-4 w-4" /> Add Certification</Button>
+        </div>
+      ),
+    },
+    achievements: {
+        value: "achievements",
+        title: "Achievements",
+        content: (
+          <div className="space-y-4">
+            {resumeData.achievements.map((ach, index) => (
+              <Card key={ach.id} className="p-4 relative">
+                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                  <div className="space-y-2">
+                    <Label>Achievement / Award</Label>
+                    <Input value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder="e.g., Winner, Smart India Hackathon" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Context</Label>
+                    <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level Competition" />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label>Date</Label>
+                    <Input value={ach.date} onChange={e => handleGenericChange('achievements', index, 'date', e.target.value)} placeholder="e.g., March 2024" />
+                  </div>
+                  <div className="sm:col-span-2 space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label>Description (Optional)</Label>
+                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('achievements', index)}>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Generate with AI
+                        </Button>
+                      </div>
+                      <Textarea value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} />
+                  </div>
+                </CardContent>
+                <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('achievements', ach.id)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </Card>
+            ))}
+            <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement</Button>
+          </div>
+        ),
+      },
   };
   
-  const defaultOrder = ['contact', 'summary', 'skills', 'education', 'experience', 'projects'];
+  const defaultOrder = ['contact', 'summary', 'skills', 'education', 'experience', 'projects', 'certifications', 'achievements'];
 
   return (
     <Accordion type="multiple" defaultValue={defaultOrder} className="w-full space-y-4">
@@ -685,7 +774,7 @@ export function ResumeForm() {
         if (!section) return null;
 
         return (
-          <AccordionItem key={section.value} value={section.value} className="border-none">
+          <AccordionItem key={`${section.value}-item`} value={section.value} className="border-none">
             <Card>
               <CardHeader className="p-6">
                 <AccordionTrigger className="text-lg font-semibold hover:no-underline p-0">

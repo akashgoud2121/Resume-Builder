@@ -49,4 +49,6 @@ export const initialResumeData: ResumeData = {
         skills: 'Git, Docker, VS Code',
     },
   ],
+  certifications: [],
+  achievements: [],
 };

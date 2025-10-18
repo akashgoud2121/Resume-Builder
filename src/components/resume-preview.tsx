@@ -92,15 +92,17 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {hasSkills && (
         <div className="mb-6 break-inside-avoid">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
-            <div className="flex flex-col gap-2">
-              {skills.map(category => category.name && category.skills && (
-                <div key={category.id} className="flex items-start text-sm">
-                  <span className="font-bold w-40 shrink-0">{category.name}:</span>
-                  <span>{category.skills}</span>
-                </div>
-              ))}
+          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
+          {skills.map(category => category.name && category.skills && (
+            <div key={category.id} className="mb-2">
+              <h3 className="text-md font-bold mb-1">{category.name}</h3>
+              <ul className="list-disc list-inside flex flex-wrap gap-x-4">
+                {category.skills.split(',').map(skill => skill.trim()).filter(Boolean).map((skill, index) => (
+                  <li key={index} className="text-sm w-1/3">{skill}</li>
+                ))}
+              </ul>
             </div>
+          ))}
         </div>
       )}
 

@@ -4,14 +4,20 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { EducationCategory, SkillCategory, Certification, Achievement } from '@/lib/types';
+import type { EducationCategory, Achievement, AchievementCategory } from '@/lib/types';
 import { Github, Linkedin, Mail, Phone } from 'lucide-react';
-import Link from 'next/link';
 
 const categoryTitles: Record<EducationCategory, string> = {
   higher: 'Higher Education',
   intermediate: 'Intermediate / Diploma',
   schooling: 'Schooling',
+};
+
+const achievementCategoryTitles: Record<AchievementCategory, string> = {
+  hackathon: 'Hackathons',
+  workshop: 'Workshops',
+  poster: 'Poster Presentations',
+  techfest: 'Techfest Participation',
 };
 
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
@@ -53,6 +59,19 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   }, {} as Record<EducationCategory, typeof education>);
 
   const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling'];
+
+  const groupedAchievements = achievements.reduce((acc, ach) => {
+    const category = ach.category || 'hackathon';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    if(ach.name) {
+      acc[category].push(ach);
+    }
+    return acc;
+  }, {} as Record<AchievementCategory, Achievement[]>);
+
+  const achievementOrder: AchievementCategory[] = ['hackathon', 'workshop', 'poster', 'techfest'];
 
   const addHttp = (url: string) => {
     if (!url) return '';
@@ -155,24 +174,6 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           )
         })}
       </div>
-      
-      {experience.length > 0 && experience.some(e => e.title) && (
-        <div className="mb-6 break-inside-avoid">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Work Experience</h2>
-          {experience.map(exp => exp.title && (
-            <div key={exp.id} className="mb-4 break-inside-avoid">
-              <div className="flex justify-between items-baseline">
-                <h3 className="text-md font-bold">{exp.title}</h3>
-                <p className="text-sm font-light">{exp.startDate} - {exp.endDate}</p>
-              </div>
-              <p className="text-sm font-semibold italic">{exp.company}</p>
-              <div className="mt-1">
-                {renderDescription(exp.description)}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
       {projects.length > 0 && projects.some(p => p.title) && (
         <div className="mb-6 break-inside-avoid">
@@ -212,16 +213,44 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {achievements.length > 0 && achievements.some(a => a.name) && (
         <div className="mb-6 break-inside-avoid">
-          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Achievements</h2>
-          {achievements.map(ach => ach.name && (
-            <div key={ach.id} className="mb-4 break-inside-avoid">
+            <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Achievements & Activities</h2>
+            {achievementOrder.map(category => {
+                const entries = groupedAchievements[category];
+                if (!entries || entries.length === 0) return null;
+
+                return (
+                    <div key={category} className="mb-4 break-inside-avoid">
+                        <h3 className="text-md font-bold text-muted-foreground mb-2">{achievementCategoryTitles[category]}</h3>
+                        {entries.map(ach => (
+                             <div key={ach.id} className="mb-4 break-inside-avoid">
+                                <div className="flex justify-between items-baseline">
+                                    <h3 className="text-md font-bold">{ach.name}</h3>
+                                    <p className="text-sm font-light">{ach.date}</p>
+                                </div>
+                                <p className="text-sm font-semibold italic">{ach.context}</p>
+                                <div className="mt-1">
+                                    {renderDescription(ach.description)}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            })}
+        </div>
+      )}
+
+      {experience.length > 0 && experience.some(e => e.title) && (
+        <div className="mb-6 break-inside-avoid">
+          <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Work Experience</h2>
+          {experience.map(exp => exp.title && (
+            <div key={exp.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-baseline">
-                <h3 className="text-md font-bold">{ach.name}</h3>
-                <p className="text-sm font-light">{ach.date}</p>
+                <h3 className="text-md font-bold">{exp.title}</h3>
+                <p className="text-sm font-light">{exp.startDate} - {exp.endDate}</p>
               </div>
-              <p className="text-sm font-semibold italic">{ach.context}</p>
+              <p className="text-sm font-semibold italic">{exp.company}</p>
               <div className="mt-1">
-                {renderDescription(ach.description)}
+                {renderDescription(exp.description)}
               </div>
             </div>
           ))}
@@ -232,7 +261,3 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 ResumePreview.displayName = "ResumePreview";
-
-    
-
-    

@@ -1,4 +1,3 @@
-// This is a dummy comment to help resolve a git sync issue.
 
 "use client";
 
@@ -10,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy } from 'lucide-react';
-import type { Education, Experience, EducationCategory, Project, SkillCategory as SkillCategoryType, Certification, Achievement } from '@/lib/types';
+import type { Education, Experience, EducationCategory, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory } from '@/lib/types';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
@@ -51,6 +50,13 @@ const educationCategoryConfig = {
       grades: { label: 'CGPA / Percentage', placeholder: 'e.g., 8.5 CGPA' },
     }
   }
+};
+
+const achievementCategoryConfig = {
+    workshop: { title: 'Workshop', nameLabel: 'Workshop Title', contextLabel: 'Conducted by' },
+    hackathon: { title: 'Hackathon', nameLabel: 'Hackathon Name / Project Title', contextLabel: 'Organized by / Rank' },
+    poster: { title: 'Poster Presentation', nameLabel: 'Presentation Title', contextLabel: 'Event / Conference' },
+    techfest: { title: 'Techfest Participation', nameLabel: 'Event Name', contextLabel: 'Organized by / Role' },
 };
 
 type AiExperienceState = {
@@ -181,6 +187,14 @@ export function ResumeForm() {
       return { ...prev, education: newEducation };
     });
   };
+  
+  const handleAchievementCategoryChange = (index: number, value: AchievementCategory) => {
+    setResumeData(prev => {
+      const newAchievements = [...prev.achievements];
+      newAchievements[index] = { ...newAchievements[index], category: value };
+      return { ...prev, achievements: newAchievements };
+    });
+  };
 
   const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements') => {
     setResumeData(prev => {
@@ -196,7 +210,7 @@ export function ResumeForm() {
       } else if (section === 'certifications') {
         newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '' };
       } else if (section === 'achievements') {
-        newEntry = { id: `ach_${Date.now()}`, name: '', context: '', date: '', description: '' };
+        newEntry = { id: `ach_${Date.now()}`, category: 'hackathon' as AchievementCategory, name: '', context: '', date: '', description: '' };
       }
       else {
         return prev;
@@ -795,50 +809,71 @@ export function ResumeForm() {
     },
     achievements: {
         value: "achievements",
-        title: "Achievements",
+        title: "Achievements & Activities",
         content: (
           <div className="space-y-4">
-            {resumeData.achievements.map((ach, index) => (
-              <Card key={ach.id} className="p-4 relative bg-background shadow-none">
-                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                  <div className="space-y-2">
-                    <Label>Achievement / Award</Label>
-                    <Input value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder="e.g., Winner, Smart India Hackathon" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Context</Label>
-                    <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level Competition" />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label>Date</Label>
-                    <Input value={ach.date} onChange={e => handleGenericChange('achievements', index, 'date', e.target.value)} placeholder="e.g., March 2024" />
-                  </div>
-                  <div className="sm:col-span-2 space-y-2">
-                      <div className="flex justify-between items-center">
-                        <Label>Description (Optional)</Label>
-                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('achievements', index)}>
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            Generate with AI
-                        </Button>
-                      </div>
-                      <Textarea value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} />
-                  </div>
-                </CardContent>
-                <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('achievements', ach.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </Card>
-            ))}
-            <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement</Button>
+            {resumeData.achievements.map((ach, index) => {
+               const config = achievementCategoryConfig[ach.category];
+               if (!config) return null;
+               return (
+                <Card key={ach.id} className="p-4 relative bg-background shadow-none">
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                     <div className="sm:col-span-2 space-y-2">
+                        <Label>Category</Label>
+                        <Select
+                        value={ach.category}
+                        onValueChange={(value: AchievementCategory) => handleAchievementCategoryChange(index, value)}
+                        >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="hackathon">Hackathon</SelectItem>
+                            <SelectItem value="workshop">Workshop</SelectItem>
+                            <SelectItem value="poster">Poster Presentation</SelectItem>
+                            <SelectItem value="techfest">Techfest Participation</SelectItem>
+                        </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{config.nameLabel}</Label>
+                      <Input value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{config.contextLabel}</Label>
+                      <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" />
+                    </div>
+                    <div className="space-y-2 sm:col-span-2">
+                      <Label>Date</Label>
+                      <Input value={ach.date} onChange={e => handleGenericChange('achievements', index, 'date', e.target.value)} placeholder="e.g., March 2024" />
+                    </div>
+                    <div className="sm:col-span-2 space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label>Description (Optional)</Label>
+                          <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('achievements', index)}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate with AI
+                          </Button>
+                        </div>
+                        <Textarea value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} />
+                    </div>
+                  </CardContent>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('achievements', ach.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </Card>
+               )
+            })}
+            <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
           </div>
         ),
       },
   };
   
-  const defaultOrder = ['contact', 'summary', 'skills', 'education', 'experience', 'projects', 'certifications', 'achievements'];
+  const defaultOrder = ['contact', 'summary', 'skills', 'education', 'projects', 'certifications', 'achievements', 'experience'];
 
   return (
-    <Accordion type="multiple" defaultValue={defaultOrder} className="w-full space-y-4">
+    <Accordion type="multiple" defaultValue={['contact', 'summary', 'skills', 'education', 'projects']} className="w-full space-y-4">
       {defaultOrder.map((sectionKey) => {
         const section = allSections[sectionKey as keyof typeof allSections];
         if (!section) return null;

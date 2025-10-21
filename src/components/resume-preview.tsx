@@ -21,12 +21,10 @@ const achievementCategoryTitles: Record<AchievementCategory, string> = {
   techfest: 'Techfest Participation',
 };
 
-type ResumePreviewProps = {
-    forPdf?: boolean;
-};
+type ResumePreviewProps = {};
 
 
-export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(({ forPdf = false }, ref) => {
+export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((props, ref) => {
   const { resumeData } = useResume();
   const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
 
@@ -91,15 +89,13 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(({ f
   return (
     <div
       ref={ref}
-      id="resume-preview"
       className={cn(
-        "bg-background text-card-foreground w-full h-full",
-        forPdf ? "p-8" : "p-8 shadow-lg transform scale-1 origin-top",
-        "transition-transform duration-300 print:shadow-none print:scale-100 print:rounded-none"
+        "bg-background text-card-foreground w-full h-full p-8",
+        "print:shadow-none print:p-8"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}
     >
-      <div className="text-center mb-6">
+      <div className="text-center mb-6 break-inside-avoid">
         {contact.name && <h1 className="text-4xl font-bold tracking-tight">{contact.name}</h1>}
          <div className="flex justify-center items-center gap-x-4 gap-y-2 mt-2 text-sm flex-wrap">
           {contact.email && (

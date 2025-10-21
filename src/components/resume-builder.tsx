@@ -18,7 +18,6 @@ import { Loader2 } from 'lucide-react';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
-  const pdfResumePreviewRef = useRef<HTMLDivElement>(null);
   const [apiKey, setApiKey] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -32,7 +31,7 @@ export function ResumeBuilder() {
   }, []);
 
   const handleDownloadPdf = async () => {
-    const element = pdfResumePreviewRef.current;
+    const element = resumePreviewRef.current;
     if (!element) return;
 
     setIsDownloading(true);
@@ -42,6 +41,8 @@ export function ResumeBuilder() {
             scale: 3, // Higher scale for better quality
             useCORS: true,
             logging: false,
+            windowWidth: element.scrollWidth,
+            windowHeight: element.scrollHeight,
         });
 
         // A4 page dimensions in mm: 210 x 297
@@ -53,25 +54,27 @@ export function ResumeBuilder() {
 
         const imgData = canvas.toDataURL('image/png');
         const pdfWidth = 210; // A4 width in mm
-        const pageHeight = 297; // A4 height in mm
+        const pdfHeight = 297; // A4 height in mm
         
-        // Calculate image dimensions to maintain aspect ratio
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        const ratio = imgWidth / imgHeight;
-        let newImgHeight = pdfWidth / ratio;
+        const imgProps = pdf.getImageProperties(imgData);
+        const imgWidth = imgProps.width;
+        const imgHeight = imgProps.height;
 
-        let heightLeft = newImgHeight;
+        const ratio = imgWidth / imgHeight;
+        
+        let canvasHeightInPdf = pdfWidth / ratio;
+        let heightLeft = canvasHeightInPdf;
+        
         let position = 0;
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, newImgHeight);
-        heightLeft -= pageHeight;
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, canvasHeightInPdf);
+        heightLeft -= pdfHeight;
 
         while (heightLeft > 0) {
-            position = heightLeft - newImgHeight;
+            position = -pdfHeight * (Math.abs(position / pdfHeight) + 1);
             pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, newImgHeight);
-            heightLeft -= pageHeight;
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeightInPdf);
+            heightLeft -= pdfHeight;
         }
         
         pdf.save('resume.pdf');
@@ -173,7 +176,9 @@ export function ResumeBuilder() {
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
                   <div className="h-full overflow-auto py-4">
-                    <ResumePreview ref={resumePreviewRef} />
+                     <div className="w-[210mm] mx-auto min-h-[297mm] shadow-lg overflow-hidden bg-background">
+                        <ResumePreview />
+                     </div>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -195,18 +200,13 @@ export function ResumeBuilder() {
             </div>
 
             <main id="resume-preview-container" className="hidden md:block w-full bg-muted/30">
-              <div className="flex flex-col items-center py-8 sticky top-[80px]">
+              <div className="flex flex-col items-center py-8 sticky top-[80px] h-[calc(100vh-80px)] overflow-auto">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div className="w-[210mm] min-h-[297mm] shadow-lg overflow-hidden bg-background">
+                <div id="resume-preview" className="w-[210mm] h-auto min-h-[297mm] shadow-lg overflow-hidden bg-background rounded-sm">
                     <ResumePreview ref={resumePreviewRef} />
                 </div>
               </div>
             </main>
-        </div>
-        
-        {/* Off-screen element for PDF generation */}
-        <div className="absolute -left-[9999px] top-0 w-[210mm] bg-background print:relative print:left-0">
-           <ResumePreview ref={pdfResumePreviewRef} forPdf={true} />
         </div>
       </div>
   );

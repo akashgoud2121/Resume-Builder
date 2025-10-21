@@ -5,7 +5,8 @@ import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import type { EducationCategory, Achievement, AchievementCategory } from '@/lib/types';
-import { Github, Linkedin, Mail, Phone } from 'lucide-react';
+import { Github, Linkedin, Mail, Phone, Link as LinkIcon } from 'lucide-react';
+
 
 const categoryTitles: Record<EducationCategory, string> = {
   higher: 'Higher Education',
@@ -20,7 +21,12 @@ const achievementCategoryTitles: Record<AchievementCategory, string> = {
   techfest: 'Techfest Participation',
 };
 
-export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
+type ResumePreviewProps = {
+    forPdf?: boolean;
+};
+
+
+export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(({ forPdf = false }, ref) => {
   const { resumeData } = useResume();
   const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
 
@@ -86,14 +92,15 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       ref={ref}
       id="resume-preview"
       className={cn(
-        "w-full max-w-[800px] bg-card text-card-foreground p-8 shadow-lg rounded-lg",
+        "bg-card text-card-foreground",
+        forPdf ? "p-8" : "w-full h-full p-8 shadow-lg rounded-lg transform scale-[0.9] origin-top",
         "transition-transform duration-300 print:shadow-none print:scale-100 print:rounded-none"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}
     >
       <div className="text-center mb-6">
         {contact.name && <h1 className="text-4xl font-bold tracking-tight">{contact.name}</h1>}
-        <div className="flex justify-center items-center gap-x-4 gap-y-2 mt-2 text-sm flex-wrap">
+         <div className="flex justify-center items-center gap-x-4 gap-y-2 mt-2 text-sm flex-wrap">
           {contact.email && (
              <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 hover:text-primary hover:underline">
                <Mail className="h-3.5 w-3.5" />

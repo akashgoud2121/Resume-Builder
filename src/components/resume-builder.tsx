@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 export function ResumeBuilder() {
-  const resumePreviewRef = React.useRef<HTMLDivElement>(null);
+  const resumePreviewRef = useRef<HTMLDivElement>(null);
+  const pdfResumePreviewRef = useRef<HTMLDivElement>(null);
   const [apiKey, setApiKey] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -31,42 +32,46 @@ export function ResumeBuilder() {
   }, []);
 
   const handleDownloadPdf = async () => {
-    const element = resumePreviewRef.current;
+    const element = pdfResumePreviewRef.current;
     if (!element) return;
 
     setIsDownloading(true);
 
     try {
         const canvas = await html2canvas(element, {
-            scale: 2, // Higher scale for better quality
+            scale: 3, // Higher scale for better quality
             useCORS: true,
             logging: false,
         });
 
+        // A4 page dimensions in mm: 210 x 297
         const pdf = new jsPDF({
-            orientation: 'p',
+            orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
         });
 
         const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = canvasWidth / canvasHeight;
-        const height = pdfWidth / ratio;
+        const pdfWidth = 210; // A4 width in mm
+        const pageHeight = 297; // A4 height in mm
+        
+        // Calculate image dimensions to maintain aspect ratio
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = imgWidth / imgHeight;
+        let newImgHeight = pdfWidth / ratio;
 
+        let heightLeft = newImgHeight;
         let position = 0;
-        let remainingHeight = canvasHeight * (pdfWidth / canvasWidth);
 
-        while (remainingHeight > 0) {
-            pdf.addImage(imgData, 'PNG', 0, -position, pdfWidth, canvasHeight * (pdfWidth / canvasWidth), undefined, 'FAST');
-            remainingHeight -= pdfHeight;
-            if (remainingHeight > 0) {
-                pdf.addPage();
-                position += pdfHeight;
-            }
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, newImgHeight);
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+            position = heightLeft - newImgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, newImgHeight);
+            heightLeft -= pageHeight;
         }
         
         pdf.save('resume.pdf');
@@ -81,6 +86,7 @@ export function ResumeBuilder() {
         setIsDownloading(false);
     }
   };
+
 
   const handleSaveApiKey = () => {
     localStorage.setItem('userApiKey', apiKey);
@@ -167,7 +173,7 @@ export function ResumeBuilder() {
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
                   <div className="h-full overflow-auto py-4">
-                    <ResumePreview ref={resumePreviewRef} forPdf={false} />
+                    <ResumePreview ref={resumePreviewRef} />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -188,19 +194,19 @@ export function ResumeBuilder() {
                 <ResumeForm />
             </div>
 
-            <main id="resume-preview-container" className="hidden md:block w-full">
+            <main id="resume-preview-container" className="hidden md:block w-full bg-muted/30">
               <div className="flex flex-col items-center py-8 sticky top-[80px]">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div className="w-[210mm] h-[297mm] shadow-lg overflow-hidden">
-                    <ResumePreview ref={resumePreviewRef} forPdf={false} />
+                <div className="w-[210mm] min-h-[297mm] shadow-lg overflow-hidden bg-background">
+                    <ResumePreview ref={resumePreviewRef} />
                 </div>
               </div>
             </main>
         </div>
         
         {/* Off-screen element for PDF generation */}
-        <div className="absolute -left-[9999px] top-0 w-[210mm]">
-           <ResumePreview ref={resumePreviewRef} forPdf={true} />
+        <div className="absolute -left-[9999px] top-0 w-[210mm] bg-background print:relative print:left-0">
+           <ResumePreview ref={pdfResumePreviewRef} forPdf={true} />
         </div>
       </div>
   );

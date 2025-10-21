@@ -64,8 +64,8 @@
 }
 
 @page {
-  size: A4;
-  margin: 20mm;
+  size: a4;
+  margin: 0;
 }
 
 @media print {
@@ -80,13 +80,8 @@
     display: none !important;
   }
 
-  #resume-preview-container {
-    padding: 0;
-    margin: 0;
-  }
-  
   #resume-preview {
-    margin: 0;
+    margin: 0 !important;
     border: none !important;
     box-shadow: none !important;
     transform: scale(1) !important;

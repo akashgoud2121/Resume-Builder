@@ -41,8 +41,10 @@ const generatePdfFlow = ai.defineFlow(
       });
       const page = await browser.newPage();
       
+      // Set the content, waiting for all network connections to be idle
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
+      // Generate the PDF from the fully rendered page
       const pdfBuffer = await page.pdf({
         format: 'A4',
         printBackground: true,

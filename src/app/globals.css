@@ -57,17 +57,6 @@
       -ms-overflow-style: none;  /* IE and Edge */
       scrollbar-width: none;  /* Firefox */
   }
-  
-  .page-container {
-    width: 210mm;
-    min-height: 297mm;
-    margin-bottom: 1rem; /* Gap between pages */
-  }
-
-  .page-content {
-    padding: 1in;
-    height: 100%;
-  }
 }
 
 @media print {
@@ -100,5 +89,3 @@
     margin: 1in;
   }
 }
-
-    

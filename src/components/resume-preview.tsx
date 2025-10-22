@@ -87,9 +87,8 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     <div
       ref={ref}
       className={cn(
-        "bg-background shadow-lg",
-        "w-[210mm] min-h-[297mm] p-[1in]",
-        "print:bg-transparent print:shadow-none print:p-0"
+        "bg-background shadow-lg page-container",
+        "w-[210mm] min-h-[297mm] p-[1in]"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}
     >
@@ -279,5 +278,3 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 ResumePreview.displayName = "ResumePreview";
-
-    

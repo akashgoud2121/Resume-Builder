@@ -33,35 +33,27 @@ export function ResumeBuilder() {
   const handleDownloadPdf = async () => {
     const elementToCapture = resumePreviewRef.current;
     if (!elementToCapture) return;
-  
+
     setIsDownloading(true);
     toast({
       title: "Generating PDF...",
       description: "This may take a moment. Please wait.",
     });
-  
-    try {
-      // Find the single child of the ref, which is the preview container
-      const printContent = elementToCapture.children[0] as HTMLElement;
-      if (!printContent) {
-          throw new Error("Could not find resume content to print.");
-      }
 
-      const canvas = await html2canvas(printContent, {
-          scale: 2,
-          useCORS: true,
-          logging: false, // Disables logging to console
-          width: printContent.offsetWidth,
-          height: printContent.offsetHeight,
+    try {
+      const canvas = await html2canvas(elementToCapture, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
       });
-  
+
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
         format: 'a4',
       });
-  
+
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
       
@@ -69,23 +61,21 @@ export function ResumeBuilder() {
       const canvasHeight = canvas.height;
       
       const ratio = canvasWidth / pdfWidth;
-      const totalPDFPages = Math.ceil(canvasHeight / ratio / pdfHeight);
-
+      const imgHeight = canvasHeight / ratio;
+      
+      let heightLeft = imgHeight;
       let position = 0;
-      
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight / ratio);
 
-      let heightLeft = canvasHeight / ratio - pdfHeight;
-      
-      let page = 1;
-      while (heightLeft > 0 && page < totalPDFPages) {
-          position = -(pdfHeight * page);
-          pdf.addPage();
-          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight/ratio);
-          heightLeft -= pdfHeight;
-          page++;
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
       }
-  
+
       pdf.save('resume.pdf');
     } catch (error) {
       console.error("Error generating PDF:", error);
@@ -209,8 +199,8 @@ export function ResumeBuilder() {
             <main id="resume-preview-container" className="hidden md:block bg-muted/30">
               <div className="flex flex-col items-center py-8 h-[calc(100vh-64px)] overflow-auto no-scrollbar">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div id="resume-preview-wrapper" ref={resumePreviewRef}>
-                    <ResumePreview />
+                <div id="resume-preview-wrapper" >
+                    <ResumePreview ref={resumePreviewRef} />
                 </div>
               </div>
             </main>

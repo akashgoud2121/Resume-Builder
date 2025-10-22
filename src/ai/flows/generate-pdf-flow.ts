@@ -35,17 +35,14 @@ const generatePdfFlow = ai.defineFlow(
   async ({ htmlContent }) => {
     let browser;
     try {
-      console.log('Launching Puppeteer...');
       browser = await puppeteer.launch({ 
-        headless: true,
+        headless: "new",
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
       const page = await browser.newPage();
       
-      console.log('Setting page content...');
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-      console.log('Generating PDF...');
       const pdfBuffer = await page.pdf({
         format: 'A4',
         printBackground: true,
@@ -57,7 +54,6 @@ const generatePdfFlow = ai.defineFlow(
         },
       });
 
-      console.log('PDF generated successfully.');
       return {
         pdfBase64: pdfBuffer.toString('base64'),
       };
@@ -66,7 +62,6 @@ const generatePdfFlow = ai.defineFlow(
       throw new Error('Failed to generate PDF.');
     } finally {
       if (browser) {
-        console.log('Closing Puppeteer browser...');
         await browser.close();
       }
     }

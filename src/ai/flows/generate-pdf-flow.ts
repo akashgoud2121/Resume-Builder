@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow for generating a PDF from HTML content using Puppeteer.
@@ -42,21 +43,7 @@ const generatePdfFlow = ai.defineFlow(
       const page = await browser.newPage();
       
       console.log('Setting page content...');
-      // We need to wrap the content in a full HTML document for Puppeteer
-      const fullHtml = `
-        <!DOCTYPE html>
-        <html>
-          <head>
-            <style>
-              /* You can inject global styles here if needed */
-            </style>
-          </head>
-          <body>
-            ${htmlContent}
-          </body>
-        </html>
-      `;
-      await page.setContent(fullHtml, { waitUntil: 'networkidle0' });
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
       console.log('Generating PDF...');
       const pdfBuffer = await page.pdf({

@@ -41,16 +41,14 @@ export function ResumeBuilder() {
 
     try {
         const htmlContent = elementToCapture.innerHTML;
-
         // The head content is needed for styles to be applied in Puppeteer
         const headContent = document.head.innerHTML;
         const fullHtml = `<html><head>${headContent}</head><body>${htmlContent}</body></html>`;
 
         const result = await generatePdf({ htmlContent: fullHtml });
         
-        const pdfBlob = new Blob([Buffer.from(result.pdfBase64, 'base64')], { type: 'application/pdf' });
         const link = document.createElement('a');
-        link.href = URL.createObjectURL(pdfBlob);
+        link.href = `data:application/pdf;base64,${result.pdfBase64}`;
         link.download = 'resume.pdf';
         document.body.appendChild(link);
         link.click();
@@ -65,7 +63,7 @@ export function ResumeBuilder() {
         console.error("Error generating PDF:", error);
         toast({
             title: "Download Failed",
-            description: "An error occurred while generating the PDF on the server.",
+            description: "An error occurred while generating the PDF on the server. Please try again.",
             variant: "destructive",
         });
     } finally {

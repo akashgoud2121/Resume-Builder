@@ -41,49 +41,46 @@ export function ResumeBuilder() {
     });
   
     try {
-      // Use html2canvas to capture all the pages
       const canvas = await html2canvas(elementToCapture, {
-        scale: 2, // Higher scale for better quality
-        useCORS: true,
-        logging: true,
-        windowWidth: elementToCapture.scrollWidth,
-        windowHeight: elementToCapture.scrollHeight,
+          scale: 2,
+          useCORS: true,
+          logging: true,
+          windowWidth: elementToCapture.scrollWidth,
+          windowHeight: elementToCapture.scrollHeight,
+          onclone: (document) => {
+            // On the cloned document, we can remove the gap between pages for a seamless PDF
+            const pages = document.querySelectorAll('.page-container');
+            pages.forEach(page => {
+                (page as HTMLElement).style.marginBottom = '0';
+            });
+          }
       });
   
       const imgData = canvas.toDataURL('image/png');
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-  
-      // A4 dimensions in points (pt), where 1 inch = 72 points.
-      const pdfA4Width = 595.28;
-      const pdfA4Height = 841.89;
-  
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'pt',
         format: 'a4',
       });
   
-      // Calculate the aspect ratio
-      const canvasAspectRatio = imgWidth / imgHeight;
-      const pdfAspectRatio = pdfA4Width / pdfA4Height;
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+      const ratio = canvasWidth / pdfWidth;
+      const imgHeight = canvasHeight / ratio;
   
-      let pdfImgWidth = pdfA4Width;
-      let pdfImgHeight = pdfA4Width / canvasAspectRatio;
-  
-      // Handle multiple pages
-      const totalPdfHeight = pdfImgHeight;
-      let heightLeft = totalPdfHeight;
+      let heightLeft = imgHeight;
       let position = 0;
   
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfImgWidth, pdfImgHeight);
-      heightLeft -= pdfA4Height;
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
+      heightLeft -= pdfHeight;
   
       while (heightLeft > 0) {
-        position = -pdfA4Height + (totalPdfHeight - heightLeft);
+        position = position - pdfHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfImgWidth, pdfImgHeight);
-        heightLeft -= pdfA4Height;
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
+        heightLeft -= pdfHeight;
       }
   
       pdf.save('resume.pdf');
@@ -206,7 +203,7 @@ export function ResumeBuilder() {
                 <ResumeForm />
             </div>
 
-            <main id="resume-preview-container" className="hidden md:block w-full bg-muted/30">
+            <main id="resume-preview-container" className="hidden md:block bg-muted/30">
               <div className="flex flex-col items-center py-8 h-[calc(100vh-64px)] overflow-auto no-scrollbar">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <div id="resume-preview-wrapper" ref={resumePreviewRef}>
@@ -218,5 +215,3 @@ export function ResumeBuilder() {
       </div>
   );
 }
-
-    

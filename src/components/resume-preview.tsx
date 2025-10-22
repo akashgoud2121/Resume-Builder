@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { forwardRef, useRef, useEffect, useState } from 'react';
+import React, { forwardRef, useRef, useEffect, useState, ReactNode } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import type { EducationCategory, Achievement, AchievementCategory, ResumeData } from '@/lib/types';
@@ -59,10 +59,9 @@ const PAGE_CONTENT_HEIGHT_PX = A4_HEIGHT_PX - (PAGE_MARGIN_TOP_BOTTOM_PX * 2);
 
 interface ResumeContentProps {
   resumeData: ResumeData;
-  isPaginationEnabled?: boolean;
 }
 
-const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationEnabled = false }) => {
+const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData }) => {
   const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
   
   const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
@@ -93,11 +92,9 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
   
   const achievementOrder: AchievementCategory[] = ['hackathon', 'workshop', 'poster', 'techfest'];
 
-  const sectionClassName = isPaginationEnabled ? "break-inside-avoid" : "";
-
   return (
     <>
-      <div className={`text-center mb-6 ${sectionClassName}`}>
+      <div data-section="contact" className={`text-center mb-6 break-inside-avoid`}>
         {contact.name && <h1 className="text-4xl font-bold tracking-tight">{contact.name}</h1>}
          <div className="flex justify-center items-center gap-x-4 gap-y-2 mt-2 text-sm flex-wrap">
           {contact.email && (
@@ -128,14 +125,14 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
       </div>
 
       {summary && (
-        <div className={`mb-6 ${sectionClassName}`}>
+        <div data-section="summary" className={`mb-6 break-inside-avoid`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Summary</h2>
           <p className="text-sm text-justify">{summary}</p>
         </div>
       )}
 
       {hasSkills && (
-        <div className={`mb-6 ${sectionClassName}`}>
+        <div data-section="skills" className={`mb-6 break-inside-avoid`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
           <div className="text-sm">
             {skills.map((category) => {
@@ -156,16 +153,16 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
       )}
 
       {education.some(e => e.school) && (
-        <div className={`mb-6 ${sectionClassName}`}>
+        <div data-section="education" className={`mb-6 break-inside-avoid`}>
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>
             {educationOrder.map(category => {
             const entries = groupedEducation[category];
             if (!entries || entries.length === 0) return null;
             return (
-                <div key={category} className={`mb-4 ${sectionClassName}`}>
+                <div key={category} className={`mb-4 break-inside-avoid`}>
                   <h3 className="text-md font-bold text-muted-foreground mb-2">{categoryTitles[category]}</h3>
                   {entries.map(edu => (
-                      <div key={edu.id} className={`flex justify-between items-start mb-2 ${sectionClassName}`}>
+                      <div key={edu.id} className={`flex justify-between items-start mb-2 break-inside-avoid`}>
                         <div className="flex-grow">
                             <h4 className="text-md font-bold">{edu.school}</h4>
                             <p className="text-sm">{edu.degree}</p>
@@ -184,10 +181,10 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
       )}
 
       {projects.length > 0 && projects.some(p => p.title) && (
-        <div className={`mb-6 ${sectionClassName}`}>
+        <div data-section="projects" className={`mb-6 break-inside-avoid`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Projects</h2>
           {projects.map(proj => proj.title && (
-            <div key={proj.id} className={`mb-4 ${sectionClassName}`}>
+            <div key={proj.id} className={`mb-4 break-inside-avoid`}>
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{proj.title}</h3>
                 <p className="text-sm font-light">{proj.startDate} - {proj.endDate}</p>
@@ -202,10 +199,10 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
       )}
       
        {certifications.length > 0 && certifications.some(c => c.name) && (
-        <div className={`mb-6 ${sectionClassName}`}>
+        <div data-section="certifications" className={`mb-6 break-inside-avoid`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Certifications</h2>
           {certifications.map(cert => cert.name && (
-            <div key={cert.id} className={`mb-4 ${sectionClassName}`}>
+            <div key={cert.id} className={`mb-4 break-inside-avoid`}>
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{cert.name}</h3>
                 <p className="text-sm font-light">{cert.date}</p>
@@ -220,17 +217,17 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
       )}
 
       {achievements.length > 0 && achievements.some(a => a.name) && (
-        <div className={`mb-6 ${sectionClassName}`}>
+        <div data-section="achievements" className={`mb-6 break-inside-avoid`}>
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Achievements & Activities</h2>
             {achievementOrder.map(category => {
                 const entries = groupedAchievements[category];
                 if (!entries || entries.length === 0) return null;
 
                 return (
-                    <div key={category} className={`mb-4 ${sectionClassName}`}>
+                    <div key={category} className={`mb-4 break-inside-avoid`}>
                         <h3 className="text-md font-bold text-muted-foreground mb-2">{achievementCategoryTitles[category]}</h3>
                         {entries.map(ach => (
-                             <div key={ach.id} className={`mb-4 ${sectionClassName}`}>
+                             <div key={ach.id} className={`mb-4 break-inside-avoid`}>
                                 <div className="flex justify-between items-baseline">
                                     <h3 className="text-md font-bold">{ach.name}</h3>
                                     <p className="text-sm font-light">{ach.date}</p>
@@ -248,10 +245,10 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
       )}
 
       {experience.length > 0 && experience.some(e => e.title) && (
-        <div className={`mb-6 ${sectionClassName}`}>
+        <div data-section="experience" className={`mb-6 break-inside-avoid`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Work Experience</h2>
           {experience.map(exp => exp.title && (
-            <div key={exp.id} className={`mb-4 ${sectionClassName}`}>
+            <div key={exp.id} className={`mb-4 break-inside-avoid`}>
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{exp.title}</h3>
                 <p className="text-sm font-light">{exp.startDate} - {exp.endDate}</p>
@@ -269,62 +266,99 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
 };
 
 
-const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactElement }> = ({ resumeData, children }) => {
+const ResumePaginator: React.FC<{ resumeData: ResumeData }> = ({ resumeData }) => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [pages, setPages] = useState<React.ReactNode[][]>([[]]);
+  const [pages, setPages] = useState<ReactNode[][]>([[]]);
 
   useEffect(() => {
     if (!contentRef.current) return;
-
-    const sections = Array.from(contentRef.current.children) as HTMLElement[];
-    const newPages: React.ReactNode[][] = [];
-    let currentPage: React.ReactNode[] = [];
-    let currentPageHeight = 0;
-
-    sections.forEach((section, index) => {
-      const sectionHeight = section.getBoundingClientRect().height;
-
-      if (currentPageHeight + sectionHeight > PAGE_CONTENT_HEIGHT_PX && currentPage.length > 0) {
-        newPages.push(currentPage);
-        currentPage = [];
-        currentPageHeight = 0;
-      }
+  
+    // Use requestAnimationFrame to ensure styles are applied and heights are measurable
+    requestAnimationFrame(() => {
+      if (!contentRef.current) return;
       
-      currentPage.push(React.cloneElement(children, {
-        ...children.props,
-        children: children.props.children[index]
-      }));
-      currentPageHeight += sectionHeight;
-    });
-
-    if (currentPage.length > 0) {
-      newPages.push(currentPage);
-    }
-    
-    // We recreate the elements in pages, so React re-renders them.
-    const finalPages = newPages.map((page, pageIndex) => 
-        page.map((section: React.ReactElement, sectionIndex) =>
-          React.cloneElement(section, { key: `${pageIndex}-${sectionIndex}` })
-        )
+      const sections = Array.from(contentRef.current.children) as HTMLElement[];
+      const newPages: ReactNode[][] = [];
+      let currentPageSections: ReactNode[] = [];
+      let currentPageHeight = 0;
+  
+      sections.forEach((section, index) => {
+        const sectionHeight = section.offsetHeight;
+  
+        // If adding the section exceeds the page height, and the page isn't empty, start a new page
+        if (currentPageHeight + sectionHeight > PAGE_CONTENT_HEIGHT_PX && currentPageSections.length > 0) {
+          newPages.push(currentPageSections);
+          currentPageSections = [];
+          currentPageHeight = 0;
+        }
+        
+        currentPageSections.push(<ResumeContent key={index} resumeData={{...resumeData}} />);
+        currentPageHeight += sectionHeight;
+      });
+  
+      // Add the last page if it has content
+      if (currentPageSections.length > 0) {
+        newPages.push(currentPageSections);
+      }
+  
+      // This is a workaround to force re-rendering of the pages with section content
+      const finalPages = newPages.map((pageSections, pageIndex) => 
+        sections.map((section, sectionIndex) => {
+            let isInPage = false;
+            // A bit of a hacky way to check if the section belongs to the current page
+            // by checking a data attribute on the source element.
+            // This depends on the order of sections being the same.
+            if(pageSections.length > 0 && (pageSections[0] as any).key == sectionIndex) {
+               isInPage = true;
+            }
+           
+            const clonedSection = React.cloneElement(
+              <div key={`${pageIndex}-${sectionIndex}`}>{(contentRef.current?.children[sectionIndex] as HTMLElement)?.outerHTML}</div>
+            );
+            return clonedSection;
+        })
       );
 
-    setPages(finalPages);
+      const reconstructedPages: ReactNode[][] = [];
+      let pageHeight = 0;
+      let page: ReactNode[] = [];
+      
+      sections.forEach((section, index) => {
+          const sectionHeight = section.offsetHeight;
+          if (pageHeight + sectionHeight > PAGE_CONTENT_HEIGHT_PX && page.length > 0) {
+              reconstructedPages.push(page);
+              page = [];
+              pageHeight = 0;
+          }
+          pageHeight += sectionHeight;
+          // Create a key that is stable across re-renders
+          const key = section.getAttribute('data-section') || `section-${index}`;
+          page.push(React.cloneElement(<div/>, { key, dangerouslySetInnerHTML: { __html: section.outerHTML } }));
+      });
+      if (page.length > 0) {
+          reconstructedPages.push(page);
+      }
 
-  }, [resumeData, children]);
+      setPages(reconstructedPages);
+    });
+
+  }, [resumeData]);
 
 
   return (
     <>
       {/* Hidden container for measuring content */}
-      <div ref={contentRef} className="absolute opacity-0 -z-10 w-[210mm]" style={{ padding: '1in' }}>
-        {children.props.children}
+      <div ref={contentRef} className="absolute opacity-0 -z-10 w-[210mm] pointer-events-none">
+        <div className='page-content'>
+            <ResumeContent resumeData={resumeData} />
+        </div>
       </div>
-
+      
       {/* Visible paginated content */}
       {pages.map((pageContent, pageIndex) => (
         <div key={pageIndex} className="page-container bg-background shadow-lg">
           <div className="page-content">
-            {pageContent.map((section: React.ReactElement) => section.props.children)}
+            {pageContent}
           </div>
         </div>
       ))}
@@ -351,9 +385,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
         style={{ fontFamily: 'Roboto, sans-serif' }}
       >
         {isPaginatorEnabled ? (
-          <ResumePaginator resumeData={resumeData}>
-            <ResumeContent resumeData={resumeData} isPaginationEnabled={true} />
-          </ResumePaginator>
+          <ResumePaginator resumeData={resumeData} />
         ) : (
           <div className="bg-background w-full min-h-full">
              <div className="page-content">
@@ -368,7 +400,3 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
 
 
 ResumePreview.displayName = "ResumePreview";
-
-    
-
-    

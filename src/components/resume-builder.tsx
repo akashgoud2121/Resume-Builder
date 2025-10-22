@@ -29,22 +29,44 @@ export function ResumeBuilder() {
     }
   }, []);
 
-  const handleDownloadPdf = async () => {
+ const handleDownloadPdf = async () => {
     const elementToCapture = resumePreviewRef.current;
     if (!elementToCapture) return;
 
     setIsDownloading(true);
     toast({
       title: "Generating PDF...",
-      description: "This may take a moment as we render your resume on the server.",
+      description: "This may take a moment. We're creating a high-quality PDF on the server.",
     });
 
     try {
-        const htmlContent = elementToCapture.innerHTML;
-        // The head content is needed for styles to be applied in Puppeteer
-        const headContent = document.head.innerHTML;
-        const fullHtml = `<html><head>${headContent}</head><body>${htmlContent}</body></html>`;
-
+        const styleSheets = Array.from(document.styleSheets)
+            .filter(
+                (sheet) =>
+                    sheet.href &&
+                    !sheet.href.startsWith('blob:') && // Exclude blob URLs
+                    sheet.ownerNode instanceof HTMLLinkElement && // Ensure it's a <link>
+                    (sheet.ownerNode as HTMLLinkElement).rel === 'stylesheet'
+            )
+            .map((sheet) => sheet.href);
+            
+        const styleTags = await Promise.all(
+            styleSheets.map(async (href) => {
+                try {
+                    const response = await fetch(href);
+                    const cssText = await response.text();
+                    return `<style>${cssText}</style>`;
+                } catch (e) {
+                    console.warn(`Could not fetch stylesheet: ${href}`, e);
+                    return '';
+                }
+            })
+        );
+        
+        const headContent = styleTags.join('\n');
+        const resumeHtml = elementToCapture.innerHTML;
+        const fullHtml = `<html><head><meta charset="UTF-8">${headContent}</head><body>${resumeHtml}</body></html>`;
+        
         const result = await generatePdf({ htmlContent: fullHtml });
         
         const link = document.createElement('a');
@@ -63,7 +85,7 @@ export function ResumeBuilder() {
         console.error("Error generating PDF:", error);
         toast({
             title: "Download Failed",
-            description: "An error occurred while generating the PDF on the server. Please try again.",
+            description: "An error occurred while generating the PDF on the server. Please check the console for more details and try again.",
             variant: "destructive",
         });
     } finally {

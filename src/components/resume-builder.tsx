@@ -41,51 +41,57 @@ export function ResumeBuilder() {
     });
 
     try {
-      const canvas = await html2canvas(elementToCapture, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-      });
+        const canvas = await html2canvas(elementToCapture, {
+            scale: 2, // Higher scale for better quality
+            useCORS: true,
+            logging: false,
+        });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'pt',
-        format: 'a4',
-      });
+        const imgData = canvas.toDataURL('image/png');
+        const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'pt', // points
+            format: 'a4',
+        });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      
-      const canvasWidth = canvas.width;
-      const canvasHeight = canvas.height;
-      
-      const ratio = canvasWidth / pdfWidth;
-      const imgHeight = canvasHeight / ratio;
-      
-      let heightLeft = imgHeight;
-      let position = 0;
+        const a4WidthPt = 595.28;
+        const a4HeightPt = 841.89;
+        const marginPt = 72; // 1 inch = 72 points
 
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-      heightLeft -= pdfHeight;
+        const contentWidth = a4WidthPt - (marginPt * 2);
+        const contentHeight = a4HeightPt - (marginPt * 2);
 
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
-      }
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const canvasAspectRatio = canvasWidth / canvasHeight;
 
-      pdf.save('resume.pdf');
+        const imgHeight = contentWidth / canvasAspectRatio;
+        let heightLeft = imgHeight;
+
+        let position = 0;
+
+        // Add the first page
+        pdf.addImage(imgData, 'PNG', marginPt, marginPt, contentWidth, imgHeight);
+        heightLeft -= contentHeight;
+
+        // Add subsequent pages if needed
+        while (heightLeft > 0) {
+            position = position - contentHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', marginPt, position + marginPt, contentWidth, imgHeight);
+            heightLeft -= contentHeight;
+        }
+
+        pdf.save('resume.pdf');
     } catch (error) {
-      console.error("Error generating PDF:", error);
-      toast({
-        title: "Download Failed",
-        description: "An error occurred while generating the PDF.",
-        variant: "destructive",
-      });
+        console.error("Error generating PDF:", error);
+        toast({
+            title: "Download Failed",
+            description: "An error occurred while generating the PDF.",
+            variant: "destructive",
+        });
     } finally {
-      setIsDownloading(false);
+        setIsDownloading(false);
     }
   };
 
@@ -208,3 +214,5 @@ export function ResumeBuilder() {
       </div>
   );
 }
+
+    

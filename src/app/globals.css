@@ -60,29 +60,23 @@
 }
 
 @media print {
-  body {
-    background-color: #fff;
+  html, body {
+    width: 210mm;
+    height: 297mm;
+    -webkit-print-color-adjust: exact; /* Chrome, Safari */
+    color-adjust: exact; /* Firefox */
   }
-
+  
   .no-print {
     display: none !important;
-  }
-
-  .page-container {
-    box-shadow: none !important;
-    margin: 0;
-    padding: 0;
-    width: 100%;
   }
 
   .break-inside-avoid {
     break-inside: avoid;
   }
-
+  
   .section-header-no-break {
     page-break-after: avoid;
   }
 
 }
-
-    

@@ -2,8 +2,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 import { Button } from '@/components/ui/button';
 import { Eye, Download, Rocket, Settings } from 'lucide-react';
 import { ResumeForm } from './resume-form';
@@ -15,6 +13,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { generatePdf } from '@/ai/flows/generate-pdf-flow';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
@@ -37,71 +36,36 @@ export function ResumeBuilder() {
     setIsDownloading(true);
     toast({
       title: "Generating PDF...",
-      description: "This may take a moment. Please wait.",
+      description: "This may take a moment as we render your resume on the server.",
     });
 
     try {
-        const canvas = await html2canvas(elementToCapture, {
-            scale: 2, // Higher scale for better quality
-            useCORS: true,
-            logging: false,
-        });
+        const htmlContent = elementToCapture.innerHTML;
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'pt',
-            format: 'a4',
-        });
+        // The head content is needed for styles to be applied in Puppeteer
+        const headContent = document.head.innerHTML;
+        const fullHtml = `<html><head>${headContent}</head><body>${htmlContent}</body></html>`;
 
-        const a4WidthPt = 595.28;
-        const a4HeightPt = 841.89;
-        const marginPt = 72; // 1 inch = 72 points
-
-        const contentWidthPt = a4WidthPt - (marginPt * 2);
-        const contentHeightPt = a4HeightPt - (marginPt * 2);
-
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
+        const result = await generatePdf({ htmlContent: fullHtml });
         
-        // Calculate the height of the image in PDF units
-        const imgHeightPt = (canvasHeight * contentWidthPt) / canvasWidth;
-
-        let position = 0;
-        let pageCount = 0;
-
-        while (position < imgHeightPt) {
-            if (pageCount > 0) {
-                pdf.addPage();
-            }
-
-            // The y position on the PDF is the top margin minus the current vertical position of the image slice
-            const yPos = marginPt - position;
-
-            pdf.addImage(
-                imgData,
-                'PNG',
-                marginPt, // x position (left margin)
-                yPos,     // y position
-                contentWidthPt,
-                imgHeightPt
-            );
-
-            position += contentHeightPt;
-            pageCount++;
-             if (pageCount > 20) { // Safety break
-                console.error("Too many pages, aborting PDF generation.");
-                break;
-            }
-        }
-
-        pdf.save('resume.pdf');
+        const pdfBlob = new Blob([Buffer.from(result.pdfBase64, 'base64')], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(pdfBlob);
+        link.download = 'resume.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+            title: "Download Complete!",
+            description: "Your PDF has been successfully generated.",
+        });
 
     } catch (error) {
         console.error("Error generating PDF:", error);
         toast({
             title: "Download Failed",
-            description: "An error occurred while generating the PDF.",
+            description: "An error occurred while generating the PDF on the server.",
             variant: "destructive",
         });
     } finally {
@@ -228,5 +192,3 @@ export function ResumeBuilder() {
       </div>
   );
 }
-
-    

@@ -269,7 +269,7 @@ const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationE
 };
 
 
-const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactNode }> = ({ resumeData, children }) => {
+const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactElement }> = ({ resumeData, children }) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [pages, setPages] = useState<React.ReactNode[][]>([[]]);
 
@@ -282,7 +282,6 @@ const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactN
     let currentPageHeight = 0;
 
     sections.forEach((section, index) => {
-      // Use getBoundingClientRect for more accurate height, including margins
       const sectionHeight = section.getBoundingClientRect().height;
 
       if (currentPageHeight + sectionHeight > PAGE_CONTENT_HEIGHT_PX && currentPage.length > 0) {
@@ -291,7 +290,10 @@ const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactN
         currentPageHeight = 0;
       }
       
-      currentPage.push(children[index as keyof typeof children]);
+      currentPage.push(React.cloneElement(children, {
+        ...children.props,
+        children: children.props.children[index]
+      }));
       currentPageHeight += sectionHeight;
     });
 
@@ -299,7 +301,14 @@ const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactN
       newPages.push(currentPage);
     }
     
-    setPages(newPages);
+    // We recreate the elements in pages, so React re-renders them.
+    const finalPages = newPages.map((page, pageIndex) => 
+        page.map((section: React.ReactElement, sectionIndex) =>
+          React.cloneElement(section, { key: `${pageIndex}-${sectionIndex}` })
+        )
+      );
+
+    setPages(finalPages);
 
   }, [resumeData, children]);
 
@@ -308,14 +317,14 @@ const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactN
     <>
       {/* Hidden container for measuring content */}
       <div ref={contentRef} className="absolute opacity-0 -z-10 w-[210mm]" style={{ padding: '1in' }}>
-        {children}
+        {children.props.children}
       </div>
 
       {/* Visible paginated content */}
       {pages.map((pageContent, pageIndex) => (
         <div key={pageIndex} className="page-container bg-background shadow-lg">
           <div className="page-content">
-            {pageContent}
+            {pageContent.map((section: React.ReactElement) => section.props.children)}
           </div>
         </div>
       ))}
@@ -346,7 +355,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
             <ResumeContent resumeData={resumeData} isPaginationEnabled={true} />
           </ResumePaginator>
         ) : (
-          <div className="bg-background w-full min-h-full p-8">
+          <div className="bg-background w-full min-h-full">
              <div className="page-content">
               <ResumeContent resumeData={resumeData} />
              </div>
@@ -359,5 +368,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
 
 
 ResumePreview.displayName = "ResumePreview";
+
+    
 
     

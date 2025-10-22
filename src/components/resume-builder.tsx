@@ -29,7 +29,7 @@ export function ResumeBuilder() {
     }
   }, []);
 
- const handleDownloadPdf = async () => {
+  const handleDownloadPdf = async () => {
     const elementToCapture = resumePreviewRef.current;
     if (!elementToCapture) {
       console.error("Resume preview element not found.");
@@ -43,43 +43,38 @@ export function ResumeBuilder() {
     });
 
     try {
-        // Fetch all stylesheets from the document head
         const styleSheets = Array.from(document.styleSheets)
             .filter(
                 (sheet) =>
                     sheet.href &&
-                    !sheet.href.startsWith('blob:') && // Exclude blob URLs which can't be fetched
+                    !sheet.href.startsWith('blob:') && 
                     sheet.ownerNode instanceof HTMLLinkElement &&
                     (sheet.ownerNode as HTMLLinkElement).rel === 'stylesheet'
             )
             .map((sheet) => sheet.href);
-            
-        // Create <style> tags from the fetched CSS content
+
         const styleTags = await Promise.all(
             styleSheets.map(async (href) => {
                 try {
                     const response = await fetch(href);
                     if (response.ok) {
-                      const cssText = await response.text();
-                      return `<style>${cssText}</style>`;
+                        const cssText = await response.text();
+                        return `<style>${cssText}</style>`;
                     }
                     return '';
                 } catch (e) {
                     console.warn(`Could not fetch stylesheet: ${href}`, e);
-                    return ''; // Return empty string on fetch error
+                    return '';
                 }
             })
         );
         
         const headContent = styleTags.join('\n');
         const resumeHtml = elementToCapture.innerHTML;
-        // Construct a full, self-contained HTML document
-        const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">${headContent}</head><body>${resumeHtml}</body></html>`;
+        const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">${headContent}</head><body style="font-family: 'Roboto', sans-serif;">${resumeHtml}</body></html>`;
         
-        // Call the server-side flow with the complete HTML
         const result = await generatePdf({ htmlContent: fullHtml });
         
-        // Trigger the download on the client
         const link = document.createElement('a');
         link.href = `data:application/pdf;base64,${result.pdfBase64}`;
         link.download = 'resume.pdf';
@@ -96,7 +91,7 @@ export function ResumeBuilder() {
         console.error("Error generating PDF:", error);
         toast({
             title: "Download Failed",
-            description: "An error occurred while generating the PDF. Please check the console for more details and try again.",
+            description: "An error occurred while generating the PDF. Please check the console and try again.",
             variant: "destructive",
         });
     } finally {

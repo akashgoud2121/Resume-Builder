@@ -91,6 +91,10 @@
     break-inside: avoid;
   }
 
+  .section-header-no-break {
+    page-break-after: avoid;
+  }
+
   @page {
     size: A4;
     margin: 1in;

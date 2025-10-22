@@ -125,7 +125,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {summary && (
         <div data-section="summary" className="mb-6 break-inside-avoid">
-          <div className="break-inside-avoid">
+          <div className="section-header-no-break">
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Summary</h2>
           </div>
           <p className="text-sm text-justify">{summary}</p>
@@ -134,7 +134,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {hasSkills && (
         <div data-section="skills" className="mb-6 break-inside-avoid">
-          <div className="break-inside-avoid">
+          <div className="section-header-no-break">
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
           </div>
           <div className="text-sm">
@@ -157,7 +157,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {education.some(e => e.school) && (
         <div data-section="education" className="mb-6 break-inside-avoid">
-            <div className="break-inside-avoid">
+            <div className="section-header-no-break">
               <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>
             </div>
             {educationOrder.map(category => {
@@ -187,7 +187,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {projects.length > 0 && projects.some(p => p.title) && (
         <div data-section="projects" className="mb-6 break-inside-avoid">
-          <div className="break-inside-avoid">
+          <div className="section-header-no-break">
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Projects</h2>
           </div>
           {projects.map(proj => proj.title && (
@@ -207,7 +207,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       
        {certifications.length > 0 && certifications.some(c => c.name) && (
         <div data-section="certifications" className="mb-6 break-inside-avoid">
-          <div className="break-inside-avoid">
+          <div className="section-header-no-break">
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Certifications</h2>
           </div>
           {certifications.map(cert => cert.name && (
@@ -227,7 +227,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {achievements.length > 0 && achievements.some(a => a.name) && (
         <div data-section="achievements" className="mb-6 break-inside-avoid">
-            <div className="break-inside-avoid">
+            <div className="section-header-no-break">
               <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Achievements & Activities</h2>
             </div>
             {achievementOrder.map(category => {
@@ -257,7 +257,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {experience.length > 0 && experience.some(e => e.title) && (
         <div data-section="experience" className="mb-6 break-inside-avoid">
-          <div className="break-inside-avoid">
+          <div className="section-header-no-break">
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Work Experience</h2>
           </div>
           {experience.map(exp => exp.title && (

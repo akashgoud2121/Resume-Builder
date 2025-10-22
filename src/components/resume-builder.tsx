@@ -43,8 +43,8 @@ export function ResumeBuilder() {
 
     try {
         const styleSheets = Array.from(document.styleSheets)
-            .filter(sheet => sheet.href?.includes('/_next/static/css/'))
-            .map(sheet => sheet.href);
+            .filter(sheet => sheet.href) // Ensure href is not null
+            .map(sheet => sheet.href!); // Non-null assertion
 
         const stylePromises = styleSheets.map(href =>
             fetch(href)

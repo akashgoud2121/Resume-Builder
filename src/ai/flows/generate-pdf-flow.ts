@@ -37,12 +37,17 @@ const generatePdfFlow = ai.defineFlow(
     try {
       browser = await puppeteer.launch({ 
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none']
       });
       const page = await browser.newPage();
       
-      // Set the content, waiting for all network connections to be idle
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      // Use goto with a data URI for maximum reliability
+      await page.goto(`data:text/html;charset=UTF-8,${encodeURIComponent(htmlContent)}`, {
+        waitUntil: 'networkidle0',
+      });
+
+      // Explicitly wait for all fonts to be loaded
+      await page.evaluateHandle('document.fonts.ready');
 
       // Generate the PDF from the fully rendered page
       const pdfBuffer = await page.pdf({

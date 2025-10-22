@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 
@@ -9,70 +10,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No HTML content provided' }, { status: 400 });
     }
 
-    // Launch Puppeteer
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--font-render-hinting=none']
     });
 
     const page = await browser.newPage();
     
-    // Add PDF generation class and wrap content
     const wrappedHtml = `
       <!DOCTYPE html>
       <html>
         <head>
           <meta charset="utf-8">
           <title>Resume</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+          <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
           <style>
-            body { margin: 0; padding: 0; font-family: 'Arial', 'Helvetica', sans-serif; }
-            .pdf-generation { 
-              font-family: 'Arial', 'Helvetica', sans-serif; 
-              line-height: 1.4; 
-              color: #000; 
-              background: #fff; 
-              font-size: 11pt;
-            }
-            .pdf-generation [data-section] { break-inside: auto; page-break-inside: auto; }
-            .pdf-generation h1, .pdf-generation h2, .pdf-generation h3 { 
-              break-after: avoid; 
-              page-break-after: avoid; 
-              orphans: 2; 
-              widows: 2; 
-            }
-            .pdf-generation ul, .pdf-generation ol { 
-              break-inside: auto; 
-              page-break-inside: auto; 
-            }
-            .pdf-generation li { 
-              break-inside: avoid; 
-              page-break-inside: avoid; 
-              orphans: 2; 
-              widows: 2; 
-            }
-            .pdf-generation .mb-4 { 
-              break-inside: avoid; 
-              page-break-inside: avoid; 
-              orphans: 2; 
-              widows: 2; 
-            }
-            .pdf-generation p { 
-              orphans: 2; 
-              widows: 2; 
-              break-inside: auto; 
-              page-break-inside: auto; 
-            }
-            .pdf-generation [data-section="contact"] { 
-              break-inside: avoid; 
-              page-break-inside: avoid; 
-            }
-            /* Re-add specific styles from the preview that are needed for layout */
+            /* Your existing styles for PDF generation are good. Let's keep them clean. */
+            body { font-family: 'Roboto', 'Arial', 'Helvetica', sans-serif; }
             .page-container {
               width: 210mm;
               min-height: 297mm;
               padding: 0.5in;
               background: #fff;
-              font-family: 'Arial','Helvetica',sans-serif;
               font-size: 11pt;
               line-height: 1.4;
             }
@@ -92,8 +53,7 @@ export async function POST(request: NextRequest) {
             .text-gray-700 { color: #374151; }
             .flex-wrap { flex-wrap: wrap; }
             .gap-1\\.5 { gap: 0.375rem; }
-            .hover\\:text-primary:hover { color: #2962FF; }
-            .hover\\:underline:hover { text-decoration: underline; }
+            a:hover { color: #2962FF; text-decoration: underline; }
             .h-3\\.5 { height: 0.875rem; }
             .w-3\\.5 { width: 0.875rem; }
             .mb-6 { margin-bottom: 1.5rem; }
@@ -107,7 +67,6 @@ export async function POST(request: NextRequest) {
             .leading-relaxed { line-height: 1.625; }
             .font-semibold { font-weight: 600; }
             .mb-2 { margin-bottom: 0.5rem; }
-            .text-gray-700 { color: #374151; }
             .flex-grow { flex-grow: 1; }
             .justify-between { justify-content: space-between; }
             .items-start { align-items: flex-start; }
@@ -124,18 +83,20 @@ export async function POST(request: NextRequest) {
             .space-y-1 > :not([hidden]) ~ :not([hidden]) { margin-top: 0.25rem; }
             .pl-2 { padding-left: 0.5rem; }
             .mr-2 { margin-right: 0.5rem; }
+             /* Page break control */
+            [data-section], .mb-4 { break-inside: avoid-page; page-break-inside: avoid; }
+            h1, h2, h3 { break-after: avoid-page; page-break-after: avoid; }
+            li { break-inside: avoid; }
           </style>
         </head>
         <body>
-          <div class="pdf-generation">${htmlContent}</div>
+          ${htmlContent}
         </body>
       </html>
     `;
     
-    // Set the HTML content
     await page.setContent(wrappedHtml, { waitUntil: 'networkidle0' });
-
-    // Generate PDF with proper page breaks
+    
     const pdf = await page.pdf({
       format: 'A4',
       margin: {
@@ -146,12 +107,10 @@ export async function POST(request: NextRequest) {
       },
       printBackground: true,
       preferCSSPageSize: true,
-      displayHeaderFooter: false
     });
 
     await browser.close();
 
-    // Return PDF 
     return new NextResponse(pdf, {
       headers: {
         'Content-Type': 'application/pdf',

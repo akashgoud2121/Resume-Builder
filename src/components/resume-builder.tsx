@@ -42,43 +42,72 @@ export function ResumeBuilder() {
     });
 
     try {
-      // Get the HTML content of the resume preview
-      const htmlContent = elementToCapture.outerHTML;
-      
-      // Send to our API endpoint for PDF generation
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ htmlContent }),
-      });
+        const styleSheets = Array.from(document.styleSheets)
+            .filter(sheet => sheet.href?.includes('/_next/static/css/'))
+            .map(sheet => sheet.href);
 
-      if (!response.ok) {
-        throw new Error('Failed to generate PDF');
-      }
+        const stylePromises = styleSheets.map(href =>
+            fetch(href)
+                .then(res => res.text())
+                .catch(err => {
+                    console.warn(`Could not fetch stylesheet: ${href}`, err);
+                    return ''; // Return empty string for failed fetches
+                })
+        );
+        
+        const styles = await Promise.all(stylePromises);
+        const fullStyles = styles.join('\n');
+        const resumeHtml = elementToCapture.innerHTML;
 
-      // Create blob and download
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'resume.pdf';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Resume</title>
+                    <link rel="preconnect" href="https://fonts.googleapis.com" />
+                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+                    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+                    <style>${fullStyles}</style>
+                </head>
+                <body>
+                    ${resumeHtml}
+                </body>
+            </html>
+        `;
 
-      toast({
-        title: "PDF Downloaded!",
-        description: "Your resume has been saved successfully.",
-      });
+        const response = await fetch('/api/generate-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ htmlContent }),
+        });
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+            console.error("PDF generation failed on server:", errorBody);
+            throw new Error('Failed to generate PDF. The server returned an error.');
+        }
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'resume.pdf';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast({
+            title: "PDF Downloaded!",
+            description: "Your resume has been saved successfully.",
+        });
 
     } catch (error) {
         console.error("Error generating PDF:", error);
         toast({
             title: "Download Failed",
-            description: "An error occurred while generating the PDF.",
+            description: "An error occurred while generating the PDF. Please try again.",
             variant: "destructive",
         });
     } finally {

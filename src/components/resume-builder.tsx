@@ -71,7 +71,7 @@ export function ResumeBuilder() {
         
         const headContent = styleTags.join('\n');
         const resumeHtml = elementToCapture.innerHTML;
-        const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">${headContent}</head><body style="font-family: 'Roboto', sans-serif;">${resumeHtml}</body></html>`;
+        const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">${headContent}</head><body style="font-family: 'Roboto', sans-serif;">${resumeHtml}</body></html>`;
         
         const result = await generatePdf({ htmlContent: fullHtml });
         

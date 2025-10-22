@@ -41,19 +41,18 @@ export function ResumeBuilder() {
     });
   
     try {
-      const canvas = await html2canvas(elementToCapture, {
+      // Find the single child of the ref, which is the preview container
+      const printContent = elementToCapture.children[0] as HTMLElement;
+      if (!printContent) {
+          throw new Error("Could not find resume content to print.");
+      }
+
+      const canvas = await html2canvas(printContent, {
           scale: 2,
           useCORS: true,
-          logging: true,
-          windowWidth: elementToCapture.scrollWidth,
-          windowHeight: elementToCapture.scrollHeight,
-          onclone: (document) => {
-            // On the cloned document, we can remove the gap between pages for a seamless PDF
-            const pages = document.querySelectorAll('.page-container');
-            pages.forEach(page => {
-                (page as HTMLElement).style.marginBottom = '0';
-            });
-          }
+          logging: false, // Disables logging to console
+          width: printContent.offsetWidth,
+          height: printContent.offsetHeight,
       });
   
       const imgData = canvas.toDataURL('image/png');
@@ -65,22 +64,26 @@ export function ResumeBuilder() {
   
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
+      
       const canvasWidth = canvas.width;
       const canvasHeight = canvas.height;
+      
       const ratio = canvasWidth / pdfWidth;
-      const imgHeight = canvasHeight / ratio;
-  
-      let heightLeft = imgHeight;
+      const totalPDFPages = Math.ceil(canvasHeight / ratio / pdfHeight);
+
       let position = 0;
-  
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight);
-      heightLeft -= pdfHeight;
-  
-      while (heightLeft > 0) {
-        position = position - pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight);
-        heightLeft -= pdfHeight;
+      
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight / ratio);
+
+      let heightLeft = canvasHeight / ratio - pdfHeight;
+      
+      let page = 1;
+      while (heightLeft > 0 && page < totalPDFPages) {
+          position = -(pdfHeight * page);
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeight/ratio);
+          heightLeft -= pdfHeight;
+          page++;
       }
   
       pdf.save('resume.pdf');
@@ -182,7 +185,7 @@ export function ResumeBuilder() {
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
                   <div className="h-full overflow-auto py-4">
-                     <ResumePreview isPaginatorEnabled={false} />
+                     <ResumePreview />
                   </div>
                 </SheetContent>
               </Sheet>

@@ -610,50 +610,6 @@ export function ResumeForm() {
         </div>
       )
     },
-    experience: {
-        value: "experience",
-        title: "Work Experience",
-        content: (
-          <div className="space-y-4">
-            {resumeData.experience.map((exp, index) => (
-                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
-                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                      <div className="space-y-2">
-                          <Label>Job Title/Role</Label>
-                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Company</Label>
-                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Start Date</Label>
-                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>End Date</Label>
-                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
-                      </div>
-                      <div className="sm:col-span-2 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Description</Label>
-                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Generate with AI
-                            </Button>
-                          </div>
-                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
-                      </div>
-                  </CardContent>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
-                      <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Card>
-            ))}
-            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
-          </div>
-        )
-    },
     projects: {
         value: "projects",
         title: "Projects",
@@ -695,75 +651,6 @@ export function ResumeForm() {
                 </Card>
             ))}
             <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
-             <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
-                <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto]">
-                    <DialogHeader>
-                    <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
-                    <DialogDescription>
-                        Provide some details, and AI will generate professional bullet points using the STAR method.
-                    </DialogDescription>
-                    </DialogHeader>
-                    <ScrollArea className="max-h-[50vh] my-4">
-                      <div className="grid gap-4 py-4 pr-6">
-                        <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative mb-4">
-                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyExperienceTemplate}>
-                                <Copy className="h-4 w-4" />
-                            </Button>
-                            <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
-                            <p className="mb-2"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
-                            <p><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Title / Name</Label>
-                          <Input
-                            value={aiExperienceState.projectTitle}
-                            readOnly
-                            disabled
-                            className="font-semibold"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
-                          <Textarea
-                            value={aiExperienceState.projectDescription}
-                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
-                            placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
-                            rows={4}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
-                          <Input
-                            value={aiExperienceState.technologiesUsed}
-                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
-                            placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
-                          />
-                        </div>
-                        <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating}>
-                          {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                          Generate Description
-                        </Button>
-                        {aiExperienceState.generatedBulletPoints && (
-                          <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                            <Label>Generated Bullet Points:</Label>
-                            <Textarea
-                              className="text-sm"
-                              readOnly
-                              value={aiExperienceState.generatedBulletPoints}
-                              rows={6}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    </ScrollArea>
-                    <DialogFooter>
-                      <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
-                      <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
-                        Use This Description
-                      </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
             </div>
         )
     },
@@ -868,6 +755,119 @@ export function ResumeForm() {
           </div>
         ),
       },
+    experience: {
+        value: "experience",
+        title: "Work Experience",
+        content: (
+          <div className="space-y-4">
+            {resumeData.experience.map((exp, index) => (
+                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                      <div className="space-y-2">
+                          <Label>Job Title/Role</Label>
+                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Company</Label>
+                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Start Date</Label>
+                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>End Date</Label>
+                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Label>Description</Label>
+                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate with AI
+                            </Button>
+                          </div>
+                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
+                      </div>
+                  </CardContent>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
+                </Card>
+            ))}
+            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+             <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
+                <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto]">
+                    <DialogHeader>
+                    <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
+                    <DialogDescription>
+                        Provide some details, and AI will generate professional bullet points using the STAR method.
+                    </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="max-h-[50vh] my-4">
+                      <div className="grid gap-4 py-4 pr-6">
+                        <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative mb-4">
+                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyExperienceTemplate}>
+                                <Copy className="h-4 w-4" />
+                            </Button>
+                            <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
+                            <p className="mb-2"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
+                            <p><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Title / Name</Label>
+                          <Input
+                            value={aiExperienceState.projectTitle}
+                            readOnly
+                            disabled
+                            className="font-semibold"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
+                          <Textarea
+                            value={aiExperienceState.projectDescription}
+                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
+                            placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
+                            rows={4}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
+                          <Input
+                            value={aiExperienceState.technologiesUsed}
+                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
+                            placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
+                          />
+                        </div>
+                        <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating}>
+                          {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                          Generate Description
+                        </Button>
+                        {aiExperienceState.generatedBulletPoints && (
+                          <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                            <Label>Generated Bullet Points:</Label>
+                            <Textarea
+                              className="text-sm"
+                              readOnly
+                              value={aiExperienceState.generatedBulletPoints}
+                              rows={6}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </ScrollArea>
+                    <DialogFooter>
+                      <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
+                      <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
+                        Use This Description
+                      </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+          </div>
+        )
+    },
   };
   
   const defaultOrder = ['contact', 'summary', 'skills', 'education', 'projects', 'certifications', 'achievements', 'experience'];

@@ -347,7 +347,9 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
           </ResumePaginator>
         ) : (
           <div className="bg-background w-full min-h-full p-8">
-            <ResumeContent resumeData={resumeData} />
+             <div className="page-content">
+              <ResumeContent resumeData={resumeData} />
+             </div>
           </div>
         )}
       </div>

@@ -1,11 +1,11 @@
 
 "use client";
 
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useRef, useEffect, useState } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { EducationCategory, Achievement, AchievementCategory } from '@/lib/types';
-import { Github, Linkedin, Mail, Phone, Link as LinkIcon } from 'lucide-react';
+import type { EducationCategory, Achievement, AchievementCategory, ResumeData } from '@/lib/types';
+import { Github, Linkedin, Mail, Phone } from 'lucide-react';
 
 
 const categoryTitles: Record<EducationCategory, string> = {
@@ -21,34 +21,49 @@ const achievementCategoryTitles: Record<AchievementCategory, string> = {
   techfest: 'Techfest Participation',
 };
 
-type ResumePreviewProps = {};
+const addHttp = (url: string) => {
+  if (!url) return '';
+  if (!/^(?:f|ht)tps?:\/\//.test(url)) {
+      return `https://${url}`;
+  }
+  return url;
+}
+
+const renderDescription = (text: string) => {
+  if (!text) return null;
+  const bulletPoints = text
+    .split(/\n|(?=- )/)
+    .filter(line => line.trim() !== '');
+
+  if (bulletPoints.length === 0 || (bulletPoints.length === 1 && !bulletPoints[0].trim().startsWith('-'))) {
+     return <p className="text-sm">{text}</p>;
+  }
+  
+  return (
+      <ul className="list-none space-y-1">
+          {bulletPoints.map((line, index) => (
+          <li key={index} className="text-sm pl-2 mb-1 flex items-start">
+              <span className='mr-2'>•</span>
+              <span>{line.trim().replace(/^- /, '')}</span>
+          </li>
+          ))}
+      </ul>
+  );
+};
 
 
-export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((props, ref) => {
-  const { resumeData } = useResume();
+// A4 page dimensions in pixels at 96 DPI. 1 inch = 96px.
+const A4_HEIGHT_PX = 1122.5; 
+const PAGE_MARGIN_TOP_BOTTOM_PX = 96; // 1 inch
+const PAGE_CONTENT_HEIGHT_PX = A4_HEIGHT_PX - (PAGE_MARGIN_TOP_BOTTOM_PX * 2);
+
+interface ResumeContentProps {
+  resumeData: ResumeData;
+  isPaginationEnabled?: boolean;
+}
+
+const ResumeContent: React.FC<ResumeContentProps> = ({ resumeData, isPaginationEnabled = false }) => {
   const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
-
-  const renderDescription = (text: string) => {
-    if (!text) return null;
-    const bulletPoints = text
-      .split(/\n|(?=- )/)
-      .filter(line => line.trim() !== '');
-
-    if (bulletPoints.length === 0 || (bulletPoints.length === 1 && !bulletPoints[0].trim().startsWith('-'))) {
-       return <p className="text-sm">{text}</p>;
-    }
-    
-    return (
-        <ul className="list-none space-y-1">
-            {bulletPoints.map((line, index) => (
-            <li key={index} className="text-sm pl-2 mb-1 flex items-start">
-                <span className='mr-2'>•</span>
-                <span>{line.trim().replace(/^- /, '')}</span>
-            </li>
-            ))}
-        </ul>
-    );
-  };
   
   const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
 
@@ -57,7 +72,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
     if (!acc[category]) {
       acc[category] = [];
     }
-    if (edu.school) { // Only add if there is a school name
+    if (edu.school) {
       acc[category].push(edu);
     }
     return acc;
@@ -75,27 +90,14 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
     }
     return acc;
   }, {} as Record<AchievementCategory, Achievement[]>);
-
+  
   const achievementOrder: AchievementCategory[] = ['hackathon', 'workshop', 'poster', 'techfest'];
 
-  const addHttp = (url: string) => {
-    if (!url) return '';
-    if (!/^(?:f|ht)tps?:\/\//.test(url)) {
-        return `https://${url}`;
-    }
-    return url;
-  }
-  
+  const sectionClassName = isPaginationEnabled ? "break-inside-avoid" : "";
+
   return (
-    <div
-      ref={ref}
-      className={cn(
-        "bg-background text-card-foreground w-full h-full p-8",
-        "print:shadow-none"
-      )}
-      style={{ fontFamily: 'Roboto, sans-serif' }}
-    >
-      <div className="text-center mb-6 break-inside-avoid">
+    <>
+      <div className={`text-center mb-6 ${sectionClassName}`}>
         {contact.name && <h1 className="text-4xl font-bold tracking-tight">{contact.name}</h1>}
          <div className="flex justify-center items-center gap-x-4 gap-y-2 mt-2 text-sm flex-wrap">
           {contact.email && (
@@ -126,14 +128,14 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
       </div>
 
       {summary && (
-        <div className="mb-6 break-inside-avoid">
+        <div className={`mb-6 ${sectionClassName}`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Summary</h2>
           <p className="text-sm text-justify">{summary}</p>
         </div>
       )}
 
       {hasSkills && (
-        <div className="mb-6 break-inside-avoid">
+        <div className={`mb-6 ${sectionClassName}`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Skills</h2>
           <div className="text-sm">
             {skills.map((category) => {
@@ -154,27 +156,27 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
       )}
 
       {education.some(e => e.school) && (
-        <div className="mb-6 break-inside-avoid">
+        <div className={`mb-6 ${sectionClassName}`}>
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>
             {educationOrder.map(category => {
             const entries = groupedEducation[category];
             if (!entries || entries.length === 0) return null;
             return (
-                <div key={category} className="mb-4 break-inside-avoid">
-                <h3 className="text-md font-bold text-muted-foreground mb-2">{categoryTitles[category]}</h3>
-                {entries.map(edu => (
-                    <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
-                    <div className="flex-grow">
-                        <h4 className="text-md font-bold">{edu.school}</h4>
-                        <p className="text-sm">{edu.degree}</p>
-                        {edu.grades && <p className="text-sm font-semibold">Grades: {edu.grades}</p>}
-                    </div>
-                    <div className="text-right flex-shrink-0 ml-4">
-                        <p className="text-sm font-light">{edu.date}</p>
-                        <p className="text-sm font-light">{edu.city}</p>
-                    </div>
-                    </div>
-                ))}
+                <div key={category} className={`mb-4 ${sectionClassName}`}>
+                  <h3 className="text-md font-bold text-muted-foreground mb-2">{categoryTitles[category]}</h3>
+                  {entries.map(edu => (
+                      <div key={edu.id} className={`flex justify-between items-start mb-2 ${sectionClassName}`}>
+                        <div className="flex-grow">
+                            <h4 className="text-md font-bold">{edu.school}</h4>
+                            <p className="text-sm">{edu.degree}</p>
+                            {edu.grades && <p className="text-sm font-semibold">Grades: {edu.grades}</p>}
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-4">
+                            <p className="text-sm font-light">{edu.date}</p>
+                            <p className="text-sm font-light">{edu.city}</p>
+                        </div>
+                      </div>
+                  ))}
                 </div>
             )
             })}
@@ -182,10 +184,10 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
       )}
 
       {projects.length > 0 && projects.some(p => p.title) && (
-        <div className="mb-6 break-inside-avoid">
+        <div className={`mb-6 ${sectionClassName}`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Projects</h2>
           {projects.map(proj => proj.title && (
-            <div key={proj.id} className="mb-4 break-inside-avoid">
+            <div key={proj.id} className={`mb-4 ${sectionClassName}`}>
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{proj.title}</h3>
                 <p className="text-sm font-light">{proj.startDate} - {proj.endDate}</p>
@@ -200,10 +202,10 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
       )}
       
        {certifications.length > 0 && certifications.some(c => c.name) && (
-        <div className="mb-6 break-inside-avoid">
+        <div className={`mb-6 ${sectionClassName}`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Certifications</h2>
           {certifications.map(cert => cert.name && (
-            <div key={cert.id} className="mb-4 break-inside-avoid">
+            <div key={cert.id} className={`mb-4 ${sectionClassName}`}>
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{cert.name}</h3>
                 <p className="text-sm font-light">{cert.date}</p>
@@ -218,17 +220,17 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
       )}
 
       {achievements.length > 0 && achievements.some(a => a.name) && (
-        <div className="mb-6 break-inside-avoid">
+        <div className={`mb-6 ${sectionClassName}`}>
             <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Achievements & Activities</h2>
             {achievementOrder.map(category => {
                 const entries = groupedAchievements[category];
                 if (!entries || entries.length === 0) return null;
 
                 return (
-                    <div key={category} className="mb-4 break-inside-avoid">
+                    <div key={category} className={`mb-4 ${sectionClassName}`}>
                         <h3 className="text-md font-bold text-muted-foreground mb-2">{achievementCategoryTitles[category]}</h3>
                         {entries.map(ach => (
-                             <div key={ach.id} className="mb-4 break-inside-avoid">
+                             <div key={ach.id} className={`mb-4 ${sectionClassName}`}>
                                 <div className="flex justify-between items-baseline">
                                     <h3 className="text-md font-bold">{ach.name}</h3>
                                     <p className="text-sm font-light">{ach.date}</p>
@@ -246,10 +248,10 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
       )}
 
       {experience.length > 0 && experience.some(e => e.title) && (
-        <div className="mb-6 break-inside-avoid">
+        <div className={`mb-6 ${sectionClassName}`}>
           <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Work Experience</h2>
           {experience.map(exp => exp.title && (
-            <div key={exp.id} className="mb-4 break-inside-avoid">
+            <div key={exp.id} className={`mb-4 ${sectionClassName}`}>
               <div className="flex justify-between items-baseline">
                 <h3 className="text-md font-bold">{exp.title}</h3>
                 <p className="text-sm font-light">{exp.startDate} - {exp.endDate}</p>
@@ -262,8 +264,98 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
           ))}
         </div>
       )}
-    </div>
+    </>
   );
-});
+};
+
+
+const ResumePaginator: React.FC<{ resumeData: ResumeData, children: React.ReactNode }> = ({ resumeData, children }) => {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const [pages, setPages] = useState<React.ReactNode[][]>([[]]);
+
+  useEffect(() => {
+    if (!contentRef.current) return;
+
+    const sections = Array.from(contentRef.current.children) as HTMLElement[];
+    const newPages: React.ReactNode[][] = [];
+    let currentPage: React.ReactNode[] = [];
+    let currentPageHeight = 0;
+
+    sections.forEach((section, index) => {
+      // Use getBoundingClientRect for more accurate height, including margins
+      const sectionHeight = section.getBoundingClientRect().height;
+
+      if (currentPageHeight + sectionHeight > PAGE_CONTENT_HEIGHT_PX && currentPage.length > 0) {
+        newPages.push(currentPage);
+        currentPage = [];
+        currentPageHeight = 0;
+      }
+      
+      currentPage.push(children[index as keyof typeof children]);
+      currentPageHeight += sectionHeight;
+    });
+
+    if (currentPage.length > 0) {
+      newPages.push(currentPage);
+    }
+    
+    setPages(newPages);
+
+  }, [resumeData, children]);
+
+
+  return (
+    <>
+      {/* Hidden container for measuring content */}
+      <div ref={contentRef} className="absolute opacity-0 -z-10 w-[210mm]" style={{ padding: '1in' }}>
+        {children}
+      </div>
+
+      {/* Visible paginated content */}
+      {pages.map((pageContent, pageIndex) => (
+        <div key={pageIndex} className="page-container bg-background shadow-lg">
+          <div className="page-content">
+            {pageContent}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+};
+
+
+type ResumePreviewProps = {
+  isPaginatorEnabled?: boolean;
+};
+
+export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>(
+  ({ isPaginatorEnabled = true }, ref) => {
+    const { resumeData } = useResume();
+
+    return (
+      <div
+        ref={ref}
+        className={cn(
+          "bg-muted/30 w-full h-full",
+          "print:bg-transparent print:shadow-none"
+        )}
+        style={{ fontFamily: 'Roboto, sans-serif' }}
+      >
+        {isPaginatorEnabled ? (
+          <ResumePaginator resumeData={resumeData}>
+            <ResumeContent resumeData={resumeData} isPaginationEnabled={true} />
+          </ResumePaginator>
+        ) : (
+          <div className="bg-background w-full min-h-full p-8">
+            <ResumeContent resumeData={resumeData} />
+          </div>
+        )}
+      </div>
+    );
+  }
+);
+
 
 ResumePreview.displayName = "ResumePreview";
+
+    

@@ -57,21 +57,43 @@
       -ms-overflow-style: none;  /* IE and Edge */
       scrollbar-width: none;  /* Firefox */
   }
+  
+  .page-container {
+    width: 210mm;
+    min-height: 297mm;
+    margin-bottom: 1rem; /* Gap between pages */
+  }
+
+  .page-content {
+    padding: 1in;
+    height: 100%;
+  }
 }
 
 @media print {
-  html, body {
-    width: 210mm;
-    height: 297mm;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  body {
+    background-color: #fff;
   }
 
   .no-print {
     display: none !important;
   }
 
+  .page-container {
+    box-shadow: none !important;
+    margin: 0;
+    width: 100%;
+    min-height: auto;
+  }
+
   .break-inside-avoid {
     break-inside: avoid;
   }
+
+  @page {
+    size: A4;
+    margin: 1in;
+  }
 }
+
+    

@@ -31,60 +31,71 @@ export function ResumeBuilder() {
   }, []);
 
   const handleDownloadPdf = async () => {
-    const element = resumePreviewRef.current;
-    if (!element) return;
-
+    const elementToCapture = resumePreviewRef.current;
+    if (!elementToCapture) return;
+  
     setIsDownloading(true);
-
+    toast({
+      title: "Generating PDF...",
+      description: "This may take a moment. Please wait.",
+    });
+  
     try {
-        const a4WidthMM = 210;
-        const a4HeightMM = 297;
-        
-        const canvas = await html2canvas(element, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        
-        const pdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4',
-        });
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        
-        const ratio = imgWidth / imgHeight;
-        let imgHeightInPdf = pdfWidth / ratio;
-        let heightLeft = imgHeightInPdf;
-        
-        let position = 0;
-
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeightInPdf);
-        heightLeft -= pdfHeight;
-
-        while (heightLeft > 0) {
-            position = heightLeft - imgHeightInPdf;
-            pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeightInPdf);
-            heightLeft -= pdfHeight;
-        }
-        
-        pdf.save('resume.pdf');
+      // Use html2canvas to capture all the pages
+      const canvas = await html2canvas(elementToCapture, {
+        scale: 2, // Higher scale for better quality
+        useCORS: true,
+        logging: true,
+        windowWidth: elementToCapture.scrollWidth,
+        windowHeight: elementToCapture.scrollHeight,
+      });
+  
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+  
+      // A4 dimensions in points (pt), where 1 inch = 72 points.
+      const pdfA4Width = 595.28;
+      const pdfA4Height = 841.89;
+  
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'pt',
+        format: 'a4',
+      });
+  
+      // Calculate the aspect ratio
+      const canvasAspectRatio = imgWidth / imgHeight;
+      const pdfAspectRatio = pdfA4Width / pdfA4Height;
+  
+      let pdfImgWidth = pdfA4Width;
+      let pdfImgHeight = pdfA4Width / canvasAspectRatio;
+  
+      // Handle multiple pages
+      const totalPdfHeight = pdfImgHeight;
+      let heightLeft = totalPdfHeight;
+      let position = 0;
+  
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfImgWidth, pdfImgHeight);
+      heightLeft -= pdfA4Height;
+  
+      while (heightLeft > 0) {
+        position = -pdfA4Height + (totalPdfHeight - heightLeft);
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfImgWidth, pdfImgHeight);
+        heightLeft -= pdfA4Height;
+      }
+  
+      pdf.save('resume.pdf');
     } catch (error) {
-        console.error("Error generating PDF:", error);
-        toast({
-            title: "Download Failed",
-            description: "An error occurred while generating the PDF.",
-            variant: "destructive",
-        });
+      console.error("Error generating PDF:", error);
+      toast({
+        title: "Download Failed",
+        description: "An error occurred while generating the PDF.",
+        variant: "destructive",
+      });
     } finally {
-        setIsDownloading(false);
+      setIsDownloading(false);
     }
   };
 
@@ -169,14 +180,12 @@ export function ResumeBuilder() {
                     <span className="sr-only">View Resume</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="h-[90vh]">
+                <SheetContent side="bottom" className="h-[90vh] bg-muted/30">
                   <SheetHeader>
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
                   <div className="h-full overflow-auto py-4">
-                    <div className="w-[210mm] min-h-[297mm] mx-auto shadow-lg bg-background">
-                      <ResumePreview />
-                    </div>
+                     <ResumePreview isPaginatorEnabled={false} />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -198,10 +207,10 @@ export function ResumeBuilder() {
             </div>
 
             <main id="resume-preview-container" className="hidden md:block w-full bg-muted/30">
-              <div className="flex flex-col items-center py-8 sticky top-[80px] h-[calc(100vh-80px)] overflow-auto">
+              <div className="flex flex-col items-center py-8 h-[calc(100vh-64px)] overflow-auto no-scrollbar">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div id="resume-preview-wrapper" className="w-[210mm] min-h-fit shadow-lg bg-background rounded-sm">
-                    <ResumePreview ref={resumePreviewRef} />
+                <div id="resume-preview-wrapper" ref={resumePreviewRef}>
+                    <ResumePreview />
                 </div>
               </div>
             </main>
@@ -209,3 +218,5 @@ export function ResumeBuilder() {
       </div>
   );
 }
+
+    

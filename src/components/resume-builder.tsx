@@ -37,44 +37,37 @@ export function ResumeBuilder() {
     setIsDownloading(true);
 
     try {
-        // A4 page dimensions in mm and pixels at 96 DPI
         const a4WidthMM = 210;
         const a4HeightMM = 297;
-        const a4WidthPX = (a4WidthMM / 25.4) * 96;
         
         const canvas = await html2canvas(element, {
-            scale: 2, // Use a higher scale for better quality
+            scale: 2,
             useCORS: true,
             logging: false,
-            width: a4WidthPX,
-            windowWidth: a4WidthPX,
         });
 
         const imgData = canvas.toDataURL('image/png');
         const imgWidth = canvas.width;
         const imgHeight = canvas.height;
-
+        
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
         });
 
-        const pdfWidth = a4WidthMM;
-        const pdfHeight = a4HeightMM;
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
         
-        // Calculate the height of the image in the PDF
         const ratio = imgWidth / imgHeight;
-        const imgHeightInPdf = pdfWidth / ratio;
-        
+        let imgHeightInPdf = pdfWidth / ratio;
         let heightLeft = imgHeightInPdf;
+        
         let position = 0;
 
-        // Add the first page
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeightInPdf);
         heightLeft -= pdfHeight;
 
-        // Add subsequent pages if content overflows
         while (heightLeft > 0) {
             position = heightLeft - imgHeightInPdf;
             pdf.addPage();
@@ -207,7 +200,7 @@ export function ResumeBuilder() {
             <main id="resume-preview-container" className="hidden md:block w-full bg-muted/30">
               <div className="flex flex-col items-center py-8 sticky top-[80px] h-[calc(100vh-80px)] overflow-auto">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div id="resume-preview-wrapper" className="w-[210mm] h-auto shadow-lg bg-background rounded-sm">
+                <div id="resume-preview-wrapper" className="w-[210mm] min-h-fit shadow-lg bg-background rounded-sm">
                     <ResumePreview ref={resumePreviewRef} />
                 </div>
               </div>

@@ -37,43 +37,48 @@ export function ResumeBuilder() {
     setIsDownloading(true);
 
     try {
+        // A4 page dimensions in mm and pixels at 96 DPI
+        const a4WidthMM = 210;
+        const a4HeightMM = 297;
+        const a4WidthPX = (a4WidthMM / 25.4) * 96;
+        
         const canvas = await html2canvas(element, {
-            scale: 3, // Higher scale for better quality
+            scale: 2, // Use a higher scale for better quality
             useCORS: true,
             logging: false,
-            windowWidth: element.scrollWidth,
-            windowHeight: element.scrollHeight,
+            width: a4WidthPX,
+            windowWidth: a4WidthPX,
         });
 
-        // A4 page dimensions in mm: 210 x 297
+        const imgData = canvas.toDataURL('image/png');
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+
         const pdf = new jsPDF({
             orientation: 'portrait',
             unit: 'mm',
             format: 'a4',
         });
 
-        const imgData = canvas.toDataURL('image/png');
-        const pdfWidth = 210; // A4 width in mm
-        const pdfHeight = 297; // A4 height in mm
+        const pdfWidth = a4WidthMM;
+        const pdfHeight = a4HeightMM;
         
-        const imgProps = pdf.getImageProperties(imgData);
-        const imgWidth = imgProps.width;
-        const imgHeight = imgProps.height;
-
+        // Calculate the height of the image in the PDF
         const ratio = imgWidth / imgHeight;
+        const imgHeightInPdf = pdfWidth / ratio;
         
-        let canvasHeightInPdf = pdfWidth / ratio;
-        let heightLeft = canvasHeightInPdf;
-        
+        let heightLeft = imgHeightInPdf;
         let position = 0;
 
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, canvasHeightInPdf);
+        // Add the first page
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeightInPdf);
         heightLeft -= pdfHeight;
 
+        // Add subsequent pages if content overflows
         while (heightLeft > 0) {
-            position = -pdfHeight * (Math.abs(position / pdfHeight) + 1);
+            position = heightLeft - imgHeightInPdf;
             pdf.addPage();
-            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, canvasHeightInPdf);
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeightInPdf);
             heightLeft -= pdfHeight;
         }
         
@@ -176,9 +181,9 @@ export function ResumeBuilder() {
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
                   <div className="h-full overflow-auto py-4">
-                     <div className="w-[210mm] mx-auto min-h-[297mm] shadow-lg overflow-hidden bg-background">
-                        <ResumePreview />
-                     </div>
+                    <div className="w-[210mm] min-h-[297mm] mx-auto shadow-lg bg-background">
+                      <ResumePreview />
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -202,7 +207,7 @@ export function ResumeBuilder() {
             <main id="resume-preview-container" className="hidden md:block w-full bg-muted/30">
               <div className="flex flex-col items-center py-8 sticky top-[80px] h-[calc(100vh-80px)] overflow-auto">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div id="resume-preview" className="w-[210mm] h-auto min-h-[297mm] shadow-lg overflow-hidden bg-background rounded-sm">
+                <div id="resume-preview-wrapper" className="w-[210mm] h-auto shadow-lg bg-background rounded-sm">
                     <ResumePreview ref={resumePreviewRef} />
                 </div>
               </div>

@@ -91,7 +91,7 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
       ref={ref}
       className={cn(
         "bg-background text-card-foreground w-full h-full p-8",
-        "print:shadow-none print:p-8"
+        "print:shadow-none"
       )}
       style={{ fontFamily: 'Roboto, sans-serif' }}
     >
@@ -153,31 +153,33 @@ export const ResumePreview = forwardRef<HTMLDivElement, ResumePreviewProps>((pro
         </div>
       )}
 
-      <div className="break-inside-avoid">
-        {education.some(e => e.school) && <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>}
-        {educationOrder.map(category => {
-          const entries = groupedEducation[category];
-          if (!entries || entries.length === 0) return null;
-          return (
-            <div key={category} className="mb-4 break-inside-avoid">
-               <h3 className="text-md font-bold text-muted-foreground mb-2">{categoryTitles[category]}</h3>
-               {entries.map(edu => (
-                 <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
-                   <div className="flex-grow">
-                     <h4 className="text-md font-bold">{edu.school}</h4>
-                     <p className="text-sm">{edu.degree}</p>
-                     {edu.grades && <p className="text-sm font-semibold">Grades: {edu.grades}</p>}
-                   </div>
-                   <div className="text-right flex-shrink-0 ml-4">
-                     <p className="text-sm font-light">{edu.date}</p>
-                     <p className="text-sm font-light">{edu.city}</p>
-                   </div>
-                 </div>
-               ))}
-            </div>
-          )
-        })}
-      </div>
+      {education.some(e => e.school) && (
+        <div className="mb-6 break-inside-avoid">
+            <h2 className="text-lg font-bold uppercase tracking-wider text-primary mb-2 border-b-2 border-primary pb-1">Education</h2>
+            {educationOrder.map(category => {
+            const entries = groupedEducation[category];
+            if (!entries || entries.length === 0) return null;
+            return (
+                <div key={category} className="mb-4 break-inside-avoid">
+                <h3 className="text-md font-bold text-muted-foreground mb-2">{categoryTitles[category]}</h3>
+                {entries.map(edu => (
+                    <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
+                    <div className="flex-grow">
+                        <h4 className="text-md font-bold">{edu.school}</h4>
+                        <p className="text-sm">{edu.degree}</p>
+                        {edu.grades && <p className="text-sm font-semibold">Grades: {edu.grades}</p>}
+                    </div>
+                    <div className="text-right flex-shrink-0 ml-4">
+                        <p className="text-sm font-light">{edu.date}</p>
+                        <p className="text-sm font-light">{edu.city}</p>
+                    </div>
+                    </div>
+                ))}
+                </div>
+            )
+            })}
+        </div>
+      )}
 
       {projects.length > 0 && projects.some(p => p.title) && (
         <div className="mb-6 break-inside-avoid">

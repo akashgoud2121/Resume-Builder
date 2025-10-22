@@ -60,23 +60,160 @@
 }
 
 @media print {
-  html, body {
-    width: 210mm;
-    height: 297mm;
-    -webkit-print-color-adjust: exact; /* Chrome, Safari */
-    color-adjust: exact; /* Firefox */
+  body {
+    background-color: #fff;
   }
-  
+
   .no-print {
     display: none !important;
+  }
+
+  .page-container {
+    box-shadow: none !important;
+    margin: 0;
+    padding: 0;
+    width: 100%;
   }
 
   .break-inside-avoid {
     break-inside: avoid;
   }
-  
+
   .section-header-no-break {
     page-break-after: avoid;
   }
 
+  /* Improve overall pagination quality */
+  @page {
+    size: A4;
+    margin: 0.5in; /* standard resume margins */
+  }
+
+  html, body {
+    height: auto !important;
+  }
+
+  /* Ensure the preview prints cleanly at A4 with reduced internal padding */
+  #resume-preview-wrapper .page-container {
+    width: 210mm !important;
+    min-height: auto !important;
+    padding: 0.5in !important; /* reduced from 1in to 0.5in for more content space */
+  }
+
+  /* Allow sections to flow naturally across pages */
+  [data-section] {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  h1, h2, h3, .section-header-no-break {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+
+  /* Better break control for different content types */
+  ul, ol {
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  li {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* Keep project/experience entries together */
+  .mb-4 {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* Make paragraphs less likely to split awkwardly */
+  p {
+    orphans: 2;
+    widows: 2;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  /* Avoid immediate page breaks between adjacent sections */
+  [data-section] + [data-section] {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  /* Ensure bullet points stay with their content */
+  .text-sm {
+    orphans: 2;
+    widows: 2;
+  }
+
+  /* Keep contact info together */
+  [data-section="contact"] {
+    break-inside: avoid-page;
+    page-break-inside: avoid;
+  }
+}
+
+/* Additional CSS for Puppeteer PDF generation */
+.pdf-generation {
+  font-family: 'Arial', 'Helvetica', sans-serif; /* ATS-friendly fonts */
+  line-height: 1.4;
+  color: #000;
+  background: #fff;
+  font-size: 11pt; /* Standard resume font size */
+}
+
+/* Allow sections to flow naturally across pages */
+.pdf-generation [data-section] {
+  break-inside: auto; /* Allow natural breaks */
+  page-break-inside: auto;
+}
+
+/* Keep headings with their content */
+.pdf-generation h1, .pdf-generation h2, .pdf-generation h3 {
+  break-after: avoid;
+  page-break-after: avoid;
+  orphans: 2;
+  widows: 2;
+}
+
+/* Keep lists together but allow breaking if necessary */
+.pdf-generation ul, .pdf-generation ol {
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+/* Keep individual list items together */
+.pdf-generation li {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  orphans: 2;
+  widows: 2;
+}
+
+/* Keep individual project/experience entries together */
+.pdf-generation .mb-4 {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  orphans: 2;
+  widows: 2;
+}
+
+/* Better paragraph handling */
+.pdf-generation p {
+  orphans: 2;
+  widows: 2;
+  break-inside: auto;
+  page-break-inside: auto;
+}
+
+/* Ensure contact info stays together */
+.pdf-generation [data-section="contact"] {
+  break-inside: avoid;
+  page-break-inside: avoid;
 }

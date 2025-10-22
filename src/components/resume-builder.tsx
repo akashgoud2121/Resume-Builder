@@ -12,8 +12,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useResume } from '@/lib/store';
+import { initialResumeData } from '@/lib/defaults';
 import { Loader2 } from 'lucide-react';
-import { generatePdf } from '@/ai/flows/generate-pdf-flow';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
@@ -21,6 +22,7 @@ export function ResumeBuilder() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
+  const { setResumeData } = useResume();
 
   useEffect(() => {
     const storedKey = localStorage.getItem('userApiKey');
@@ -31,67 +33,52 @@ export function ResumeBuilder() {
 
   const handleDownloadPdf = async () => {
     const elementToCapture = resumePreviewRef.current;
-    if (!elementToCapture) {
-      console.error("Resume preview element not found.");
-      return;
-    }
+    if (!elementToCapture) return;
 
     setIsDownloading(true);
     toast({
       title: "Generating PDF...",
-      description: "This may take a moment. We're creating a high-quality PDF on the server.",
+      description: "This may take a moment. Please wait.",
     });
 
     try {
-        const styleSheets = Array.from(document.styleSheets)
-            .filter(
-                (sheet) =>
-                    sheet.href &&
-                    !sheet.href.startsWith('blob:') && 
-                    sheet.ownerNode instanceof HTMLLinkElement &&
-                    (sheet.ownerNode as HTMLLinkElement).rel === 'stylesheet'
-            )
-            .map((sheet) => sheet.href);
+      // Get the HTML content of the resume preview
+      const htmlContent = elementToCapture.outerHTML;
+      
+      // Send to our API endpoint for PDF generation
+      const response = await fetch('/api/generate-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ htmlContent }),
+      });
 
-        const styleTags = await Promise.all(
-            styleSheets.map(async (href) => {
-                try {
-                    const response = await fetch(href);
-                    if (response.ok) {
-                        const cssText = await response.text();
-                        return `<style>${cssText}</style>`;
-                    }
-                    return '';
-                } catch (e) {
-                    console.warn(`Could not fetch stylesheet: ${href}`, e);
-                    return '';
-                }
-            })
-        );
-        
-        const headContent = styleTags.join('\n');
-        const resumeHtml = elementToCapture.innerHTML;
-        const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8">${headContent}</head><body style="font-family: 'Roboto', sans-serif;">${resumeHtml}</body></html>`;
-        
-        const result = await generatePdf({ htmlContent: fullHtml });
-        
-        const link = document.createElement('a');
-        link.href = `data:application/pdf;base64,${result.pdfBase64}`;
-        link.download = 'resume.pdf';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        toast({
-            title: "Download Complete!",
-            description: "Your PDF has been successfully generated.",
-        });
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      // Create blob and download
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'resume.pdf';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "PDF Downloaded!",
+        description: "Your resume has been saved successfully.",
+      });
 
     } catch (error) {
         console.error("Error generating PDF:", error);
         toast({
             title: "Download Failed",
-            description: "An error occurred while generating the PDF. Please check the console and try again.",
+            description: "An error occurred while generating the PDF.",
             variant: "destructive",
         });
     } finally {
@@ -131,6 +118,21 @@ export function ResumeBuilder() {
           </div>
 
           <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setResumeData(initialResumeData);
+                try {
+                  localStorage.setItem('resumeData', JSON.stringify(initialResumeData));
+                } catch {}
+                toast({
+                  title: 'Test data loaded',
+                  description: 'The form has been populated with sample content.',
+                });
+              }}
+            >
+              Load Test Data
+            </Button>
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                 <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Settings">

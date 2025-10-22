@@ -3,4 +3,3 @@
 import '@/ai/flows/generate-summary-flow';
 import '@/ai/flows/generate-experience-flow';
 import '@/ai/flows/generate-skills-flow';
-import '@/ai/flows/generate-pdf-flow';

@@ -42,11 +42,11 @@ export function ResumeBuilder() {
 
     try {
         const canvas = await html2canvas(elementToCapture, {
-            scale: 2,
+            scale: 2, // Higher scale for better quality
             useCORS: true,
             logging: false,
         });
-        
+
         const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF({
             orientation: 'portrait',
@@ -60,72 +60,42 @@ export function ResumeBuilder() {
 
         const contentWidthPt = a4WidthPt - (marginPt * 2);
         const contentHeightPt = a4HeightPt - (marginPt * 2);
-        
+
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
-        const canvasAspectRatio = canvasWidth / canvasHeight;
-
-        const imgHeightPt = contentWidthPt / canvasAspectRatio;
+        
+        // Calculate the height of the image in PDF units
+        const imgHeightPt = (canvasHeight * contentWidthPt) / canvasWidth;
 
         let position = 0;
-        let pages = 0;
-        const totalPages = Math.ceil(imgHeightPt / contentHeightPt);
+        let pageCount = 0;
 
         while (position < imgHeightPt) {
-            if (pages > 0) {
-              pdf.addPage();
+            if (pageCount > 0) {
+                pdf.addPage();
             }
-            
+
+            // The y position on the PDF is the top margin minus the current vertical position of the image slice
+            const yPos = marginPt - position;
+
             pdf.addImage(
                 imgData,
                 'PNG',
-                marginPt, // Left margin
-                position === 0 ? marginPt : -position + marginPt, // Top margin for first page, then adjust
+                marginPt, // x position (left margin)
+                yPos,     // y position
                 contentWidthPt,
                 imgHeightPt
             );
 
             position += contentHeightPt;
-            pages++;
-            
-            // This is a safeguard against an infinite loop.
-            if (pages > 20) {
-                console.error("Too many pages generated, aborting PDF creation.");
+            pageCount++;
+             if (pageCount > 20) { // Safety break
+                console.error("Too many pages, aborting PDF generation.");
                 break;
             }
         }
-        
-        // This is a workaround for a jsPDF bug where adding a new page
-        // doesn't correctly handle the subsequent positioning on the first page
-        // if the content spans more than one page. We delete the incorrect first page
-        // and create it again correctly.
-        if (totalPages > 1) {
-          const tempPdf = new jsPDF({
-            orientation: 'portrait',
-            unit: 'pt',
-            format: 'a4',
-          });
 
-          position = 0;
-          for (let i = 0; i < totalPages; i++) {
-            if (i > 0) {
-              tempPdf.addPage();
-            }
-            tempPdf.addImage(
-              imgData, 'PNG', 
-              marginPt, // x
-              -position + marginPt, // y
-              contentWidthPt, 
-              imgHeightPt
-            );
-            position += contentHeightPt;
-          }
-          tempPdf.save('resume.pdf');
-
-        } else {
-          pdf.save('resume.pdf');
-        }
-
+        pdf.save('resume.pdf');
 
     } catch (error) {
         console.error("Error generating PDF:", error);
@@ -258,3 +228,5 @@ export function ResumeBuilder() {
       </div>
   );
 }
+
+    

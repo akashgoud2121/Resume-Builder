@@ -61,8 +61,8 @@
 
 /* Print-specific styles */
 @media print {
-  /* Hide everything that shouldn't be printed */
-  .no-print {
+  /* Hide everything that shouldn't be printed by default */
+  .no-print, [data-radix-toast-viewport] {
     display: none !important;
   }
   

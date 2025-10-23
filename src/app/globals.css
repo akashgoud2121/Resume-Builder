@@ -62,7 +62,7 @@
 /* Print-specific styles */
 @media print {
   /* Hide everything that shouldn't be printed by default */
-  .no-print {
+  .no-print, [data-radix-toast-viewport] {
     display: none !important;
   }
   
@@ -112,6 +112,14 @@
   @page {
     size: A4;
     margin: 1in;
+    
+    /* Remove browser-added headers and footers */
+    @top-left { content: '' }
+    @top-center { content: '' }
+    @top-right { content: '' }
+    @bottom-left { content: '' }
+    @bottom-center { content: '' }
+    @bottom-right { content: '' }
   }
 
   /* Avoid breaking elements across pages */

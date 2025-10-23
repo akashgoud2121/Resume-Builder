@@ -16,6 +16,7 @@ import { useResume } from '@/lib/store';
 import { initialResumeData } from '@/lib/defaults';
 import { Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
@@ -43,36 +44,39 @@ export function ResumeBuilder() {
     });
 
     try {
-        // Use html2canvas to capture the resume preview as an image
         const canvas = await html2canvas(elementToCapture, {
-            scale: 2, // Higher scale for better quality
+            scale: 2, // Use a higher scale for better resolution
             useCORS: true,
             logging: false,
         });
 
-        const imageBase64 = canvas.toDataURL('image/png');
-
-        const response = await fetch('/api/generate-pdf', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ imageBase64 }),
+        const imgData = canvas.toDataURL('image/png');
+        
+        const pdf = new jsPDF({
+            orientation: 'p',
+            unit: 'mm',
+            format: 'a4',
         });
 
-        if (!response.ok) {
-            const errorBody = await response.text();
-            console.error("PDF generation failed on server:", errorBody);
-            throw new Error('Failed to generate PDF. The server returned an error.');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        
+        const ratio = canvasWidth / canvasHeight;
+        const widthInPdf = pdfWidth;
+        const heightInPdf = widthInPdf / ratio;
+
+        // If the calculated height is greater than the PDF height, it means the content is longer.
+        // We handle this by adding new pages. However, for a standard resume, it should fit on one page.
+        // A more robust implementation for multi-page resumes might be needed if content is very long.
+        if (heightInPdf > pdfHeight) {
+            console.warn("Resume content might be too long for a single A4 page.");
         }
 
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'resume.pdf';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
+        pdf.addImage(imgData, 'PNG', 0, 0, widthInPdf, heightInPdf);
+        pdf.save('resume.pdf');
 
         toast({
             title: "PDF Downloaded!",
@@ -131,12 +135,12 @@ export function ResumeBuilder() {
                   localStorage.setItem('resumeData', JSON.stringify(initialResumeData));
                 } catch {}
                 toast({
-                  title: 'Test data loaded',
+                  title: 'Demo data loaded',
                   description: 'The form has been populated with sample content.',
                 });
               }}
             >
-              Load Test Data
+              Load Demo Data
             </Button>
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                 <DialogTrigger asChild>

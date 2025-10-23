@@ -5,7 +5,7 @@ import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import type { EducationCategory, Achievement, AchievementCategory } from '@/lib/types';
-import { Github, Linkedin, Mail, Phone } from 'lucide-react';
+import { Github, Linkedin, Mail, Phone, Link as LinkIcon } from 'lucide-react';
 
 
 const categoryTitles: Record<EducationCategory, string> = {
@@ -33,18 +33,19 @@ const renderDescription = (text: string) => {
   if (!text) return null;
   const bulletPoints = text
     .split(/\n|(?=- )/)
-    .filter(line => line.trim() !== '');
+    .map(line => line.trim())
+    .filter(line => line.startsWith('-'));
 
-  if (bulletPoints.length === 0 || (bulletPoints.length === 1 && !bulletPoints[0].trim().startsWith('-'))) {
+  if (bulletPoints.length === 0) {
      return <p className="text-sm text-gray-800 leading-relaxed">{text}</p>;
   }
   
   return (
       <ul className="list-none space-y-1">
           {bulletPoints.map((line, index) => (
-          <li key={index} className="text-sm text-gray-800 pl-2 mb-1 flex items-start leading-relaxed">
-              <span className='mr-2 text-gray-600'>•</span>
-              <span>{line.trim().replace(/^- /, '')}</span>
+          <li key={index} className="text-sm text-gray-800 pl-4 relative">
+             <span className="absolute left-0 text-gray-600 top-0.5">•</span>
+              <span>{line.replace(/^- /, '')}</span>
           </li>
           ))}
       </ul>
@@ -87,35 +88,35 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     <div
       ref={ref}
       className={cn(
-        "bg-background shadow-lg page-container",
-        "w-[210mm] min-h-[297mm] p-[0.5in]",
-        "font-['Arial','Helvetica',sans-serif] text-[11pt] leading-[1.4]"
+        "bg-white shadow-lg page-container",
+        "w-[210mm] min-h-[297mm] p-6", // A4 paper size, with padding
+        "font-sans text-gray-900 text-sm"
       )}
     >
-        <div data-section="contact" className="text-center mb-8 break-inside-avoid">
-            {contact.name && <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-3">{contact.name}</h1>}
-             <div className="flex justify-center items-center gap-x-6 gap-y-1 text-sm text-gray-700 flex-wrap">
+        <div data-section="contact" className="text-left mb-6 border-b border-gray-300 pb-4">
+            {contact.name && <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">{contact.name}</h1>}
+             <div className="flex justify-start items-center gap-x-4 gap-y-1 text-xs text-gray-600 flex-wrap">
               {contact.email && (
                  <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 hover:text-primary hover:underline">
-                   <Mail className="h-3.5 w-3.5" />
+                   <Mail className="h-3 w-3" />
                    <span>{contact.email}</span>
                  </a>
               )}
               {contact.phone && (
                 <div className="flex items-center gap-1.5">
-                   <Phone className="h-3.5 w-3.5" />
+                   <Phone className="h-3 w-3" />
                    <span>{contact.phone}</span>
                 </div>
               )}
                {contact.linkedin && (
                  <a href={addHttp(contact.linkedin)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary hover:underline">
-                    <Linkedin className="h-3.5 w-3.5" />
+                    <Linkedin className="h-3 w-3" />
                    <span>{contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '')}</span>
                  </a>
               )}
               {contact.github && (
                  <a href={addHttp(contact.github)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary hover:underline">
-                    <Github className="h-3.5 w-3.5" />
+                    <Github className="h-3 w-3" />
                    <span>{contact.github.replace(/^(https?:\/\/)?(www\.)?/, '')}</span>
                  </a>
               )}
@@ -123,29 +124,24 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
 
       {summary && (
-        <div data-section="summary" className="mb-6 break-inside-avoid">
-          <div className="section-header-no-break">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 mb-3 border-b-2 border-gray-300 pb-1">Summary</h2>
-          </div>
-          <p className="text-sm text-gray-800 leading-relaxed">{summary}</p>
+        <div data-section="summary" className="mb-4">
+          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Summary</h2>
+          <p className="text-sm text-gray-700 leading-normal">{summary}</p>
         </div>
       )}
 
       {hasSkills && (
-        <div data-section="skills" className="mb-6 break-inside-avoid">
-          <div className="section-header-no-break">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 mb-3 border-b-2 border-gray-300 pb-1">Skills</h2>
-          </div>
-          <div className="text-sm text-gray-800">
+        <div data-section="skills" className="mb-4">
+          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Skills</h2>
+          <div className="text-sm text-gray-700 space-y-1">
             {skills.map((category) => {
               const trimmedSkills = category.skills.split(',').map(s => s.trim()).filter(Boolean).join(', ');
               if (category.name && trimmedSkills) {
                 return (
-                  <p key={category.id} className="mb-2">
-                    <span className="font-semibold text-gray-900">{category.name}:</span>
-                    {' '}
-                    <span className="text-gray-700">{trimmedSkills}</span>
-                  </p>
+                  <div key={category.id} className="flex items-start">
+                    <p className="w-1/3 font-semibold text-gray-800">{category.name}:</p>
+                    <p className="w-2/3">{trimmedSkills}</p>
+                  </div>
                 )
               }
               return null;
@@ -154,48 +150,34 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       )}
 
-      {education.some(e => e.school) && (
-        <div data-section="education" className="mb-6 break-inside-avoid">
-            <div className="section-header-no-break">
-              <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 mb-3 border-b-2 border-gray-300 pb-1">Education</h2>
+      {experience.length > 0 && experience.some(e => e.title) && (
+        <div data-section="experience" className="mb-4">
+          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Work Experience</h2>
+          {experience.map(exp => exp.title && (
+            <div key={exp.id} className="mb-3 break-inside-avoid">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="text-sm font-bold text-gray-900">{exp.title}</h3>
+                <p className="text-xs text-gray-600 font-medium">{exp.startDate} - {exp.endDate}</p>
+              </div>
+              <p className="text-sm font-medium text-gray-700 italic mb-1">{exp.company}</p>
+              <div className="mt-1">
+                {renderDescription(exp.description)}
+              </div>
             </div>
-            {educationOrder.map(category => {
-            const entries = groupedEducation[category];
-            if (!entries || entries.length === 0) return null;
-            return (
-                <div key={category} className="mb-4 break-inside-avoid">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">{categoryTitles[category]}</h3>
-                  {entries.map(edu => (
-                      <div key={edu.id} className="flex justify-between items-start mb-3 break-inside-avoid">
-                        <div className="flex-grow">
-                            <h4 className="text-sm font-bold text-gray-900">{edu.school}</h4>
-                            <p className="text-sm text-gray-700">{edu.degree}</p>
-                            {edu.grades && <p className="text-sm font-medium text-gray-600">Grades: {edu.grades}</p>}
-                        </div>
-                        <div className="text-right flex-shrink-0 ml-4">
-                            <p className="text-sm text-gray-600">{edu.date}</p>
-                            <p className="text-sm text-gray-600">{edu.city}</p>
-                        </div>
-                      </div>
-                  ))}
-                </div>
-            )
-            })}
+          ))}
         </div>
       )}
 
       {projects.length > 0 && projects.some(p => p.title) && (
-        <div data-section="projects" className="mb-6 break-inside-avoid">
-          <div className="section-header-no-break">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 mb-3 border-b-2 border-gray-300 pb-1">Projects</h2>
-          </div>
+        <div data-section="projects" className="mb-4">
+          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Projects</h2>
           {projects.map(proj => proj.title && (
-            <div key={proj.id} className="mb-4 break-inside-avoid">
+            <div key={proj.id} className="mb-3 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="text-sm font-bold text-gray-900">{proj.title}</h3>
-                <p className="text-sm text-gray-600">{proj.startDate} - {proj.endDate}</p>
+                <p className="text-xs text-gray-600 font-medium">{proj.startDate} - {proj.endDate}</p>
               </div>
-              <p className="text-sm font-medium text-gray-700 italic mb-2">{proj.organization}</p>
+              {proj.organization && <p className="text-sm font-medium text-gray-700 italic mb-1">{proj.organization}</p>}
               <div className="mt-1">
                 {renderDescription(proj.description)}
               </div>
@@ -203,19 +185,44 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           ))}
         </div>
       )}
+
+      {education.some(e => e.school) && (
+        <div data-section="education" className="mb-4">
+            <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Education</h2>
+            {educationOrder.map(category => {
+            const entries = groupedEducation[category];
+            if (!entries || entries.length === 0) return null;
+            return (
+                <React.Fragment key={category}>
+                  {entries.map(edu => (
+                      <div key={edu.id} className="flex justify-between items-start mb-2 break-inside-avoid">
+                        <div className="flex-grow">
+                            <h4 className="text-sm font-bold text-gray-900">{edu.school}</h4>
+                            <p className="text-sm text-gray-700">{edu.degree}</p>
+                            {edu.grades && <p className="text-sm text-gray-600">{edu.grades}</p>}
+                        </div>
+                        <div className="text-right flex-shrink-0 ml-4">
+                            <p className="text-xs text-gray-600 font-medium">{edu.date}</p>
+                            <p className="text-xs text-gray-600">{edu.city}</p>
+                        </div>
+                      </div>
+                  ))}
+                </React.Fragment>
+            )
+            })}
+        </div>
+      )}
       
        {certifications.length > 0 && certifications.some(c => c.name) && (
-        <div data-section="certifications" className="mb-6 break-inside-avoid">
-          <div className="section-header-no-break">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 mb-3 border-b-2 border-gray-300 pb-1">Certifications</h2>
-          </div>
+        <div data-section="certifications" className="mb-4">
+          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Certifications</h2>
           {certifications.map(cert => cert.name && (
-            <div key={cert.id} className="mb-4 break-inside-avoid">
+            <div key={cert.id} className="mb-3 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="text-sm font-bold text-gray-900">{cert.name}</h3>
-                <p className="text-sm text-gray-600">{cert.date}</p>
+                <p className="text-xs text-gray-600 font-medium">{cert.date}</p>
               </div>
-              <p className="text-sm font-medium text-gray-700 italic mb-2">{cert.issuer}</p>
+              <p className="text-sm font-medium text-gray-700 italic mb-1">{cert.issuer}</p>
               <div className="mt-1">
                 {renderDescription(cert.description)}
               </div>
@@ -225,24 +232,22 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       )}
 
       {achievements.length > 0 && achievements.some(a => a.name) && (
-        <div data-section="achievements" className="mb-6 break-inside-avoid">
-            <div className="section-header-no-break">
-              <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 mb-3 border-b-2 border-gray-300 pb-1">Achievements & Activities</h2>
-            </div>
+        <div data-section="achievements" className="mb-4">
+            <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Achievements & Activities</h2>
             {achievementOrder.map(category => {
                 const entries = groupedAchievements[category];
                 if (!entries || entries.length === 0) return null;
 
                 return (
-                    <div key={category} className="mb-4 break-inside-avoid">
-                        <h3 className="text-sm font-semibold text-gray-700 mb-2">{achievementCategoryTitles[category]}</h3>
+                    <div key={category} className="mb-2 break-inside-avoid">
+                        <h3 className="text-sm font-semibold text-gray-700 underline mb-2">{achievementCategoryTitles[category]}</h3>
                         {entries.map(ach => (
-                             <div key={ach.id} className="mb-4 break-inside-avoid">
+                             <div key={ach.id} className="mb-3 break-inside-avoid">
                                 <div className="flex justify-between items-baseline mb-1">
-                                    <h3 className="text-sm font-bold text-gray-900">{ach.name}</h3>
-                                    <p className="text-sm text-gray-600">{ach.date}</p>
+                                    <h4 className="text-sm font-bold text-gray-900">{ach.name}</h4>
+                                    <p className="text-xs text-gray-600 font-medium">{ach.date}</p>
                                 </div>
-                                <p className="text-sm font-medium text-gray-700 italic mb-2">{ach.context}</p>
+                                <p className="text-sm font-medium text-gray-700 italic mb-1">{ach.context}</p>
                                 <div className="mt-1">
                                     {renderDescription(ach.description)}
                                 </div>
@@ -254,25 +259,6 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       )}
 
-      {experience.length > 0 && experience.some(e => e.title) && (
-        <div data-section="experience" className="mb-6 break-inside-avoid">
-          <div className="section-header-no-break">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-gray-900 mb-3 border-b-2 border-gray-300 pb-1">Work Experience</h2>
-          </div>
-          {experience.map(exp => exp.title && (
-            <div key={exp.id} className="mb-4 break-inside-avoid">
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="text-sm font-bold text-gray-900">{exp.title}</h3>
-                <p className="text-sm text-gray-600">{exp.startDate} - {exp.endDate}</p>
-              </div>
-              <p className="text-sm font-medium text-gray-700 italic mb-2">{exp.company}</p>
-              <div className="mt-1">
-                {renderDescription(exp.description)}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 });

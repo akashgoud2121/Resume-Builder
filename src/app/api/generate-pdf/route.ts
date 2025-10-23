@@ -1,6 +1,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,16 +19,17 @@ export async function POST(request: NextRequest) {
     // Embed the image into the PDF
     const image = await pdfDoc.embedPng(imageBytes);
 
-    // Get the image's dimensions
+    // Get the image's dimensions and calculate aspect ratio
     const { width, height } = image.scale(1);
-
-    // Add a new page matching the image's aspect ratio
+    
     // A4 dimensions in points: 595.28 x 841.89
     const A4_WIDTH = 595.28;
     const A4_HEIGHT = 841.89;
+    
+    // Add a page with A4 dimensions
     const page = pdfDoc.addPage([A4_WIDTH, A4_HEIGHT]);
     
-    // Draw the image on the page
+    // Draw the image on the page, fitting it to the page width
     page.drawImage(image, {
       x: 0,
       y: 0,

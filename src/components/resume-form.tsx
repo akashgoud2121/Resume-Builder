@@ -3,14 +3,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useResume } from '@/lib/store';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Trash2, Sparkles, Loader2, Copy } from 'lucide-react';
-import type { Education, Experience, EducationCategory, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory } from '@/lib/types';
-import { Card, CardContent, CardHeader } from './ui/card';
+import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight } from 'lucide-react';
+import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory } from '@/lib/types';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { generateExperience } from '@/ai/flows/generate-experience-flow';
@@ -18,6 +17,7 @@ import { generateSkills } from '@/ai/flows/generate-skills-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const educationCategoryConfig = {
   schooling: {
@@ -81,6 +81,7 @@ export function ResumeForm() {
 
   const [isSkillsAiDialogOpen, setIsSkillsAiDialogOpen] = useState(false);
   const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
 
 
   const [aiExperienceState, setAiExperienceState] = useState<AiExperienceState>({
@@ -396,9 +397,8 @@ export function ResumeForm() {
   };
 
 
-  const allSections = {
-    contact: {
-      value: "contact",
+  const allSections = [
+    {
       title: "Contact Information",
       content: (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -425,8 +425,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    summary: {
-      value: "summary",
+    {
       title: "Professional Summary",
       content: (
         <div className="space-y-2">
@@ -492,8 +491,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    skills: {
-      value: "skills",
+    {
       title: "Skills",
       content: (
           <div className="space-y-4">
@@ -552,8 +550,7 @@ export function ResumeForm() {
           </div>
       )
     },
-    education: {
-      value: "education",
+    {
       title: "Education",
       content: (
         <div className="space-y-4">
@@ -610,8 +607,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    projects: {
-        value: "projects",
+    {
         title: "Projects",
         content: (
           <div className="space-y-4">
@@ -654,8 +650,7 @@ export function ResumeForm() {
             </div>
         )
     },
-    certifications: {
-      value: "certifications",
+    {
       title: "Certifications",
       content: (
         <div className="space-y-4">
@@ -694,8 +689,7 @@ export function ResumeForm() {
         </div>
       ),
     },
-    achievements: {
-        value: "achievements",
+    {
         title: "Achievements & Activities",
         content: (
           <div className="space-y-4">
@@ -755,8 +749,7 @@ export function ResumeForm() {
           </div>
         ),
       },
-    experience: {
-        value: "experience",
+    {
         title: "Work Experience",
         content: (
           <div className="space-y-4">
@@ -868,31 +861,57 @@ export function ResumeForm() {
           </div>
         )
     },
-  };
+  ];
   
-  const defaultOrder = ['contact', 'summary', 'skills', 'education', 'projects', 'certifications', 'achievements', 'experience'];
+  const handleNext = () => {
+    setCurrentStep((prev) => Math.min(prev + 1, allSections.length - 1));
+  };
+
+  const handlePrev = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  };
 
   return (
-    <Accordion type="multiple" defaultValue={['contact', 'summary', 'skills', 'education', 'projects']} className="w-full space-y-4">
-      {defaultOrder.map((sectionKey) => {
-        const section = allSections[sectionKey as keyof typeof allSections];
-        if (!section) return null;
-
-        return (
-          <AccordionItem key={section.value} value={section.value} className="border-none">
-            <Card className="shadow-lg transition-all duration-200 hover:shadow-xl hover:-translate-y-1">
-              <CardHeader className="p-4 md:p-6">
-                <AccordionTrigger className="text-lg font-semibold hover:no-underline p-0">
-                    {section.title}
-                </AccordionTrigger>
-              </CardHeader>
-              <AccordionContent className="px-4 md:px-6">
-                  {section.content}
-              </AccordionContent>
-            </Card>
-          </AccordionItem>
-        );
-      })}
-    </Accordion>
+    <div className="w-full">
+      <div className="mb-8">
+        <div className="flex justify-between items-center">
+            {allSections.map((_, index) => (
+                <React.Fragment key={index}>
+                    <div className="flex flex-col items-center">
+                        <div
+                            className={cn(
+                                "h-8 w-8 rounded-full flex items-center justify-center border-2",
+                                currentStep === index ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground bg-background text-muted-foreground",
+                                currentStep > index && "bg-primary/50 border-primary/50 text-primary-foreground"
+                            )}
+                        >
+                            {index + 1}
+                        </div>
+                    </div>
+                    {index < allSections.length - 1 && (
+                        <div className={cn("flex-1 h-0.5", currentStep > index ? 'bg-primary' : 'bg-muted-foreground')} />
+                    )}
+                </React.Fragment>
+            ))}
+        </div>
+      </div>
+      <Card className="shadow-lg transition-all duration-200">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">{allSections[currentStep].title}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {allSections[currentStep].content}
+        </CardContent>
+      </Card>
+      <div className="mt-8 flex justify-between">
+        <Button onClick={handlePrev} disabled={currentStep === 0}>
+          <ArrowLeft className="mr-2 h-4 w-4" /> Previous
+        </Button>
+        <Button onClick={handleNext} disabled={currentStep === allSections.length - 1}>
+          Next <ArrowRight className="ml-2 h-4 w-4" />
+        </Button>
+      </div>
+    </div>
   );
 }
+

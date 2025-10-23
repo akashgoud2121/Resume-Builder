@@ -64,9 +64,10 @@ export function ResumeBuilder() {
             </Link>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 md:gap-4">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => {
                 setResumeData(initialResumeData);
                 try {
@@ -78,7 +79,7 @@ export function ResumeBuilder() {
                 });
               }}
             >
-              Load Demo Data
+              Load Demo
             </Button>
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                 <DialogTrigger asChild>
@@ -129,17 +130,20 @@ export function ResumeBuilder() {
                     <span className="sr-only">View Resume</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="bottom" className="h-[90vh] bg-muted/30">
-                  <SheetHeader>
+                <SheetContent side="bottom" className="h-[95vh] bg-muted/40 p-0 flex flex-col">
+                  <SheetHeader className="p-4 border-b">
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
-                  <div className="h-full overflow-auto py-4">
-                     <ResumePreview />
+                  <div className="flex-1 overflow-auto p-4">
+                     <div className="mx-auto w-full scale-[0.9] origin-top">
+                        <ResumePreview />
+                     </div>
                   </div>
                 </SheetContent>
               </Sheet>
             </div>
-            <Button onClick={handleDownloadPdf}>
+
+            <Button onClick={handleDownloadPdf} className="hidden md:flex">
               <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>

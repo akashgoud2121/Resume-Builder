@@ -288,6 +288,7 @@ export function ResumeForm() {
       projectDescription: '',
       technologiesUsed: '',
       generatedBulletPoints: '',
+      isGenerating: false,
     });
   };
 
@@ -399,7 +400,8 @@ export function ResumeForm() {
 
   const allSections = [
     {
-      title: "Contact Information",
+      title: "Contact Info",
+      shortTitle: "Contact",
       content: (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
@@ -427,6 +429,7 @@ export function ResumeForm() {
     },
     {
       title: "Professional Summary",
+      shortTitle: "Summary",
       content: (
         <div className="space-y-2">
           <div className="flex justify-between items-center">
@@ -491,6 +494,7 @@ export function ResumeForm() {
     },
     {
       title: "Skills",
+      shortTitle: "Skills",
       content: (
           <div className="space-y-4">
             <div className="flex justify-end">
@@ -550,6 +554,7 @@ export function ResumeForm() {
     },
     {
       title: "Education",
+      shortTitle: "Education",
       content: (
         <div className="space-y-4">
           {resumeData.education.map((edu, index) => {
@@ -606,7 +611,52 @@ export function ResumeForm() {
       )
     },
     {
+        title: "Work Experience",
+        shortTitle: "Experience",
+        content: (
+          <div className="space-y-4">
+            {resumeData.experience.map((exp, index) => (
+                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                      <div className="space-y-2">
+                          <Label>Job Title/Role</Label>
+                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Company</Label>
+                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Start Date</Label>
+                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>End Date</Label>
+                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Label>Description</Label>
+                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate with AI
+                            </Button>
+                          </div>
+                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
+                      </div>
+                  </CardContent>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
+                </Card>
+            ))}
+            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+          </div>
+        )
+    },
+    {
         title: "Projects",
+        shortTitle: "Projects",
         content: (
           <div className="space-y-4">
             {resumeData.projects.map((proj, index) => (
@@ -645,11 +695,12 @@ export function ResumeForm() {
                 </Card>
             ))}
             <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
-            </div>
+          </div>
         )
     },
     {
       title: "Certifications",
+      shortTitle: "Certs",
       content: (
         <div className="space-y-4">
           {resumeData.certifications.map((cert, index) => (
@@ -689,6 +740,7 @@ export function ResumeForm() {
     },
     {
         title: "Achievements & Activities",
+        shortTitle: "Achieve",
         content: (
           <div className="space-y-4">
             {resumeData.achievements.map((ach, index) => {
@@ -746,116 +798,6 @@ export function ResumeForm() {
             <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
           </div>
         ),
-      },
-    {
-        title: "Work Experience",
-        content: (
-          <div className="space-y-4">
-            {resumeData.experience.map((exp, index) => (
-                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
-                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                      <div className="space-y-2">
-                          <Label>Job Title/Role</Label>
-                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Company</Label>
-                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Start Date</Label>
-                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>End Date</Label>
-                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
-                      </div>
-                      <div className="sm:col-span-2 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Description</Label>
-                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Generate with AI
-                            </Button>
-                          </div>
-                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
-                      </div>
-                  </CardContent>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
-                      <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Card>
-            ))}
-            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
-             <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
-                 <DialogContent className="sm:max-w-xl">
-                    <DialogHeader>
-                    <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
-                    <DialogDescription>
-                        Provide some details, and AI will generate professional bullet points using the STAR method.
-                    </DialogDescription>
-                    </DialogHeader>
-                    <div className="py-4 space-y-4">
-                        <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
-                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleCopyExperienceTemplate}>
-                                <Copy className="h-4 w-4" />
-                            </Button>
-                            <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
-                            <p className="mb-2 pr-8"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
-                            <p className="pr-8"><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Title / Name</Label>
-                          <Input
-                            value={aiExperienceState.projectTitle}
-                            readOnly
-                            disabled
-                            className="font-semibold"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
-                          <Textarea
-                            value={aiExperienceState.projectDescription}
-                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
-                            placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
-                            rows={4}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
-                          <Input
-                            value={aiExperienceState.technologiesUsed}
-                            onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
-                            placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
-                          />
-                        </div>
-                        <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating} className="w-full">
-                          {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                          Generate Description
-                        </Button>
-                        {aiExperienceState.generatedBulletPoints && (
-                          <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                            <Label>Generated Bullet Points:</Label>
-                            <Textarea
-                              className="text-sm"
-                              readOnly
-                              value={aiExperienceState.generatedBulletPoints}
-                              rows={6}
-                            />
-                          </div>
-                        )}
-                    </div>
-                    <DialogFooter>
-                      <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
-                      <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
-                        Use This Description
-                      </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-          </div>
-        )
     },
   ];
   
@@ -874,46 +816,39 @@ export function ResumeForm() {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <div className="flex justify-between items-center px-2">
-            {allSections.map((_, index) => (
+        <div className="flex items-center justify-between px-1 md:px-2">
+            {allSections.map((section, index) => (
                 <React.Fragment key={index}>
-                    <button
-                      type="button"
+                    <div
+                      className="flex flex-col items-center text-center cursor-pointer focus:outline-none group"
                       onClick={() => handleStepClick(index)}
-                      className="flex flex-col items-center text-center cursor-pointer focus:outline-none"
-                      aria-label={`Go to step ${index + 1}`}
+                      onKeyDown={(e) => e.key === 'Enter' && handleStepClick(index)}
+                      role="button"
+                      tabIndex={0}
+                      aria-label={`Go to step ${index + 1}: ${section.title}`}
                     >
                         <div
                             className={cn(
-                                "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all",
+                                "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all group-hover:border-primary",
                                 currentStep === index ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground bg-background text-muted-foreground",
                                 currentStep > index && "bg-primary/80 border-primary/80 text-primary-foreground"
                             )}
                         >
                             {index + 1}
                         </div>
-                    </button>
+                         <p className={cn(
+                            "text-xs mt-1 transition-colors group-hover:text-primary",
+                            currentStep === index ? "font-semibold text-primary" : "text-muted-foreground",
+                            "hidden sm:block"
+                         )}>
+                           {section.shortTitle}
+                        </p>
+                    </div>
                     {index < allSections.length - 1 && (
-                        <div className={cn("flex-1 h-0.5 transition-all", currentStep > index ? 'bg-primary' : 'bg-muted-foreground/50')} />
+                        <div className={cn("flex-1 h-0.5 transition-all mx-1", currentStep > index ? 'bg-primary' : 'bg-muted-foreground/50')} />
                     )}
                 </React.Fragment>
             ))}
-        </div>
-        <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
-          {allSections.map((section, index) => (
-            <button
-              type="button"
-              key={index}
-              onClick={() => handleStepClick(index)}
-              className={cn(
-                "w-1/4 text-center cursor-pointer focus:outline-none",
-                currentStep === index && "font-semibold text-primary"
-              )}
-              aria-label={`Go to ${section.title} section`}
-            >
-              {section.title.split(' ')[0]}
-            </button>
-          ))}
         </div>
       </div>
       <Card className="shadow-lg transition-all duration-200">
@@ -932,8 +867,74 @@ export function ResumeForm() {
           Next <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
+      
+       <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
+           <DialogContent className="sm:max-w-xl">
+              <DialogHeader>
+              <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
+              <DialogDescription>
+                  Provide some details, and AI will generate professional bullet points using the STAR method.
+              </DialogDescription>
+              </DialogHeader>
+              <div className="py-4 space-y-4">
+                  <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
+                      <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleCopyExperienceTemplate}>
+                          <Copy className="h-4 w-4" />
+                      </Button>
+                      <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
+                      <p className="mb-2 pr-8"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
+                      <p className="pr-8"><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Title / Name</Label>
+                    <Input
+                      value={aiExperienceState.projectTitle}
+                      readOnly
+                      disabled
+                      className="font-semibold"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
+                    <Textarea
+                      value={aiExperienceState.projectDescription}
+                      onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
+                      placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
+                      rows={4}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
+                    <Input
+                      value={aiExperienceState.technologiesUsed}
+                      onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
+                      placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
+                    />
+                  </div>
+                  <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating} className="w-full">
+                    {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    Generate Description
+                  </Button>
+                  {aiExperienceState.generatedBulletPoints && (
+                    <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                      <Label>Generated Bullet Points:</Label>
+                      <Textarea
+                        className="text-sm"
+                        readOnly
+                        value={aiExperienceState.generatedBulletPoints}
+                        rows={6}
+                      />
+                    </div>
+                  )}
+              </div>
+              <DialogFooter>
+                <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
+                <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
+                  Use This Description
+                </Button>
+              </DialogFooter>
+          </DialogContent>
+      </Dialog>
     </div>
   );
 }
-
-    

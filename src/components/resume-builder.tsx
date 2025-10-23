@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/lib/store';
 import { initialResumeData } from '@/lib/defaults';
 import { Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 export function ResumeBuilder() {
   const resumePreviewRef = useRef<HTMLDivElement>(null);
@@ -42,12 +43,19 @@ export function ResumeBuilder() {
     });
 
     try {
-        const htmlContent = elementToCapture.innerHTML;
+        // Use html2canvas to capture the resume preview as an image
+        const canvas = await html2canvas(elementToCapture, {
+            scale: 2, // Higher scale for better quality
+            useCORS: true,
+            logging: false,
+        });
+
+        const imageBase64 = canvas.toDataURL('image/png');
 
         const response = await fetch('/api/generate-pdf', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ htmlContent }),
+            body: JSON.stringify({ imageBase64 }),
         });
 
         if (!response.ok) {

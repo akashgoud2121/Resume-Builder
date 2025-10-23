@@ -14,7 +14,6 @@ import { Label } from './ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/lib/store';
 import { initialResumeData } from '@/lib/defaults';
-import { Loader2 } from 'lucide-react';
 
 export function ResumeBuilder() {
   const [apiKey, setApiKey] = useState('');
@@ -153,15 +152,15 @@ export function ResumeBuilder() {
           </div>
         </header>
 
-        <div className="grid md:grid-cols-2 flex-1 print:block">
+        <div className="grid md:grid-cols-2 flex-1">
             <div className="h-full w-full overflow-y-auto p-4 md:p-6 no-scrollbar no-print">
                 <ResumeForm />
             </div>
 
-            <main id="resume-preview-container" className="hidden md:block bg-muted/30 print:bg-white">
+            <main id="resume-preview-container" className="hidden md:block bg-muted/30">
               <div className="flex flex-col items-center py-8 h-[calc(100vh-64px)] overflow-auto no-scrollbar print:h-auto print:py-0">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div id="resume-preview-wrapper" >
+                <div id="resume-preview-wrapper">
                     <ResumePreview />
                 </div>
               </div>

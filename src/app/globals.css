@@ -65,41 +65,51 @@
   .no-print {
     display: none !important;
   }
-
+  
   /* Reset body styles for printing */
   body {
-    background-color: #fff !important;
+    background: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    margin: 0;
-    padding: 0;
   }
-  
-  /* Make only the resume preview container visible */
+
+  /* Isolate and style the print container */
   #resume-preview-container {
     display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white !important;
+    padding: 0;
+    margin: 0;
   }
 
   #resume-preview-wrapper {
-    margin: 0;
-    padding: 0;
-    box-shadow: none;
-    border: none;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    height: 100% !important;
   }
 
   .page-container {
+    padding: 0.5in !important; /* Apply the margin as padding */
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 0 !important;
+    border: none !important;
     width: 100% !important;
     min-height: auto !important;
-    border: none !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
   /* Page layout rules for printing */
   @page {
     size: A4;
-    margin: 0.5in;
+    margin: 0; /* Set printer margins to 0 as padding is handled by .page-container */
   }
 
   /* Avoid breaking elements across pages */

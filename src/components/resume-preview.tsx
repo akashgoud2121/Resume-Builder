@@ -89,13 +89,13 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       ref={ref}
       className={cn(
         "bg-white shadow-lg page-container",
-        "w-[210mm] min-h-[297mm] p-6", // A4 paper size, with padding
-        "font-sans text-gray-900 text-sm"
+        "w-[210mm] min-h-[297mm] p-8", 
+        "font-sans text-gray-900 text-[10pt]"
       )}
     >
-        <div data-section="contact" className="text-left mb-6 border-b border-gray-300 pb-4">
+        <div data-section="contact" className="text-center mb-6">
             {contact.name && <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">{contact.name}</h1>}
-             <div className="flex justify-start items-center gap-x-4 gap-y-1 text-xs text-gray-600 flex-wrap">
+             <div className="flex justify-center items-center gap-x-4 gap-y-1 text-xs text-gray-600 flex-wrap">
               {contact.email && (
                  <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 hover:text-primary hover:underline">
                    <Mail className="h-3 w-3" />
@@ -121,18 +121,19 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                  </a>
               )}
             </div>
+             <hr className="mt-4 border-t-2 border-gray-300" />
         </div>
 
       {summary && (
         <div data-section="summary" className="mb-4">
-          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Summary</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">Summary</h2>
           <p className="text-sm text-gray-700 leading-normal">{summary}</p>
         </div>
       )}
 
       {hasSkills && (
         <div data-section="skills" className="mb-4">
-          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Skills</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">Skills</h2>
           <div className="text-sm text-gray-700 space-y-1">
             {skills.map((category) => {
               const trimmedSkills = category.skills.split(',').map(s => s.trim()).filter(Boolean).join(', ');
@@ -152,7 +153,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {experience.length > 0 && experience.some(e => e.title) && (
         <div data-section="experience" className="mb-4">
-          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Work Experience</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">Work Experience</h2>
           {experience.map(exp => exp.title && (
             <div key={exp.id} className="mb-3 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
@@ -170,7 +171,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {projects.length > 0 && projects.some(p => p.title) && (
         <div data-section="projects" className="mb-4">
-          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Projects</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">Projects</h2>
           {projects.map(proj => proj.title && (
             <div key={proj.id} className="mb-3 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
@@ -188,7 +189,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {education.some(e => e.school) && (
         <div data-section="education" className="mb-4">
-            <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Education</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">Education</h2>
             {educationOrder.map(category => {
             const entries = groupedEducation[category];
             if (!entries || entries.length === 0) return null;
@@ -215,7 +216,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       
        {certifications.length > 0 && certifications.some(c => c.name) && (
         <div data-section="certifications" className="mb-4">
-          <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Certifications</h2>
+          <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">Certifications</h2>
           {certifications.map(cert => cert.name && (
             <div key={cert.id} className="mb-3 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
@@ -233,7 +234,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
       {achievements.length > 0 && achievements.some(a => a.name) && (
         <div data-section="achievements" className="mb-4">
-            <h2 className="text-base font-bold uppercase tracking-wider text-gray-800 mb-2 border-b-2 border-gray-300 pb-1">Achievements & Activities</h2>
+            <h2 className="text-sm font-bold uppercase tracking-widest text-gray-800 mb-2">Achievements & Activities</h2>
             {achievementOrder.map(category => {
                 const entries = groupedAchievements[category];
                 if (!entries || entries.length === 0) return null;

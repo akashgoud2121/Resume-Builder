@@ -5,7 +5,7 @@ export const initialResumeData: ResumeData = {
   contact: {
     name: 'E Akash Goud',
     email: 'letsmail.akashgoud@gmail.com',
-    phone: '9049686222',
+    phone: '9849886222',
     linkedin: 'linkedin.com/in/akash-goud-7a3b62318/',
     github: 'github.com/akashgoud2121',
   },
@@ -15,8 +15,8 @@ export const initialResumeData: ResumeData = {
       id: `edu_${Date.now()}_1`,
       category: 'higher',
       school: 'Malla Reddy College Of Engineering and Technology',
-      degree: 'Computer Science',
-      date: 'May 2026',
+      degree: 'B.Tech in Computer Science (AIML)',
+      date: '2022 - 2026',
       city: 'Hyderabad',
       grades: '8.57 CGPA',
     },
@@ -25,7 +25,7 @@ export const initialResumeData: ResumeData = {
       category: 'intermediate',
       school: 'Sri Gayatri Junior College',
       degree: 'MPC',
-      date: 'Apr 2019',
+      date: '2020 - 2022',
       city: 'Hyderabad',
       grades: '95.6%',
     },
@@ -34,7 +34,7 @@ export const initialResumeData: ResumeData = {
       category: 'schooling',
       school: 'Viswa Bharathi Techno School',
       degree: 'SSC',
-      date: 'Mar 2019',
+      date: '2019 - 2020',
       city: 'Gadwal',
       grades: '9.3 GPA',
     },
@@ -42,8 +42,8 @@ export const initialResumeData: ResumeData = {
   experience: [
       {
         id: `exp_${Date.now()}`,
-        title: 'Aimi Engineer',
-        company: 'Cognisys AI',
+        title: 'Aiml Engineer',
+        company: 'Cognisys Ai',
         startDate: 'May 2025',
         endDate: 'May 2026',
         description: `- Designed and developed a responsive web application UI for daily water intake tracking, leveraging React and Tailwind CSS to enhance user experience and engagement.
@@ -68,7 +68,7 @@ export const initialResumeData: ResumeData = {
       startDate: 'Apr 2023',
       endDate: 'July 2023',
       description: `- Developed a fullstack Retrieval-Augmented Generation (RAG) chatbot using Python and Streamlit, enabling users to securely input API keys, upload custom documents, and engage in AI-powered conversations to extract precise answers.
-- Engineered a seamless user experience by integrating document upload and API key management features, enhancing the bot's ability to provide context-aware responses and improving user interaction.`
+- Engineered a seamless user experience by integrating document upload and API key management features.`
     },
   ],
   skills: [

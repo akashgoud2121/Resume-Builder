@@ -45,7 +45,7 @@ export function ResumeBuilder() {
 
     try {
         const canvas = await html2canvas(elementToCapture, {
-            scale: 2, // Use a higher scale for better resolution
+            scale: 2,
             useCORS: true,
             logging: false,
         });
@@ -65,17 +65,19 @@ export function ResumeBuilder() {
         const canvasHeight = canvas.height;
         
         const ratio = canvasWidth / canvasHeight;
-        const widthInPdf = pdfWidth;
-        const heightInPdf = widthInPdf / ratio;
-
-        // If the calculated height is greater than the PDF height, it means the content is longer.
-        // We handle this by adding new pages. However, for a standard resume, it should fit on one page.
-        // A more robust implementation for multi-page resumes might be needed if content is very long.
-        if (heightInPdf > pdfHeight) {
-            console.warn("Resume content might be too long for a single A4 page.");
+        let imgWidth = pdfWidth;
+        let imgHeight = imgWidth / ratio;
+        
+        // If image height is greater than page height, scale it down
+        if (imgHeight > pdfHeight) {
+            imgHeight = pdfHeight;
+            imgWidth = imgHeight * ratio;
         }
 
-        pdf.addImage(imgData, 'PNG', 0, 0, widthInPdf, heightInPdf);
+        const x = (pdfWidth - imgWidth) / 2;
+        const y = 0; // Top alignment
+
+        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
         pdf.save('resume.pdf');
 
         toast({

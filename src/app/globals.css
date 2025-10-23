@@ -111,7 +111,7 @@
   /* Page layout rules for printing */
   @page {
     size: A4;
-    margin: 1in;
+    margin: 0.7in;
     
     /* Remove browser-added headers and footers */
     @top-left { content: '' }

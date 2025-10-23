@@ -122,7 +122,7 @@ export function ResumeBuilder() {
                 </DialogContent>
             </Dialog>
 
-            <div className="md:hidden">
+            <div className="flex items-center gap-2 md:hidden">
               <Sheet>
                 <SheetTrigger asChild>
                   <Button variant="outline" size="icon">
@@ -135,12 +135,16 @@ export function ResumeBuilder() {
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
                   <div className="flex-1 overflow-auto p-4">
-                     <div className="mx-auto w-full scale-[0.9] origin-top">
+                     <div className="mx-auto w-[210mm] scale-[0.35] sm:scale-[0.5] md:scale-[0.7] origin-top">
                         <ResumePreview />
                      </div>
                   </div>
                 </SheetContent>
               </Sheet>
+               <Button variant="outline" size="icon" onClick={handleDownloadPdf}>
+                <Download className="h-5 w-5" />
+                <span className="sr-only">Download PDF</span>
+              </Button>
             </div>
 
             <Button onClick={handleDownloadPdf} className="hidden md:flex">

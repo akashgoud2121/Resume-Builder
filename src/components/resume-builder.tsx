@@ -15,14 +15,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/lib/store';
 import { initialResumeData } from '@/lib/defaults';
 import { Loader2 } from 'lucide-react';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 export function ResumeBuilder() {
-  const resumePreviewRef = useRef<HTMLDivElement>(null);
   const [apiKey, setApiKey] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
   const { setResumeData } = useResume();
 
@@ -33,68 +29,15 @@ export function ResumeBuilder() {
     }
   }, []);
 
-  const handleDownloadPdf = async () => {
-    const elementToCapture = resumePreviewRef.current;
-    if (!elementToCapture) return;
-
-    setIsDownloading(true);
+  const handleDownloadPdf = () => {
     toast({
-      title: "Generating PDF...",
-      description: "This may take a moment. Please wait.",
+      title: "Preparing PDF...",
+      description: "Your browser's print dialog will open. Please select 'Save as PDF'.",
     });
-
-    try {
-        const canvas = await html2canvas(elementToCapture, {
-            scale: 2,
-            useCORS: true,
-            logging: false,
-        });
-
-        const imgData = canvas.toDataURL('image/png');
-        
-        const pdf = new jsPDF({
-            orientation: 'p',
-            unit: 'mm',
-            format: 'a4',
-        });
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        
-        const ratio = canvasWidth / canvasHeight;
-        let imgWidth = pdfWidth;
-        let imgHeight = imgWidth / ratio;
-        
-        // If image height is greater than page height, scale it down
-        if (imgHeight > pdfHeight) {
-            imgHeight = pdfHeight;
-            imgWidth = imgHeight * ratio;
-        }
-
-        const x = (pdfWidth - imgWidth) / 2;
-        const y = 0; // Top alignment
-
-        pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-        pdf.save('resume.pdf');
-
-        toast({
-            title: "PDF Downloaded!",
-            description: "Your resume has been saved successfully.",
-        });
-
-    } catch (error) {
-        console.error("Error generating PDF:", error);
-        toast({
-            title: "Download Failed",
-            description: "An error occurred while generating the PDF. Please try again.",
-            variant: "destructive",
-        });
-    } finally {
-        setIsDownloading(false);
-    }
+    // Use a small timeout to allow the toast to appear before the print dialog freezes the UI
+    setTimeout(() => {
+      window.print();
+    }, 500);
   };
 
 
@@ -203,27 +146,23 @@ export function ResumeBuilder() {
                 </SheetContent>
               </Sheet>
             </div>
-            <Button onClick={handleDownloadPdf} disabled={isDownloading}>
-                {isDownloading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Download className="mr-2 h-4 w-4" />
-                )}
+            <Button onClick={handleDownloadPdf}>
+              <Download className="mr-2 h-4 w-4" />
               Download PDF
             </Button>
           </div>
         </header>
 
-        <div className="grid md:grid-cols-[1fr,auto] flex-1">
+        <div className="grid md:grid-cols-2 flex-1 print:block">
             <div className="h-full w-full overflow-y-auto p-4 md:p-6 no-scrollbar no-print">
                 <ResumeForm />
             </div>
 
-            <main id="resume-preview-container" className="hidden md:block bg-muted/30">
-              <div className="flex flex-col items-center py-8 h-[calc(100vh-64px)] overflow-auto no-scrollbar">
+            <main id="resume-preview-container" className="hidden md:block bg-muted/30 print:bg-white">
+              <div className="flex flex-col items-center py-8 h-[calc(100vh-64px)] overflow-auto no-scrollbar print:h-auto print:py-0">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <div id="resume-preview-wrapper" >
-                    <ResumePreview ref={resumePreviewRef} />
+                    <ResumePreview />
                 </div>
               </div>
             </main>

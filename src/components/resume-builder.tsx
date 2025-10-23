@@ -29,14 +29,8 @@ export function ResumeBuilder() {
   }, []);
 
   const handleDownloadPdf = () => {
-    toast({
-      title: "Preparing PDF...",
-      description: "Your browser's print dialog will open. Please select 'Save as PDF'.",
-    });
-    // Use a small timeout to allow the toast to appear before the print dialog freezes the UI
-    setTimeout(() => {
-      window.print();
-    }, 500);
+    alert("Your browser's print dialog will now open. Please choose 'Save as PDF' as the destination to download your resume.");
+    window.print();
   };
 
 

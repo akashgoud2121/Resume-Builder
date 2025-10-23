@@ -438,46 +438,44 @@ export function ResumeForm() {
                   Generate with AI
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto]">
+              <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                   <DialogTitle>Generate a Student Resume Objective</DialogTitle>
                   <DialogDescription>
                     To get the best result, provide details about your studies, any relevant experience (like internships or projects), your top skills, and what kind of role you're looking for.
                   </DialogDescription>
                 </DialogHeader>
-                <ScrollArea className="max-h-[50vh] my-4">
-                  <div className="grid gap-4 py-4 pr-6">
-                    <div className="space-y-2">
-                      <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative">
-                          <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopySummaryTemplate}>
-                              <Copy className="h-4 w-4" />
-                          </Button>
-                          <p className="font-semibold text-muted-foreground mb-1">Example Template:</p>
-                          <p>{summaryTemplateText}</p>
-                      </div>
-                      <Label htmlFor="ai-details" className="mt-4 block">
-                        Your key details
-                      </Label>
-                      <Textarea
-                        id="ai-details"
-                        value={summaryAiDetails}
-                        onChange={(e) => setSummaryAiDetails(e.target.value)}
-                        placeholder="Paste and edit the template above, or write your own details here..."
-                        rows={5}
-                      />
-                    </div>
-                    <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary}>
-                      {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                      Generate Objective
-                    </Button>
-                    {generatedSummary && (
-                      <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                        <Label>Generated Objective:</Label>
-                        <p className="text-sm">{generatedSummary}</p>
-                      </div>
-                    )}
+                <div className="py-4 space-y-4">
+                  <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
+                      <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleCopySummaryTemplate}>
+                          <Copy className="h-4 w-4" />
+                      </Button>
+                      <p className="font-semibold text-muted-foreground mb-1">Example Template:</p>
+                      <p className="pr-8">{summaryTemplateText}</p>
                   </div>
-                </ScrollArea>
+                  <div className="space-y-2">
+                    <Label htmlFor="ai-details">
+                      Your key details
+                    </Label>
+                    <Textarea
+                      id="ai-details"
+                      value={summaryAiDetails}
+                      onChange={(e) => setSummaryAiDetails(e.target.value)}
+                      placeholder="Paste and edit the template above, or write your own details here..."
+                      rows={5}
+                    />
+                  </div>
+                  <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="w-full">
+                    {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    Generate Objective
+                  </Button>
+                  {generatedSummary && (
+                    <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                      <Label>Generated Objective:</Label>
+                      <p className="text-sm">{generatedSummary}</p>
+                    </div>
+                  )}
+                </div>
                 <DialogFooter>
                   <Button variant="secondary" onClick={() => setIsSummaryAiDialogOpen(false)}>Cancel</Button>
                   <Button onClick={handleUseSummary} disabled={!generatedSummary}>
@@ -790,22 +788,21 @@ export function ResumeForm() {
             ))}
             <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
              <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
-                <DialogContent className="sm:max-w-[625px] grid-rows-[auto_1fr_auto]">
+                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>
                     <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
                     <DialogDescription>
                         Provide some details, and AI will generate professional bullet points using the STAR method.
                     </DialogDescription>
                     </DialogHeader>
-                    <ScrollArea className="max-h-[50vh] my-4">
-                      <div className="grid gap-4 py-4 pr-6">
-                        <div className="p-3 rounded-md bg-muted/50 border border-muted-foreground/20 text-sm relative mb-4">
-                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7" onClick={handleCopyExperienceTemplate}>
+                    <div className="py-4 space-y-4">
+                        <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleCopyExperienceTemplate}>
                                 <Copy className="h-4 w-4" />
                             </Button>
                             <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
-                            <p className="mb-2"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
-                            <p><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
+                            <p className="mb-2 pr-8"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
+                            <p className="pr-8"><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
                         </div>
                         <div className="space-y-2">
                           <Label>Title / Name</Label>
@@ -833,7 +830,7 @@ export function ResumeForm() {
                             placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
                           />
                         </div>
-                        <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating}>
+                        <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating} className="w-full">
                           {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                           Generate Description
                         </Button>
@@ -848,8 +845,7 @@ export function ResumeForm() {
                             />
                           </div>
                         )}
-                      </div>
-                    </ScrollArea>
+                    </div>
                     <DialogFooter>
                       <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
                       <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
@@ -874,25 +870,32 @@ export function ResumeForm() {
   return (
     <div className="w-full">
       <div className="mb-8">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center px-2">
             {allSections.map((_, index) => (
                 <React.Fragment key={index}>
-                    <div className="flex flex-col items-center">
+                    <div className="flex flex-col items-center text-center">
                         <div
                             className={cn(
-                                "h-8 w-8 rounded-full flex items-center justify-center border-2",
+                                "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all",
                                 currentStep === index ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground bg-background text-muted-foreground",
-                                currentStep > index && "bg-primary/50 border-primary/50 text-primary-foreground"
+                                currentStep > index && "bg-primary/80 border-primary/80 text-primary-foreground"
                             )}
                         >
                             {index + 1}
                         </div>
                     </div>
                     {index < allSections.length - 1 && (
-                        <div className={cn("flex-1 h-0.5", currentStep > index ? 'bg-primary' : 'bg-muted-foreground')} />
+                        <div className={cn("flex-1 h-0.5 transition-all", currentStep > index ? 'bg-primary' : 'bg-muted-foreground/50')} />
                     )}
                 </React.Fragment>
             ))}
+        </div>
+        <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
+          {allSections.map((section, index) => (
+            <div key={index} className={cn("w-1/4 text-center", currentStep === index && "font-semibold text-primary")}>
+              {section.title.split(' ')[0]}
+            </div>
+          ))}
         </div>
       </div>
       <Card className="shadow-lg transition-all duration-200">
@@ -915,3 +918,4 @@ export function ResumeForm() {
   );
 }
 
+    

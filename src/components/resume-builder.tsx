@@ -42,39 +42,7 @@ export function ResumeBuilder() {
     });
 
     try {
-        const styleSheets = Array.from(document.styleSheets)
-            .filter(sheet => sheet.href) // Ensure href is not null
-            .map(sheet => sheet.href!); // Non-null assertion
-
-        const stylePromises = styleSheets.map(href =>
-            fetch(href)
-                .then(res => res.text())
-                .catch(err => {
-                    console.warn(`Could not fetch stylesheet: ${href}`, err);
-                    return ''; // Return empty string for failed fetches
-                })
-        );
-        
-        const styles = await Promise.all(stylePromises);
-        const fullStyles = styles.join('\n');
-        const resumeHtml = elementToCapture.innerHTML;
-
-        const htmlContent = `
-            <!DOCTYPE html>
-            <html>
-                <head>
-                    <meta charset="utf-8">
-                    <title>Resume</title>
-                    <link rel="preconnect" href="https://fonts.googleapis.com" />
-                    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-                    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
-                    <style>${fullStyles}</style>
-                </head>
-                <body>
-                    ${resumeHtml}
-                </body>
-            </html>
-        `;
+        const htmlContent = elementToCapture.innerHTML;
 
         const response = await fetch('/api/generate-pdf', {
             method: 'POST',

@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight } from 'lucide-react';
-import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory } from '@/lib/types';
+import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
@@ -866,6 +866,10 @@ export function ResumeForm() {
   const handlePrev = () => {
     setCurrentStep((prev) => Math.max(prev - 1, 0));
   };
+  
+  const handleStepClick = (index: number) => {
+    setCurrentStep(index);
+  };
 
   return (
     <div className="w-full">
@@ -873,7 +877,12 @@ export function ResumeForm() {
         <div className="flex justify-between items-center px-2">
             {allSections.map((_, index) => (
                 <React.Fragment key={index}>
-                    <div className="flex flex-col items-center text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleStepClick(index)}
+                      className="flex flex-col items-center text-center cursor-pointer focus:outline-none"
+                      aria-label={`Go to step ${index + 1}`}
+                    >
                         <div
                             className={cn(
                                 "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all",
@@ -883,7 +892,7 @@ export function ResumeForm() {
                         >
                             {index + 1}
                         </div>
-                    </div>
+                    </button>
                     {index < allSections.length - 1 && (
                         <div className={cn("flex-1 h-0.5 transition-all", currentStep > index ? 'bg-primary' : 'bg-muted-foreground/50')} />
                     )}
@@ -892,9 +901,18 @@ export function ResumeForm() {
         </div>
         <div className="flex justify-between items-center text-xs text-muted-foreground mt-1">
           {allSections.map((section, index) => (
-            <div key={index} className={cn("w-1/4 text-center", currentStep === index && "font-semibold text-primary")}>
+            <button
+              type="button"
+              key={index}
+              onClick={() => handleStepClick(index)}
+              className={cn(
+                "w-1/4 text-center cursor-pointer focus:outline-none",
+                currentStep === index && "font-semibold text-primary"
+              )}
+              aria-label={`Go to ${section.title} section`}
+            >
               {section.title.split(' ')[0]}
-            </div>
+            </button>
           ))}
         </div>
       </div>

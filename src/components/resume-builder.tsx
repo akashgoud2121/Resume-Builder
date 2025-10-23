@@ -135,7 +135,7 @@ export function ResumeBuilder() {
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
                   <div className="flex-1 overflow-auto p-4">
-                     <div className="mx-auto w-[210mm] scale-[0.35] sm:scale-[0.5] md:scale-[0.7] origin-top">
+                     <div className="mx-auto w-fit" style={{ transform: 'scale(0.8)', transformOrigin: 'top' }}>
                         <ResumePreview />
                      </div>
                   </div>
@@ -162,7 +162,7 @@ export function ResumeBuilder() {
             <main id="resume-preview-container" className="hidden md:block bg-muted/30">
               <div className="flex flex-col items-center py-8 h-[calc(100vh-64px)] overflow-auto no-scrollbar print:h-auto print:py-0">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
-                <div id="resume-preview-wrapper">
+                <div id="resume-preview-wrapper" style={{ transform: 'scale(0.75)', transformOrigin: 'top' }}>
                     <ResumePreview />
                 </div>
               </div>

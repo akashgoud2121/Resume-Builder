@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Rocket, GraduationCap, Settings } from 'lucide-react';
+import { FileText, GraduationCap, Settings } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -48,7 +48,7 @@ export default function Home() {
     <div className="flex min-h-screen w-full flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
-          <Rocket className="h-6 w-6 text-primary" />
+          <FileText className="h-6 w-6 text-primary" />
           <span className="font-headline text-xl">Resume Builder</span>
         </Link>
         <div className="flex items-center gap-4">

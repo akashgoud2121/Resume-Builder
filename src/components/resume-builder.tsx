@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, Download, Rocket, Settings } from 'lucide-react';
+import { Eye, Download, FileText, Settings } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
@@ -59,7 +59,7 @@ export function ResumeBuilder() {
         <header className="no-print flex h-16 shrink-0 items-center justify-between border-b-2 px-4 md:px-6 sticky top-0 z-30 bg-background">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
-              <Rocket className="h-6 w-6 text-primary" />
+              <FileText className="h-6 w-6 text-primary" />
               <span className="font-headline text-xl font-bold">Resume Builder</span>
             </Link>
           </div>

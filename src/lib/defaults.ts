@@ -1,5 +1,5 @@
 
-import type { ResumeData } from './types';
+import type { ResumeData, EducationCategory } from './types';
 
 export const initialResumeData: ResumeData = {
   contact: {

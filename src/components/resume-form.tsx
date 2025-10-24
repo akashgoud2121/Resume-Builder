@@ -20,7 +20,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { GenerateSummaryInput } from '@/ai/schemas';
 
-const educationCategoryConfig = {
+const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
     title: 'Schooling (Class X/XII)',
     fields: {
@@ -49,6 +49,16 @@ const educationCategoryConfig = {
       date: { label: 'Expected Graduation Year', placeholder: 'e.g., May 2027' },
       city: { label: 'City / State', placeholder: 'e.g., Mumbai, Maharashtra' },
       grades: { label: 'CGPA / Percentage', placeholder: 'e.g., 8.5 CGPA' },
+    }
+  },
+  other: {
+    title: 'Other Qualification',
+    fields: {
+      school: { label: 'Institution / Provider Name', placeholder: 'e.g., Coursera' },
+      degree: { label: 'Qualification / Course Name', placeholder: 'e.g., Machine Learning Specialization' },
+      date: { label: 'Completion Year', placeholder: 'e.g., 2024' },
+      city: { label: 'Location (Optional)', placeholder: 'e.g., Online' },
+      grades: { label: 'Grades / Score (Optional)', placeholder: 'e.g., 98%' },
     }
   }
 };
@@ -635,6 +645,7 @@ export function ResumeForm() {
                         <SelectItem value="higher">Higher Education (University)</SelectItem>
                         <SelectItem value="intermediate">Intermediate/Diploma</SelectItem>
                         <SelectItem value="schooling">Schooling (Class X/XII)</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

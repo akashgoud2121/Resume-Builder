@@ -7,7 +7,7 @@ export type ContactInfo = {
   github: string;
 };
 
-export type EducationCategory = 'schooling' | 'intermediate' | 'higher';
+export type EducationCategory = 'schooling' | 'intermediate' | 'higher' | 'other';
 
 export type Education = {
   id: string;

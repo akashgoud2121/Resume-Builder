@@ -5,7 +5,7 @@ import React from 'react';
 import { useResume } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Label } from '@/lib/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory } from '@/lib/types';
@@ -82,6 +82,19 @@ const initialSummaryAiState: GenerateSummaryInput = {
     skills: 'React, Python, SQL',
     jobType: 'Software Engineering Internship'
 };
+
+const SKILL_CATEGORIES = [
+  'Programming Languages',
+  'Frontend Frameworks & Libraries',
+  'Backend Frameworks & Libraries',
+  'Styling & UI Libraries',
+  'Databases',
+  'Cloud & DevOps',
+  'Developer Tools',
+  'AI/ML Concepts',
+  'Other',
+];
+
 
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
@@ -222,7 +235,7 @@ export function ResumeForm() {
       } else if (section === 'projects') {
         newEntry = { id: `proj_${Date.now()}`, title: '', organization: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'skills') {
-        newEntry = { id: `skillcat_${Date.now()}`, name: 'New Category', skills: '' };
+        newEntry = { id: `skillcat_${Date.now()}`, name: 'Programming Languages', skills: '' };
       } else if (section === 'certifications') {
         newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '' };
       } else if (section === 'achievements') {
@@ -445,16 +458,19 @@ export function ResumeForm() {
                   <DialogDescription>
                     Provide a few key details, and our AI will craft a professional and personalized objective for you.
                   </DialogDescription>
+                   <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                  </DialogClose>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="year">Year / Level of Study</Label>
                          <Select
+                            value={summaryAiState.year}
                             onValueChange={(value) => {
-                                if (value !== 'other') {
-                                    setSummaryAiState(prev => ({...prev, year: value}));
-                                }
+                                setSummaryAiState(prev => ({...prev, year: value}));
                             }}
                          >
                             <SelectTrigger>
@@ -465,7 +481,7 @@ export function ResumeForm() {
                                 <SelectItem value="Second-year">Second-year</SelectItem>
                                 <SelectItem value="Third-year">Third-year</SelectItem>
                                 <SelectItem value="Final-year">Final-year</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
+                                <SelectItem value="Other">Other (Specify Below)</SelectItem>
                             </SelectContent>
                         </Select>
                         <Input id="year" name="year" value={summaryAiState.year} onChange={handleSummaryAiStateChange} placeholder="e.g., Final-year" className="mt-2" />
@@ -530,6 +546,10 @@ export function ResumeForm() {
                             <DialogDescription>
                                 The AI will analyze your summary, experience, and projects to suggest relevant technical skills, organized by category. Your existing skills will be replaced.
                             </DialogDescription>
+                             <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Close</span>
+                            </DialogClose>
                         </DialogHeader>
                         <DialogFooter>
                             <Button variant="secondary" onClick={() => setIsSkillsAiDialogOpen(false)}>Cancel</Button>
@@ -546,16 +566,36 @@ export function ResumeForm() {
                   <CardContent className="grid grid-cols-1 gap-4 p-2">
                     <div className="space-y-2">
                       <Label>Skill Category</Label>
-                      <Input 
-                        value={category.name} 
-                        onChange={e => handleGenericChange('skills', index, 'name', e.target.value)} 
-                        placeholder="e.g., Programming Languages" />
+                      <Select
+                        value={SKILL_CATEGORIES.includes(category.name) ? category.name : 'Other'}
+                        onValueChange={(value) => {
+                          if (value !== 'Other') {
+                            handleGenericChange('skills', index, 'name', value);
+                          }
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SKILL_CATEGORIES.map(cat => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        value={category.name}
+                        onChange={e => handleGenericChange('skills', index, 'name', e.target.value)}
+                        placeholder="Or type a custom category"
+                        className="mt-2"
+                      />
+                       <p className="text-xs text-muted-foreground">Select a category or type your own if you choose 'Other'.</p>
                     </div>
                     <div className="space-y-2">
                       <Label>Skills</Label>
-                      <Textarea 
-                        value={category.skills} 
-                        onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)} 
+                      <Textarea
+                        value={category.skills}
+                        onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)}
                         placeholder="e.g., JavaScript, Python, Java"
                         rows={3}
                       />
@@ -592,9 +632,9 @@ export function ResumeForm() {
                         <SelectValue placeholder="Select a category" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="schooling">Schooling (Class X/XII)</SelectItem>
-                        <SelectItem value="intermediate">Intermediate/Diploma</SelectItem>
                         <SelectItem value="higher">Higher Education (University)</SelectItem>
+                        <SelectItem value="intermediate">Intermediate/Diploma</SelectItem>
+                        <SelectItem value="schooling">Schooling (Class X/XII)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -898,6 +938,10 @@ export function ResumeForm() {
                 <DialogDescription>
                     Provide some details, and AI will generate professional bullet points using the STAR method.
                 </DialogDescription>
+                 <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                    <X className="h-4 w-4" />
+                    <span className="sr-only">Close</span>
+                  </DialogClose>
               </DialogHeader>
               <div className="py-4 space-y-4">
                   <div className="p-4 rounded-md bg-muted/70 border text-sm relative">

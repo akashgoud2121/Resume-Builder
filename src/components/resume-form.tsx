@@ -727,12 +727,6 @@ export function ResumeForm() {
                                 ))}
                             </SelectContent>
                         </Select>
-                         <Input
-                            value={proj.projectType}
-                            onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
-                            placeholder="Or type a custom project type"
-                            className="mt-2"
-                        />
                       </div>
                       <div className="space-y-2">
                           <Label>Organization / Affiliation</Label>

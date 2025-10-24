@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow for generating a professional resume summary.
@@ -15,10 +16,21 @@ export async function generateSummary(input: GenerateSummaryInput & { userApiKey
     name: 'generateSummaryPrompt',
     input: { schema: GenerateSummaryInputSchema },
     output: { schema: GenerateSummaryOutputSchema },
-    prompt: `You are an expert resume writer and career coach. Based on the following details, write a concise, impactful, and professional summary for a resume. The summary should be 2-4 sentences long.
+    prompt: `You are an expert career coach and resume writer specializing in creating standout objectives for students.
+Your task is to write a concise, impactful, and professional resume summary (2-3 sentences) tailored to the user's specific situation.
+It is critical to generate a unique summary based on the inputs. For a larger audience, seeing the same type of objective is boring. Adapt the tone and focus based on their year of study.
 
-Key Details:
-{{{details}}}
+- For a 'first-year' or 'second-year' student, emphasize enthusiasm, foundational knowledge, and a strong desire to learn and contribute.
+- For a 'third-year' or 'final-year' student, focus more on specialized skills, project experience, and readiness to apply knowledge in a professional setting.
+
+User's Details:
+- Year/Level: {{{year}}}
+- Major: {{{major}}}
+- Specialization: {{{specialization}}}
+- Top Skills: {{{skills}}}
+- Desired Role: {{{jobType}}}
+
+Generate a professional summary based on these details.
 `,
   });
 
@@ -36,3 +48,5 @@ Key Details:
 
   return generateSummaryFlow(promptInput);
 }
+
+    

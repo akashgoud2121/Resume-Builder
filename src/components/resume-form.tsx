@@ -18,6 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
+import type { GenerateSummaryInput } from '@/ai/schemas';
 
 const educationCategoryConfig = {
   schooling: {
@@ -70,11 +71,19 @@ type AiExperienceState = {
   targetType: 'experience' | 'projects' | 'achievements' | 'certifications';
 };
 
+const initialSummaryAiState: GenerateSummaryInput = {
+    year: 'Final-year',
+    major: 'Computer Science',
+    specialization: 'AI/ML',
+    skills: 'React, Python, SQL',
+    jobType: 'Software Engineering Internship'
+};
+
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
   const [userApiKey, setUserApiKey] = useState<string | null>(null);
   const [isSummaryAiDialogOpen, setIsSummaryAiDialogOpen] = useState(false);
-  const [summaryAiDetails, setSummaryAiDetails] = useState('');
+  const [summaryAiState, setSummaryAiState] = useState<GenerateSummaryInput>(initialSummaryAiState);
   const [generatedSummary, setGeneratedSummary] = useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const { toast } = useToast();
@@ -109,8 +118,6 @@ export function ResumeForm() {
         window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
-
-  const summaryTemplateText = "I am a [Your Year, e.g., final-year] [Your Major] student specializing in [Your Specialization]. I have experience with [Your Top 2-3 Skills, e.g., React, Python, and SQL]. I am seeking a [Job Type, e.g., software engineering internship] to apply my skills and contribute to a challenging environment.";
 
   const templateTexts = {
     experience: {
@@ -166,6 +173,10 @@ export function ResumeForm() {
 
   const handleSummaryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setResumeData(prev => ({ ...prev, summary: e.target.value }));
+  };
+  
+  const handleSummaryAiStateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSummaryAiState(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType | Certification | Achievement>(
@@ -228,18 +239,10 @@ export function ResumeForm() {
   };
 
   const handleGenerateSummary = async () => {
-    if (!summaryAiDetails.trim()) {
-      toast({
-        title: "Details are empty",
-        description: "Please provide some details to generate a summary.",
-        variant: "destructive",
-      });
-      return;
-    }
     setIsGeneratingSummary(true);
     setGeneratedSummary('');
     try {
-      const result = await generateSummary({ details: summaryAiDetails, userApiKey });
+      const result = await generateSummary({ ...summaryAiState, userApiKey });
       if (result.summary) {
         setGeneratedSummary(result.summary);
       }
@@ -261,15 +264,6 @@ export function ResumeForm() {
     toast({
       title: "Summary Updated!",
       description: "The AI-generated summary has been added to your resume.",
-    });
-  };
-
-  const handleCopySummaryTemplate = () => {
-    navigator.clipboard.writeText(summaryTemplateText).then(() => {
-      toast({
-        title: "Template Copied!",
-        description: "Paste it in the text area below to get started.",
-      });
     });
   };
   
@@ -445,28 +439,31 @@ export function ResumeForm() {
                 <DialogHeader>
                   <DialogTitle>Generate a Student Resume Objective</DialogTitle>
                   <DialogDescription>
-                    To get the best result, provide details about your studies, any relevant experience (like internships or projects), your top skills, and what kind of role you're looking for.
+                    Provide a few key details, and our AI will craft a professional and personalized objective for you.
                   </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
-                  <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
-                      <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleCopySummaryTemplate}>
-                          <Copy className="h-4 w-4" />
-                      </Button>
-                      <p className="font-semibold text-muted-foreground mb-1">Example Template:</p>
-                      <p className="pr-8">{summaryTemplateText}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ai-details">
-                      Your key details
-                    </Label>
-                    <Textarea
-                      id="ai-details"
-                      value={summaryAiDetails}
-                      onChange={(e) => setSummaryAiDetails(e.target.value)}
-                      placeholder="Paste and edit the template above, or write your own details here..."
-                      rows={5}
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="year">Year / Level of Study</Label>
+                        <Input id="year" name="year" value={summaryAiState.year} onChange={handleSummaryAiStateChange} placeholder="e.g., Final-year" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="major">Major / Field of Study</Label>
+                        <Input id="major" name="major" value={summaryAiState.major} onChange={handleSummaryAiStateChange} placeholder="e.g., Computer Science" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="specialization">Specialization (Optional)</Label>
+                        <Input id="specialization" name="specialization" value={summaryAiState.specialization} onChange={handleSummaryAiStateChange} placeholder="e.g., AI/ML" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="jobType">Desired Role</Label>
+                        <Input id="jobType" name="jobType" value={summaryAiState.jobType} onChange={handleSummaryAiStateChange} placeholder="e.g., Software Internship" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-2">
+                        <Label htmlFor="skills">Top Skills</Label>
+                        <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
+                      </div>
                   </div>
                   <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="w-full">
                     {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
@@ -938,3 +935,5 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    

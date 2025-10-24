@@ -6,7 +6,11 @@ import { z } from 'genkit';
 
 // Summary Generation
 export const GenerateSummaryInputSchema = z.object({
-  details: z.string().describe('Key highlights, skills, and career goals to include in the summary.'),
+  year: z.string().describe("The user's current year of study or academic level (e.g., 'Final-year', 'Second-year', 'First-year')."),
+  major: z.string().describe("The user's primary field of study or major (e.g., 'Computer Science', 'Electrical Engineering')."),
+  specialization: z.string().describe("An optional specialization within their major (e.g., 'AI/ML', 'Cybersecurity')."),
+  skills: z.string().describe("A comma-separated list of the user's top 2-3 technical skills (e.g., 'React, Python, SQL')."),
+  jobType: z.string().describe("The type of role the user is seeking (e.g., 'Software Engineering Internship', 'Data Analyst full-time role')."),
 });
 export type GenerateSummaryInput = z.infer<typeof GenerateSummaryInputSchema>;
 
@@ -45,3 +49,5 @@ export const GenerateSkillsOutputSchema = z.object({
   skillCategories: z.array(SkillCategorySchema).describe('An array of categorized skills.'),
 });
 export type GenerateSkillsOutput = z.infer<typeof GenerateSkillsOutputSchema>;
+
+    

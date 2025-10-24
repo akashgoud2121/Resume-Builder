@@ -65,22 +65,6 @@ export function ResumeBuilder() {
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setResumeData(initialResumeData);
-                try {
-                  localStorage.setItem('resumeData', JSON.stringify(initialResumeData));
-                } catch {}
-                toast({
-                  title: 'Demo data loaded',
-                  description: 'The form has been populated with sample content.',
-                });
-              }}
-            >
-              Load Demo
-            </Button>
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                 <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Settings">

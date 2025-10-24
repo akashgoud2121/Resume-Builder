@@ -689,50 +689,6 @@ export function ResumeForm() {
       )
     },
     {
-        title: "Work Experience",
-        shortTitle: "Experience",
-        content: (
-          <div className="space-y-4">
-            {resumeData.experience.map((exp, index) => (
-                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
-                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                      <div className="space-y-2">
-                          <Label>Job Title/Role</Label>
-                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Company</Label>
-                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Start Date</Label>
-                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>End Date</Label>
-                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
-                      </div>
-                      <div className="sm:col-span-2 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <Label>Description</Label>
-                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Generate with AI
-                            </Button>
-                          </div>
-                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
-                      </div>
-                  </CardContent>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
-                      <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Card>
-            ))}
-            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
-          </div>
-        )
-    },
-    {
         title: "Projects",
         shortTitle: "Projects",
         content: (
@@ -880,6 +836,50 @@ export function ResumeForm() {
             <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
           </div>
         ),
+    },
+    {
+        title: "Work Experience",
+        shortTitle: "Experience",
+        content: (
+          <div className="space-y-4">
+            {resumeData.experience.map((exp, index) => (
+                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
+                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                      <div className="space-y-2">
+                          <Label>Job Title/Role</Label>
+                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Company</Label>
+                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Start Date</Label>
+                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>End Date</Label>
+                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
+                      </div>
+                      <div className="sm:col-span-2 space-y-2">
+                          <div className="flex justify-between items-center">
+                            <Label>Description</Label>
+                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate with AI
+                            </Button>
+                          </div>
+                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
+                      </div>
+                  </CardContent>
+                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
+                      <Trash2 className="h-4 w-4" />
+                  </Button>
+                </Card>
+            ))}
+            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+          </div>
+        )
     },
   ];
   

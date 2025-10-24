@@ -190,7 +190,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
                 {proj.projectType}
-                {proj.organization && ` at ${proj.organization}`}
+                {(proj.organization && proj.organization.toLowerCase() !== 'personal project') && ` at ${proj.organization}`}
               </p>
               {renderDescription(proj.description)}
             </div>

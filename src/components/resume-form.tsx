@@ -5,7 +5,7 @@ import React from 'react';
 import { useResume } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/lib/label';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory } from '@/lib/types';
@@ -391,7 +391,7 @@ export function ResumeForm() {
       } else {
         toast({
           title: "No Skills Generated",
-          description: "The AI couldn't suggest any skills. Try adding more content to your summary, experience, or projects.",
+          description: "The AI couldn't suggest any skills. Try adding more content to your resume, experience, or projects.",
           variant: "destructive"
         });
       }
@@ -1005,3 +1005,5 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    

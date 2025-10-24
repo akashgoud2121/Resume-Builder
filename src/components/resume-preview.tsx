@@ -175,7 +175,9 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                 <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
                 <p className="text-sm text-gray-600 font-medium">{proj.startDate} - {proj.endDate}</p>
               </div>
-              {proj.organization && <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{proj.organization}</p>}
+              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
+                {proj.projectType && `${proj.projectType} at `}{proj.organization}
+              </p>
               {renderDescription(proj.description)}
             </div>
           ))}
@@ -248,5 +250,3 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 ResumePreview.displayName = "ResumePreview";
-
-    

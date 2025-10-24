@@ -58,7 +58,8 @@ export const initialResumeData: ResumeData = {
     {
       id: `proj_${Date.now()}_1`,
       title: 'Trust Free Block Chain Frame work For AIGC And Management in Metaverse',
-      organization: 'Major Project',
+      projectType: 'Major Project',
+      organization: 'Malla Reddy College Of Engineering and Technology',
       startDate: 'April 2025',
       endDate: 'May 2025',
       description: `- Developed a trust-free front-end interface using React and Tailwind CSS, facilitating seamless transactions for AI-generated content within a metaverse network.
@@ -67,7 +68,8 @@ export const initialResumeData: ResumeData = {
     {
       id: `proj_${Date.now()}_2`,
       title: 'RAG Chat bot',
-      organization: 'Minor Project',
+      projectType: 'Minor Project',
+      organization: 'Personal Project',
       startDate: 'Apr 2023',
       endDate: 'July 2023',
       description: `- Developed a fullstack Retrieval-Augmented Generation (RAG) chatbot using Python and Streamlit, enabling users to securely input API keys, upload custom documents, and engage in AI-powered conversations to extract precise answers.
@@ -132,5 +134,3 @@ export const initialResumeData: ResumeData = {
     }
   ],
 };
-
-    

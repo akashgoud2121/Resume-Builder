@@ -32,6 +32,7 @@ export type Experience = {
 export type Project = {
   id:string;
   title: string;
+  projectType: string;
   organization: string;
   startDate: string;
   endDate: string;

@@ -109,6 +109,16 @@ const SKILL_CATEGORIES = [
   'Other',
 ];
 
+const PROJECT_TYPES = [
+    'Major Project',
+    'Minor Project',
+    'Course Project',
+    'Personal Project',
+    'Client Project',
+    '3rd-1 Sem App Dev',
+    '3rd-2 Sem App Dev 2',
+    'Other'
+];
 
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
@@ -247,7 +257,7 @@ export function ResumeForm() {
       } else if (section === 'experience') {
         newEntry = { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'projects') {
-        newEntry = { id: `proj_${Date.now()}`, title: '', organization: '', startDate: '', endDate: '', description: '' };
+        newEntry = { id: `proj_${Date.now()}`, title: '', projectType: 'Personal Project', organization: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'skills') {
         newEntry = { id: `skillcat_${Date.now()}`, name: 'Programming Languages', skills: '' };
       } else if (section === 'certifications') {
@@ -696,13 +706,37 @@ export function ResumeForm() {
             {resumeData.projects.map((proj, index) => (
                 <Card key={proj.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                      <div className="space-y-2">
+                      <div className="space-y-2 sm:col-span-2">
                           <Label>Project Title</Label>
                           <Input value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" />
                       </div>
                       <div className="space-y-2">
-                          <Label>Organization/Context</Label>
-                          <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., Personal Project, Coursework" />
+                        <Label>Project Type</Label>
+                        <Select
+                            value={PROJECT_TYPES.includes(proj.projectType) ? proj.projectType : 'Other'}
+                            onValueChange={(value) => {
+                                handleGenericChange('projects', index, 'projectType', value);
+                            }}
+                        >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a type" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {PROJECT_TYPES.map(type => (
+                                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                         <Input
+                            value={proj.projectType}
+                            onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
+                            placeholder="Or type a custom project type"
+                            className="mt-2"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                          <Label>Organization / Affiliation</Label>
+                          <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., Personal Project, University Name" />
                       </div>
                       <div className="space-y-2">
                           <Label>Start Date</Label>
@@ -1024,7 +1058,3 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    
-
-    

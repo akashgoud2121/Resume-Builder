@@ -110,7 +110,8 @@ export const initialResumeData: ResumeData = {
       issuer: 'SalesForce',
       date: 'May 2024',
       description: `- Architected and developed robust, secure, and scalable solutions on the Salesforce platform, demonstrating validated proficiency through successful completion of rigorous hands-on labs and a comprehensive final certification exam.
-- Engineered dynamic and efficient Salesforce solutions by leveraging advanced platform features, showcasing expertise in solution management and optimization through intensive virtual internship exercises.`
+- Engineered dynamic and efficient Salesforce solutions by leveraging advanced platform features, showcasing expertise in solution management and optimization through intensive virtual internship exercises.`,
+      technologies: 'Apex, Lightning Web Components, SOQL, Salesforce CLI',
     }
   ],
   achievements: [

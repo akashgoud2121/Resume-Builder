@@ -261,7 +261,7 @@ export function ResumeForm() {
       } else if (section === 'skills') {
         newEntry = { id: `skillcat_${Date.now()}`, name: 'Programming Languages', skills: '' };
       } else if (section === 'certifications') {
-        newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '' };
+        newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '', technologies: '' };
       } else if (section === 'achievements') {
         newEntry = { id: `ach_${Date.now()}`, category: 'other' as AchievementCategory, name: '', context: '', date: '', description: '' };
       }
@@ -321,7 +321,7 @@ export function ResumeForm() {
       targetType: type,
       projectTitle: title,
       projectDescription: '',
-      technologiesUsed: '',
+      technologiesUsed: (type === 'certifications' && 'technologies' in entry) ? entry.technologies : '',
       generatedBulletPoints: '',
       isGenerating: false,
     });
@@ -789,6 +789,16 @@ export function ResumeForm() {
                         </Button>
                     </div>
                     <Textarea value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} />
+                </div>
+                <div className="sm:col-span-2 space-y-2">
+                  <Label>Technologies/Skills Covered</Label>
+                  <Textarea
+                    value={cert.technologies}
+                    onChange={e => handleGenericChange('certifications', index, 'technologies', e.target.value)}
+                    placeholder="e.g., VPC, IAM, BigQuery, Cloud Functions"
+                    rows={2}
+                  />
+                  <p className="text-sm text-muted-foreground">Separate items with a comma.</p>
                 </div>
               </CardContent>
               <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('certifications', cert.id)}>

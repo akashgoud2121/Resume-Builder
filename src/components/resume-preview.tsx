@@ -4,7 +4,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { EducationCategory, Achievement, AchievementCategory } from '@/lib/types';
+import type { EducationCategory, Achievement, AchievementCategory, Certification } from '@/lib/types';
 import { Github, Linkedin, Mail, Phone, Link as LinkIcon } from 'lucide-react';
 
 
@@ -189,8 +189,8 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                 <p className="text-sm text-gray-600 font-medium">{proj.startDate} - {proj.endDate}</p>
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
-                {proj.projectType}
-                {(proj.organization && proj.organization.toLowerCase() !== 'personal project') && ` at ${proj.organization}`}
+                 {proj.projectType}
+                 {proj.organization && proj.organization.toLowerCase() !== 'personal project' && ` at ${proj.organization}`}
               </p>
               {renderDescription(proj.description)}
             </div>
@@ -198,7 +198,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       </Section>
 
       <Section title="Certifications" hasData={certifications.length > 0 && certifications.some(c => c.name)}>
-          {certifications.map(cert => cert.name && (
+          {certifications.map((cert: Certification) => cert.name && (
             <div key={cert.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="text-base font-bold text-gray-900">{cert.name}</h3>
@@ -206,6 +206,12 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{cert.issuer}</p>
               {renderDescription(cert.description)}
+              {cert.technologies && (
+                  <div className="mt-1.5 text-sm">
+                      <span className="font-bold text-gray-800">Skills Covered: </span>
+                      <span className="text-gray-700">{cert.technologies}</span>
+                  </div>
+              )}
             </div>
           ))}
       </Section>

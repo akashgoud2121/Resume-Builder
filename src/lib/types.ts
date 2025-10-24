@@ -51,6 +51,7 @@ export type Certification = {
   issuer: string;
   date: string;
   description: string;
+  technologies: string;
 };
 
 export type AchievementCategory = 'workshop' | 'hackathon' | 'poster' | 'techfest' | 'leadership' | 'volunteering' | 'publication' | 'other';

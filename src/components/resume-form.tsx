@@ -450,7 +450,25 @@ export function ResumeForm() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="year">Year / Level of Study</Label>
-                        <Input id="year" name="year" value={summaryAiState.year} onChange={handleSummaryAiStateChange} placeholder="e.g., Final-year" />
+                         <Select
+                            onValueChange={(value) => {
+                                if (value !== 'other') {
+                                    setSummaryAiState(prev => ({...prev, year: value}));
+                                }
+                            }}
+                         >
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a level" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="First-year">First-year</SelectItem>
+                                <SelectItem value="Second-year">Second-year</SelectItem>
+                                <SelectItem value="Third-year">Third-year</SelectItem>
+                                <SelectItem value="Final-year">Final-year</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <Input id="year" name="year" value={summaryAiState.year} onChange={handleSummaryAiStateChange} placeholder="e.g., Final-year" className="mt-2" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="major">Major / Field of Study</Label>
@@ -466,7 +484,7 @@ export function ResumeForm() {
                       </div>
                       <div className="sm:col-span-2 space-y-2">
                         <Label htmlFor="skills">Top Skills</Label>
-                        <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
+                        <Input id="skills" name="skills" value={summaryAi-state.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
                       </div>
                   </div>
                   <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="w-full">
@@ -943,5 +961,7 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    
 
     

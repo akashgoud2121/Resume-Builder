@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useResume } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,19 +85,19 @@ const initialSummaryAiState: GenerateSummaryInput = {
 
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
-  const [userApiKey, setUserApiKey] = useState<string | null>(null);
-  const [isSummaryAiDialogOpen, setIsSummaryAiDialogOpen] = useState(false);
-  const [summaryAiState, setSummaryAiState] = useState<GenerateSummaryInput>(initialSummaryAiState);
-  const [generatedSummary, setGeneratedSummary] = useState('');
-  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [userApiKey, setUserApiKey] = React.useState<string | null>(null);
+  const [isSummaryAiDialogOpen, setIsSummaryAiDialogOpen] = React.useState(false);
+  const [summaryAiState, setSummaryAiState] = React.useState<GenerateSummaryInput>(initialSummaryAiState);
+  const [generatedSummary, setGeneratedSummary] = React.useState('');
+  const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
   const { toast } = useToast();
 
-  const [isSkillsAiDialogOpen, setIsSkillsAiDialogOpen] = useState(false);
-  const [isGeneratingSkills, setIsGeneratingSkills] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
+  const [isSkillsAiDialogOpen, setIsSkillsAiDialogOpen] = React.useState(false);
+  const [isGeneratingSkills, setIsGeneratingSkills] = React.useState(false);
+  const [currentStep, setCurrentStep] = React.useState(0);
 
 
-  const [aiExperienceState, setAiExperienceState] = useState<AiExperienceState>({
+  const [aiExperienceState, setAiExperienceState] = React.useState<AiExperienceState>({
     isOpen: false,
     projectTitle: '',
     projectDescription: '',
@@ -108,7 +108,7 @@ export function ResumeForm() {
     targetType: 'experience',
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     const key = localStorage.getItem('userApiKey');
     setUserApiKey(key);
 
@@ -484,7 +484,7 @@ export function ResumeForm() {
                       </div>
                       <div className="sm:col-span-2 space-y-2">
                         <Label htmlFor="skills">Top Skills</Label>
-                        <Input id="skills" name="skills" value={summaryAi-state.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
+                        <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
                       </div>
                   </div>
                   <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="w-full">
@@ -961,7 +961,5 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    
 
     

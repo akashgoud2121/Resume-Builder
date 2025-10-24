@@ -155,34 +155,6 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           </div>
       </Section>
 
-      <Section title="Work Experience" hasData={experience.length > 0 && experience.some(e => e.title)}>
-          {experience.map(exp => exp.title && (
-            <div key={exp.id} className="mb-4 break-inside-avoid">
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="text-base font-bold text-gray-900">{exp.title}</h3>
-                <p className="text-sm text-gray-600 font-medium">{exp.startDate} - {exp.endDate}</p>
-              </div>
-              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{exp.company}</p>
-              {renderDescription(exp.description)}
-            </div>
-          ))}
-      </Section>
-
-      <Section title="Projects" hasData={projects.length > 0 && projects.some(p => p.title)}>
-          {projects.map(proj => proj.title && (
-            <div key={proj.id} className="mb-4 break-inside-avoid">
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
-                <p className="text-sm text-gray-600 font-medium">{proj.startDate} - {proj.endDate}</p>
-              </div>
-              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
-                {proj.projectType && `${proj.projectType} at `}{proj.organization}
-              </p>
-              {renderDescription(proj.description)}
-            </div>
-          ))}
-      </Section>
-
       <Section title="Education" hasData={education.some(e => e.school)}>
         <div className="space-y-3">
           {educationOrder.map(category => {
@@ -209,6 +181,22 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       </Section>
       
+      <Section title="Projects" hasData={projects.length > 0 && projects.some(p => p.title)}>
+          {projects.map(proj => proj.title && (
+            <div key={proj.id} className="mb-4 break-inside-avoid">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
+                <p className="text-sm text-gray-600 font-medium">{proj.startDate} - {proj.endDate}</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
+                {proj.projectType}
+                {proj.organization && ` at ${proj.organization}`}
+              </p>
+              {renderDescription(proj.description)}
+            </div>
+          ))}
+      </Section>
+
       <Section title="Certifications" hasData={certifications.length > 0 && certifications.some(c => c.name)}>
           {certifications.map(cert => cert.name && (
             <div key={cert.id} className="mb-4 break-inside-avoid">
@@ -243,6 +231,19 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                   </div>
               );
           })}
+      </Section>
+      
+      <Section title="Work Experience" hasData={experience.length > 0 && experience.some(e => e.title)}>
+          {experience.map(exp => exp.title && (
+            <div key={exp.id} className="mb-4 break-inside-avoid">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="text-base font-bold text-gray-900">{exp.title}</h3>
+                <p className="text-sm text-gray-600 font-medium">{exp.startDate} - {exp.endDate}</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{exp.company}</p>
+              {renderDescription(exp.description)}
+            </div>
+          ))}
       </Section>
 
     </div>

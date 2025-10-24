@@ -53,11 +53,15 @@ const educationCategoryConfig = {
   }
 };
 
-const achievementCategoryConfig = {
+const achievementCategoryConfig: Record<AchievementCategory, { title: string; nameLabel: string; contextLabel: string }> = {
     workshop: { title: 'Workshop', nameLabel: 'Workshop Title', contextLabel: 'Conducted by' },
     hackathon: { title: 'Hackathon', nameLabel: 'Hackathon Name / Project Title', contextLabel: 'Organized by / Rank' },
     poster: { title: 'Poster Presentation', nameLabel: 'Presentation Title', contextLabel: 'Event / Conference' },
     techfest: { title: 'Techfest Participation', nameLabel: 'Event Name', contextLabel: 'Organized by / Role' },
+    leadership: { title: 'Leadership', nameLabel: 'Role / Position', contextLabel: 'Organization / Club' },
+    volunteering: { title: 'Volunteering', nameLabel: 'Role', contextLabel: 'Organization' },
+    publication: { title: 'Publication', nameLabel: 'Paper / Article Title', contextLabel: 'Journal / Conference Name' },
+    other: { title: 'Other', nameLabel: 'Activity Name', contextLabel: 'Context (e.g., Competition Name)' },
 };
 
 type AiExperienceState = {
@@ -222,7 +226,7 @@ export function ResumeForm() {
       } else if (section === 'certifications') {
         newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '' };
       } else if (section === 'achievements') {
-        newEntry = { id: `ach_${Date.now()}`, category: 'hackathon' as AchievementCategory, name: '', context: '', date: '', description: '' };
+        newEntry = { id: `ach_${Date.now()}`, category: 'other' as AchievementCategory, name: '', context: '', date: '', description: '' };
       }
       else {
         return prev;
@@ -760,6 +764,10 @@ export function ResumeForm() {
                             <SelectItem value="workshop">Workshop</SelectItem>
                             <SelectItem value="poster">Poster Presentation</SelectItem>
                             <SelectItem value="techfest">Techfest Participation</SelectItem>
+                            <SelectItem value="leadership">Leadership</SelectItem>
+                            <SelectItem value="volunteering">Volunteering</SelectItem>
+                            <SelectItem value="publication">Publication</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
                         </SelectContent>
                         </Select>
                     </div>
@@ -935,5 +943,3 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    

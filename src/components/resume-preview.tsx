@@ -13,6 +13,10 @@ const achievementCategoryTitles: Record<AchievementCategory, string> = {
   workshop: 'Workshops',
   poster: 'Poster Presentations',
   techfest: 'Techfest Participation',
+  leadership: 'Leadership Roles',
+  volunteering: 'Volunteering',
+  publication: 'Publications',
+  other: 'Other Activities',
 };
 
 const addHttp = (url: string) => {
@@ -66,7 +70,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling'];
 
   const groupedAchievements = achievements.reduce((acc, ach) => {
-    const category = ach.category || 'hackathon';
+    const category = ach.category || 'other';
     if (!acc[category]) {
       acc[category] = [];
     }
@@ -76,7 +80,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     return acc;
   }, {} as Record<AchievementCategory, Achievement[]>);
   
-  const achievementOrder: AchievementCategory[] = ['hackathon', 'workshop', 'poster', 'techfest'];
+  const achievementOrder: AchievementCategory[] = ['hackathon', 'workshop', 'poster', 'techfest', 'leadership', 'volunteering', 'publication', 'other'];
 
   const Section = ({ title, children, hasData }: { title: string; children: React.ReactNode, hasData: boolean }) => {
     if (!hasData) return null;

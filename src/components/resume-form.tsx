@@ -7,10 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight } from 'lucide-react';
+import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { generateExperience } from '@/ai/flows/generate-experience-flow';
 import { generateSkills } from '@/ai/flows/generate-skills-flow';
@@ -894,10 +894,10 @@ export function ResumeForm() {
        <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
            <DialogContent className="sm:max-w-xl">
               <DialogHeader>
-              <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
-              <DialogDescription>
-                  Provide some details, and AI will generate professional bullet points using the STAR method.
-              </DialogDescription>
+                <DialogTitle>{templateTexts[aiExperienceState.targetType]?.title || "Generate Description"}</DialogTitle>
+                <DialogDescription>
+                    Provide some details, and AI will generate professional bullet points using the STAR method.
+                </DialogDescription>
               </DialogHeader>
               <div className="py-4 space-y-4">
                   <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
@@ -961,5 +961,3 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    

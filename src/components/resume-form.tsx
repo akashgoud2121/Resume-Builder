@@ -26,7 +26,8 @@ const educationCategoryConfig: Record<EducationCategory, any> = {
     fields: {
       school: { label: 'School Name', placeholder: 'e.g., Delhi Public School' },
       degree: { label: 'Board (e.g., CBSE, ICSE) or Class', placeholder: 'e.g., CBSE Class XII' },
-      date: { label: 'Year of Passing', placeholder: 'e.g., 2021' },
+      startDate: { label: 'Start Year', placeholder: 'e.g., 2019' },
+      endDate: { label: 'End Year', placeholder: 'e.g., 2020' },
       city: { label: 'City / State', placeholder: 'e.g., New Delhi, Delhi' },
       grades: { label: 'Grades / Percentage', placeholder: 'e.g., 95% or 10 CGPA' },
     }
@@ -36,7 +37,8 @@ const educationCategoryConfig: Record<EducationCategory, any> = {
     fields: {
       school: { label: 'College / Institute Name', placeholder: 'e.g., Sri Chaitanya Junior College' },
       degree: { label: 'Group / Specialization', placeholder: 'e.g., MPC' },
-      date: { label: 'Year of Passing', placeholder: 'e.g., 2023' },
+      startDate: { label: 'Start Year', placeholder: 'e.g., 2020' },
+      endDate: { label: 'End Year', placeholder: 'e.g., 2022' },
       city: { label: 'City / State', placeholder: 'e.g., Hyderabad, Telangana' },
       grades: { label: 'Grades / Percentage', placeholder: 'e.g., 98%' },
     }
@@ -46,7 +48,8 @@ const educationCategoryConfig: Record<EducationCategory, any> = {
     fields: {
       school: { label: 'University / College Name', placeholder: 'e.g., Indian Institute of Technology Bombay' },
       degree: { label: 'Degree & Major', placeholder: 'e.g., B.Tech in Computer Science' },
-      date: { label: 'Expected Graduation Year', placeholder: 'e.g., May 2027' },
+      startDate: { label: 'Start Year', placeholder: 'e.g., 2022' },
+      endDate: { label: 'End Year (or Expected)', placeholder: 'e.g., 2026' },
       city: { label: 'City / State', placeholder: 'e.g., Mumbai, Maharashtra' },
       grades: { label: 'CGPA / Percentage', placeholder: 'e.g., 8.5 CGPA' },
     }
@@ -56,7 +59,8 @@ const educationCategoryConfig: Record<EducationCategory, any> = {
     fields: {
       school: { label: 'Institution / Provider Name', placeholder: 'e.g., Coursera' },
       degree: { label: 'Qualification / Course Name', placeholder: 'e.g., Machine Learning Specialization' },
-      date: { label: 'Completion Year', placeholder: 'e.g., 2024' },
+      startDate: { label: 'Start Date', placeholder: 'e.g., Jan 2024' },
+      endDate: { label: 'End Date', placeholder: 'e.g., May 2024' },
       city: { label: 'Location (Optional)', placeholder: 'e.g., Online' },
       grades: { label: 'Grades / Score (Optional)', placeholder: 'e.g., 98%' },
     }
@@ -239,7 +243,7 @@ export function ResumeForm() {
     setResumeData(prev => {
       let newEntry;
       if (section === 'education') {
-        newEntry = { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', date: '', city: '', grades: '' };
+        newEntry = { id: `edu_${Date.now()}`, category: 'higher' as EducationCategory, school: '', degree: '', startDate: '', endDate: '', city: '', grades: '' };
       } else if (section === 'experience') {
         newEntry = { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'projects') {
@@ -649,25 +653,29 @@ export function ResumeForm() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <Label>{config.fields.school.label}</Label>
                     <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-2 sm:col-span-2">
                     <Label>{config.fields.degree.label}</Label>
                     <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} />
                   </div>
                   <div className="space-y-2">
-                    <Label>{config.fields.date.label}</Label>
-                    <Input value={edu.date} onChange={e => handleGenericChange('education', index, 'date', e.target.value)} placeholder={config.fields.date.placeholder} />
+                    <Label>{config.fields.startDate.label}</Label>
+                    <Input value={edu.startDate} onChange={e => handleGenericChange('education', index, 'startDate', e.target.value)} placeholder={config.fields.startDate.placeholder} />
                   </div>
                   <div className="space-y-2">
-                    <Label>{config.fields.city.label}</Label>
-                    <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
+                    <Label>{config.fields.endDate.label}</Label>
+                    <Input value={edu.endDate} onChange={e => handleGenericChange('education', index, 'endDate', e.target.value)} placeholder={config.fields.endDate.placeholder} />
                   </div>
                    <div className="space-y-2">
                     <Label>{config.fields.grades.label}</Label>
                     <Input value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{config.fields.city.label}</Label>
+                    <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
                   </div>
                 </CardContent>
                 <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
@@ -1016,5 +1024,7 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    
 
     

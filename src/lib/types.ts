@@ -14,7 +14,8 @@ export type Education = {
   category: EducationCategory;
   school: string;
   degree: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   city: string;
   grades: string;
 };
@@ -72,3 +73,5 @@ export type ResumeData = {
   certifications: Certification[];
   achievements: Achievement[];
 };
+
+    

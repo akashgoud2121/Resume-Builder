@@ -67,7 +67,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     return acc;
   }, {} as Record<EducationCategory, typeof education>);
 
-  const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling'];
+  const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling', 'other'];
 
   const groupedAchievements = achievements.reduce((acc, ach) => {
     const category = ach.category || 'other';
@@ -196,7 +196,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                           {edu.grades && <p className="text-sm text-gray-600">{edu.grades}</p>}
                       </div>
                       <div className="text-right flex-shrink-0 ml-4">
-                          <p className="text-sm text-gray-600 font-medium">{edu.date}</p>
+                          <p className="text-sm text-gray-600 font-medium">{edu.startDate} - {edu.endDate}</p>
                           <p className="text-sm text-gray-600">{edu.city}</p>
                       </div>
                     </div>
@@ -248,3 +248,5 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 ResumePreview.displayName = "ResumePreview";
+
+    

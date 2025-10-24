@@ -16,7 +16,8 @@ export const initialResumeData: ResumeData = {
       category: 'higher',
       school: 'Malla Reddy College Of Engineering and Technology',
       degree: 'B.Tech in Computer Science (AIML)',
-      date: '2022 - 2026',
+      startDate: '2022',
+      endDate: '2026',
       city: 'Hyderabad',
       grades: '8.57 CGPA',
     },
@@ -25,7 +26,8 @@ export const initialResumeData: ResumeData = {
       category: 'intermediate',
       school: 'Sri Gayatri Junior College',
       degree: 'MPC',
-      date: '2020 - 2022',
+      startDate: '2020',
+      endDate: '2022',
       city: 'Hyderabad',
       grades: '95.6%',
     },
@@ -34,7 +36,8 @@ export const initialResumeData: ResumeData = {
       category: 'schooling',
       school: 'Viswa Bharathi Techno School',
       degree: 'SSC',
-      date: '2019 - 2020',
+      startDate: '2019',
+      endDate: '2020',
       city: 'Gadwal',
       grades: '9.3 GPA',
     },
@@ -129,3 +132,5 @@ export const initialResumeData: ResumeData = {
     }
   ],
 };
+
+    

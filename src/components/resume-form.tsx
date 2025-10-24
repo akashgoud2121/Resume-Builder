@@ -352,7 +352,7 @@ export function ResumeForm() {
         setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
       }
     } catch (error) {
-      console.error(error);
+       console.error(error);
        setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
       toast({
         title: "Generation Failed",
@@ -762,7 +762,7 @@ export function ResumeForm() {
     },
     {
       title: "Certifications",
-      shortTitle: "Certs",
+      shortTitle: "Cert.",
       content: (
         <div className="space-y-4">
           {resumeData.certifications.map((cert, index) => (
@@ -812,7 +812,7 @@ export function ResumeForm() {
     },
     {
         title: "Achievements & Activities",
-        shortTitle: "Achieve",
+        shortTitle: "Achievements",
         content: (
           <div className="space-y-4">
             {resumeData.achievements.map((ach, index) => {
@@ -1062,3 +1062,5 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    

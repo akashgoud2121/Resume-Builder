@@ -730,7 +730,7 @@ export function ResumeForm() {
                       </div>
                       <div className="space-y-2">
                           <Label>Organization / Affiliation</Label>
-                          <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., Personal Project, University Name" />
+                          <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" />
                       </div>
                       <div className="space-y-2">
                           <Label>Start Date</Label>

@@ -126,6 +126,7 @@ export function ResumeForm() {
   const [userApiKey, setUserApiKey] = React.useState<string | null>(null);
   const [isSummaryAiDialogOpen, setIsSummaryAiDialogOpen] = React.useState(false);
   const [summaryAiState, setSummaryAiState] = React.useState<GenerateSummaryInput>(initialSummaryAiState);
+  const [otherYear, setOtherYear] = React.useState('');
   const [generatedSummary, setGeneratedSummary] = React.useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
   const { toast } = useToast();
@@ -312,7 +313,8 @@ export function ResumeForm() {
     setIsGeneratingSummary(true);
     setGeneratedSummary('');
     try {
-      const result = await generateSummary({ ...summaryAiState, userApiKey });
+      const year = summaryAiState.year === 'Other' ? otherYear : summaryAiState.year;
+      const result = await generateSummary({ ...summaryAiState, year, userApiKey });
       if (result.summary) {
         setGeneratedSummary(result.summary);
       }
@@ -560,6 +562,16 @@ export function ResumeForm() {
                                         <SelectItem value="Other">Other</SelectItem>
                                     </SelectContent>
                                 </Select>
+                                {summaryAiState.year === 'Other' && (
+                                    <Input
+                                        id="otherYear"
+                                        name="otherYear"
+                                        value={otherYear}
+                                        onChange={(e) => setOtherYear(e.target.value)}
+                                        placeholder="Please specify"
+                                        className="mt-2"
+                                    />
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="major">Major / Field of Study</Label>
@@ -583,6 +595,7 @@ export function ResumeForm() {
                           disabled={
                             isGeneratingSummary ||
                             !summaryAiState.year ||
+                            (summaryAiState.year === 'Other' && !otherYear.trim()) ||
                             !summaryAiState.major.trim() ||
                             !summaryAiState.jobType.trim() ||
                             !summaryAiState.skills.trim()

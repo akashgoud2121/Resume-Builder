@@ -469,11 +469,11 @@ export function ResumeForm() {
     }
   };
 
-  const handleCopySkill = (text: string) => {
+  const handleCopySkill = (text: string, type: 'Category' | 'Skills') => {
     navigator.clipboard.writeText(text);
     toast({
-        title: "Skills Copied!",
-        description: "The skills have been copied to your clipboard.",
+        title: `${type} Copied!`,
+        description: `The ${type.toLowerCase()} have been copied to your clipboard.`,
     });
   };
   
@@ -671,6 +671,10 @@ export function ResumeForm() {
                             <DialogTitle>
                                 {aiSkillsState.step === 'confirm' ? 'Generate Skills with AI' : 'Suggested Skills'}
                             </DialogTitle>
+                             <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                                <X className="h-4 w-4" />
+                                <span className="sr-only">Close</span>
+                            </DialogClose>
                             <DialogDescription>
                                 {aiSkillsState.step === 'confirm'
                                   ? "The AI will analyze your resume to suggest technical skills. Your existing skills won't be changed."
@@ -683,15 +687,21 @@ export function ResumeForm() {
                             <ScrollArea className="max-h-[50vh] p-1">
                                 <div className="space-y-4 pr-4">
                                 {aiSkillsState.generatedSkills.skillCategories.map((cat, index) => (
-                                    <div key={index} className="p-3 border rounded-md bg-muted/50">
-                                        <div className="flex justify-between items-center mb-2">
+                                    <div key={index} className="p-3 border rounded-md bg-muted/50 space-y-2">
+                                        <div className="flex justify-between items-center">
                                             <p className="font-semibold text-sm">{cat.categoryName}</p>
-                                            <Button variant="ghost" size="sm" onClick={() => handleCopySkill(cat.skills)}>
+                                            <Button variant="ghost" size="sm" onClick={() => handleCopySkill(cat.categoryName, 'Category')}>
                                                 <Copy className="mr-2 h-3.5 w-3.5" />
-                                                Copy
+                                                Copy Category
                                             </Button>
                                         </div>
-                                        <p className="text-sm text-muted-foreground">{cat.skills}</p>
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm text-muted-foreground">{cat.skills}</p>
+                                             <Button variant="ghost" size="sm" onClick={() => handleCopySkill(cat.skills, 'Skills')}>
+                                                <Copy className="mr-2 h-3.5 w-3.5" />
+                                                Copy Skills
+                                            </Button>
+                                        </div>
                                     </div>
                                 ))}
                                 </div>

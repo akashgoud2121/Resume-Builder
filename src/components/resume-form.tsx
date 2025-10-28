@@ -578,7 +578,17 @@ export function ResumeForm() {
                                 <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
                             </div>
                         </div>
-                        <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="w-full">
+                        <Button
+                          onClick={handleGenerateSummary}
+                          disabled={
+                            isGeneratingSummary ||
+                            !summaryAiState.year ||
+                            !summaryAiState.major.trim() ||
+                            !summaryAiState.jobType.trim() ||
+                            !summaryAiState.skills.trim()
+                          }
+                          className="w-full"
+                        >
                             {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                             Generate Objective
                         </Button>

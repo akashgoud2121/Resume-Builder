@@ -19,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
-import type { GenerateSummaryInput } from '@/ai/schemas';
+import type { GenerateSummaryInput, GenerateSkillsOutput } from '@/ai/schemas';
 
 const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
@@ -90,6 +90,13 @@ type AiExperienceState = {
   targetType: 'experience' | 'projects' | 'achievements' | 'certifications';
 };
 
+type AiSkillsState = {
+    isOpen: boolean;
+    isGenerating: boolean;
+    step: 'confirm' | 'results';
+    generatedSkills: GenerateSkillsOutput | null;
+};
+
 const initialSummaryAiState: GenerateSummaryInput = {
     year: '',
     major: '',
@@ -131,8 +138,12 @@ export function ResumeForm() {
   const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
   const { toast } = useToast();
 
-  const [isSkillsAiDialogOpen, setIsSkillsAiDialogOpen] = React.useState(false);
-  const [isGeneratingSkills, setIsGeneratingSkills] = React.useState(false);
+  const [aiSkillsState, setAiSkillsState] = React.useState<AiSkillsState>({
+    isOpen: false,
+    isGenerating: false,
+    step: 'confirm',
+    generatedSkills: null,
+  });
   const [currentStep, setCurrentStep] = React.useState(0);
 
 
@@ -420,7 +431,7 @@ export function ResumeForm() {
   };
 
   const handleGenerateSkills = async () => {
-    setIsGeneratingSkills(true);
+    setAiSkillsState(prev => ({ ...prev, isGenerating: true }));
     try {
       const experienceText = resumeData.experience.map(e => e.description).join('\\n');
       const projectsText = resumeData.projects.map(p => p.description).join('\\n');
@@ -433,22 +444,19 @@ export function ResumeForm() {
       });
 
       if (result.skillCategories && result.skillCategories.length > 0) {
-        const newSkillCategories = result.skillCategories.map(cat => ({
-          id: `skillcat_${Date.now()}_${Math.random()}`,
-          name: cat.categoryName,
-          skills: cat.skills,
+        setAiSkillsState(prev => ({
+            ...prev,
+            generatedSkills: result,
+            isGenerating: false,
+            step: 'results'
         }));
-        setResumeData(prev => ({ ...prev, skills: newSkillCategories }));
-        toast({
-          title: "Skills Generated!",
-          description: "AI has suggested some skills based on your resume.",
-        });
       } else {
         toast({
           title: "No Skills Generated",
-          description: "The AI couldn't suggest any skills. Try adding more content to your resume, experience, or projects.",
+          description: "The AI couldn't suggest any skills. Try adding more content to your resume.",
           variant: "destructive"
         });
+        setAiSkillsState(prev => ({ ...prev, isGenerating: false, step: 'confirm' }));
       }
     } catch (error) {
        console.error(error);
@@ -457,10 +465,25 @@ export function ResumeForm() {
         description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
         variant: "destructive",
       });
-    } finally {
-      setIsGeneratingSkills(false);
-      setIsSkillsAiDialogOpen(false);
+      setAiSkillsState(prev => ({ ...prev, isGenerating: false, step: 'confirm' }));
     }
+  };
+
+  const handleCopySkill = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast({
+        title: "Skills Copied!",
+        description: "The skills have been copied to your clipboard.",
+    });
+  };
+  
+  const resetAiSkillsDialog = () => {
+    setAiSkillsState({
+        isOpen: false,
+        isGenerating: false,
+        step: 'confirm',
+        generatedSkills: null,
+    });
   };
 
 
@@ -546,6 +569,7 @@ export function ResumeForm() {
                             <div className="space-y-2 sm:col-span-2">
                                 <Label htmlFor="year">Year / Level of Study</Label>
                                 <Select
+                                    name="year"
                                     value={summaryAiState.year}
                                     onValueChange={(value) => {
                                         setSummaryAiState(prev => ({...prev, year: value}));
@@ -635,30 +659,65 @@ export function ResumeForm() {
       content: (
           <div className="space-y-4">
             <div className="flex justify-end">
-                <Dialog open={isSkillsAiDialogOpen} onOpenChange={setIsSkillsAiDialogOpen}>
+                 <Dialog open={aiSkillsState.isOpen} onOpenChange={(isOpen) => setAiSkillsState(prev => ({...prev, isOpen}))} on-close={resetAiSkillsDialog}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" onClick={() => setAiSkillsState(prev => ({...prev, isOpen: true}))}>
                             <Sparkles className="mr-2 h-4 w-4" />
                             AI Assist: Suggest Skills
                         </Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Generate Skills with AI</DialogTitle>
+                            <DialogTitle>
+                                {aiSkillsState.step === 'confirm' ? 'Generate Skills with AI' : 'Suggested Skills'}
+                            </DialogTitle>
                             <DialogDescription>
-                                The AI will analyze your summary, experience, and projects to suggest relevant technical skills, organized by category. Your existing skills will be replaced.
+                                {aiSkillsState.step === 'confirm'
+                                  ? "The AI will analyze your resume to suggest technical skills. Your existing skills won't be changed."
+                                  : "Here are some skills suggested by the AI. Copy them to add them to your resume."
+                                }
                             </DialogDescription>
-                             <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+                            <DialogClose onClick={resetAiSkillsDialog} className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
                                 <X className="h-4 w-4" />
                                 <span className="sr-only">Close</span>
                             </DialogClose>
                         </DialogHeader>
+
+                        {aiSkillsState.step === 'results' && aiSkillsState.generatedSkills ? (
+                            <ScrollArea className="max-h-[50vh] p-1">
+                                <div className="space-y-4 pr-4">
+                                {aiSkillsState.generatedSkills.skillCategories.map((cat, index) => (
+                                    <div key={index} className="p-3 border rounded-md bg-muted/50">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <p className="font-semibold text-sm">{cat.categoryName}</p>
+                                            <Button variant="ghost" size="sm" onClick={() => handleCopySkill(cat.skills)}>
+                                                <Copy className="mr-2 h-3.5 w-3.5" />
+                                                Copy
+                                            </Button>
+                                        </div>
+                                        <p className="text-sm text-muted-foreground">{cat.skills}</p>
+                                    </div>
+                                ))}
+                                </div>
+                            </ScrollArea>
+                        ) : (
+                            <div className="py-4 text-center text-sm text-muted-foreground">
+                                {aiSkillsState.isGenerating ? "Analyzing your resume..." : "Click below to start."}
+                            </div>
+                        )}
+
                         <DialogFooter>
-                            <Button variant="secondary" onClick={() => setIsSkillsAiDialogOpen(false)}>Cancel</Button>
-                            <Button onClick={handleGenerateSkills} disabled={isGeneratingSkills}>
-                                {isGeneratingSkills ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                Generate and Replace Skills
-                            </Button>
+                            {aiSkillsState.step === 'confirm' ? (
+                                <>
+                                    <Button variant="secondary" onClick={resetAiSkillsDialog}>Cancel</Button>
+                                    <Button onClick={handleGenerateSkills} disabled={aiSkillsState.isGenerating}>
+                                        {aiSkillsState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                        Analyze and Suggest
+                                    </Button>
+                                </>
+                            ) : (
+                                <Button onClick={resetAiSkillsDialog}>Done</Button>
+                            )}
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
@@ -1140,3 +1199,5 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    

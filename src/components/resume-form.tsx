@@ -660,7 +660,7 @@ export function ResumeForm() {
             <div className="flex justify-end">
                  <Dialog open={aiSkillsState.isOpen} onOpenChange={(isOpen) => { if (!isOpen) resetAiSkillsDialog(); setAiSkillsState(prev => ({...prev, isOpen}))}}>
                     <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" onClick={() => setAiSkillsState(prev => ({...prev, isOpen: true}))}>
+                        <Button variant="outline" size="sm">
                             <Sparkles className="mr-2 h-4 w-4" />
                             AI Assist: Suggest Skills
                         </Button>
@@ -1138,58 +1138,60 @@ export function ResumeForm() {
                     Provide some details, and AI will generate professional bullet points using the STAR method.
                 </DialogDescription>
               </DialogHeader>
-              <div className="py-4 space-y-4">
-                  <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
-                      <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleCopyExperienceTemplate}>
-                          <Copy className="h-4 w-4" />
-                      </Button>
-                      <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
-                      <p className="mb-2 pr-8"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
-                      <p className="pr-8"><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Title / Name</Label>
-                    <Input
-                      value={aiExperienceState.projectTitle}
-                      readOnly
-                      disabled
-                      className="font-semibold"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
-                    <Textarea
-                      value={aiExperienceState.projectDescription}
-                      onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
-                      placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
-                      rows={4}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
-                    <Input
-                      value={aiExperienceState.technologiesUsed}
-                      onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
-                      placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
-                    />
-                  </div>
-                  <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating} className="w-full">
-                    {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Generate Description
-                  </Button>
-                  {aiExperienceState.generatedBulletPoints && (
-                    <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                      <Label>Generated Bullet Points:</Label>
-                      <Textarea
-                        className="text-sm"
+              <ScrollArea className="max-h-[60vh] p-1">
+                <div className="py-4 px-3 space-y-4">
+                    <div className="p-4 rounded-md bg-muted/70 border text-sm relative">
+                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={handleCopyExperienceTemplate}>
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                        <p className="font-semibold text-muted-foreground mb-2">Example Template:</p>
+                        <p className="mb-2 pr-8"><span className="font-medium">Description:</span> {templateTexts[aiExperienceState.targetType]?.template.description}</p>
+                        <p className="pr-8"><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Title / Name</Label>
+                      <Input
+                        value={aiExperienceState.projectTitle}
                         readOnly
-                        value={aiExperienceState.generatedBulletPoints}
-                        rows={6}
+                        disabled
+                        className="font-semibold"
                       />
                     </div>
-                  )}
-              </div>
-              <DialogFooter>
+                    <div className="space-y-2">
+                      <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
+                      <Textarea
+                        value={aiExperienceState.projectDescription}
+                        onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
+                        placeholder={templateTexts[aiExperienceState.targetType]?.descriptionPlaceholder}
+                        rows={4}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>{templateTexts[aiExperienceState.targetType]?.techLabel}</Label>
+                      <Input
+                        value={aiExperienceState.technologiesUsed}
+                        onChange={(e) => setAiExperienceState(prev => ({ ...prev, technologiesUsed: e.target.value }))}
+                        placeholder={templateTexts[aiExperienceState.targetType]?.techPlaceholder}
+                      />
+                    </div>
+                    <Button onClick={handleGenerateExperience} disabled={aiExperienceState.isGenerating} className="w-full">
+                      {aiExperienceState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                      Generate Description
+                    </Button>
+                    {aiExperienceState.generatedBulletPoints && (
+                      <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                        <Label>Generated Bullet Points:</Label>
+                        <Textarea
+                          className="text-sm"
+                          readOnly
+                          value={aiExperienceState.generatedBulletPoints}
+                          rows={6}
+                        />
+                      </div>
+                    )}
+                </div>
+              </ScrollArea>
+              <DialogFooter className="pr-5">
                 <Button variant="secondary" onClick={() => setAiExperienceState(prev => ({ ...prev, isOpen: false }))}>Cancel</Button>
                 <Button onClick={handleUseExperience} disabled={!aiExperienceState.generatedBulletPoints}>
                   Use This Description
@@ -1209,3 +1211,4 @@ export function ResumeForm() {
 
 
     
+

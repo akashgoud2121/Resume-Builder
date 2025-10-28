@@ -5,6 +5,7 @@ export type ContactInfo = {
   phone: string;
   linkedin: string;
   github: string;
+  portfolio: string;
 };
 
 export type EducationCategory = 'schooling' | 'intermediate' | 'higher' | 'other';

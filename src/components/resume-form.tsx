@@ -433,8 +433,8 @@ export function ResumeForm() {
   };
 
 
-  const sectionDefinitions = {
-    contact: {
+  const allSections = [
+    {
       title: "Contact Info",
       shortTitle: "Contact",
       content: (
@@ -459,10 +459,14 @@ export function ResumeForm() {
             <Label htmlFor="github">GitHub URL</Label>
             <Input id="github" name="github" value={resumeData.contact.github} onChange={handleContactChange} placeholder="github.com/johndoe" />
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="portfolio">Portfolio/Other Link</Label>
+            <Input id="portfolio" name="portfolio" value={resumeData.contact.portfolio} onChange={handleContactChange} placeholder="your-portfolio.com" />
+          </div>
         </div>
       )
     },
-    summary: {
+    {
       title: "Professional Summary",
       shortTitle: "Summary",
       content: (
@@ -551,7 +555,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    skills: {
+    {
       title: "Skills",
       shortTitle: "Skills",
       content: (
@@ -635,7 +639,7 @@ export function ResumeForm() {
           </div>
       )
     },
-    education: {
+    {
       title: "Education",
       shortTitle: "Education",
       content: (
@@ -698,7 +702,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    projects: {
+    {
         title: "Projects",
         shortTitle: "Projects",
         content: (
@@ -760,7 +764,7 @@ export function ResumeForm() {
           </div>
         )
     },
-    certifications: {
+    {
       title: "Certifications",
       shortTitle: "Cert.",
       content: (
@@ -810,7 +814,7 @@ export function ResumeForm() {
         </div>
       ),
     },
-    achievements: {
+    {
         title: "Achievements & Activities",
         shortTitle: "Achievements",
         content: (
@@ -875,7 +879,7 @@ export function ResumeForm() {
           </div>
         ),
     },
-    experience: {
+    {
         title: "Work Experience",
         shortTitle: "Experience",
         content: (
@@ -919,17 +923,6 @@ export function ResumeForm() {
           </div>
         )
     },
-  };
-  
-  const allSections = [
-    sectionDefinitions.contact,
-    sectionDefinitions.summary,
-    sectionDefinitions.skills,
-    sectionDefinitions.education,
-    sectionDefinitions.projects,
-    sectionDefinitions.certifications,
-    sectionDefinitions.achievements,
-    sectionDefinitions.experience,
   ];
 
   const handleNext = () => {

@@ -139,13 +139,19 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                {contact.linkedin && (
                  <a href={addHttp(contact.linkedin)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
                     <Linkedin className="h-3.5 w-3.5" />
-                   <span>{contact.linkedin.replace(/^(https?:\/\/)?(www\.)?/, '')}</span>
+                   <span>LinkedIn</span>
                  </a>
               )}
               {contact.github && (
                  <a href={addHttp(contact.github)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
                     <Github className="h-3.5 w-3.5" />
-                   <span>{contact.github.replace(/^(https?:\/\/)?(www\.)?/, '')}</span>
+                   <span>GitHub</span>
+                 </a>
+              )}
+              {contact.portfolio && (
+                 <a href={addHttp(contact.portfolio)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+                    <LinkIcon className="h-3.5 w-3.5" />
+                   <span>Portfolio</span>
                  </a>
               )}
             </div>

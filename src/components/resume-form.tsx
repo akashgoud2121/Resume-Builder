@@ -687,20 +687,24 @@ export function ResumeForm() {
                             <ScrollArea className="max-h-[50vh] p-1">
                                 <div className="space-y-4 pr-4">
                                 {aiSkillsState.generatedSkills.skillCategories.map((cat, index) => (
-                                    <div key={index} className="p-3 border rounded-md bg-muted/50 space-y-2">
-                                        <div className="flex justify-between items-center">
-                                            <p className="font-semibold text-sm">{cat.categoryName}</p>
-                                            <Button variant="ghost" size="sm" onClick={() => handleCopySkill(cat.categoryName, 'Category')}>
-                                                <Copy className="mr-2 h-3.5 w-3.5" />
-                                                Copy Category
-                                            </Button>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <p className="text-sm text-muted-foreground">{cat.skills}</p>
-                                             <Button variant="ghost" size="sm" onClick={() => handleCopySkill(cat.skills, 'Skills')}>
-                                                <Copy className="mr-2 h-3.5 w-3.5" />
-                                                Copy Skills
-                                            </Button>
+                                    <div key={index} className="p-3 border rounded-md bg-muted/50">
+                                        <div className="grid grid-cols-3 gap-2 items-center">
+                                            <div className="col-span-2 space-y-1">
+                                                <p className="font-semibold text-sm">{cat.categoryName}</p>
+                                                {cat.skills && <p className="text-sm text-muted-foreground">{cat.skills}</p>}
+                                            </div>
+                                            <div className="flex flex-col gap-2">
+                                                <Button variant="ghost" size="sm" className='justify-start' onClick={() => handleCopySkill(cat.categoryName, 'Category')}>
+                                                    <Copy className="mr-2 h-3.5 w-3.5" />
+                                                    Copy Category
+                                                </Button>
+                                                {cat.skills && (
+                                                    <Button variant="ghost" size="sm" className='justify-start' onClick={() => handleCopySkill(cat.skills, 'Skills')}>
+                                                        <Copy className="mr-2 h-3.5 w-3.5" />
+                                                        Copy Skills
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -1209,3 +1213,4 @@ export function ResumeForm() {
     
 
     
+

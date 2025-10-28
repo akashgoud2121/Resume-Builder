@@ -20,6 +20,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { GenerateSummaryInput, GenerateSkillsOutput } from '@/ai/schemas';
+import { MonthYearPicker } from './date-picker';
 
 const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
@@ -814,11 +815,11 @@ export function ResumeForm() {
                   </div>
                   <div className="space-y-2">
                     <Label>{config.fields.startDate.label}</Label>
-                    <Input value={edu.startDate} onChange={e => handleGenericChange('education', index, 'startDate', e.target.value)} placeholder={config.fields.startDate.placeholder} />
+                    <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} />
                   </div>
                   <div className="space-y-2">
                     <Label>{config.fields.endDate.label}</Label>
-                    <Input value={edu.endDate} onChange={e => handleGenericChange('education', index, 'endDate', e.target.value)} placeholder={config.fields.endDate.placeholder} />
+                    <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} />
                   </div>
                    <div className="space-y-2">
                     <Label>{config.fields.grades.label}</Label>
@@ -875,11 +876,11 @@ export function ResumeForm() {
                       </div>
                       <div className="space-y-2">
                           <Label>Start Date</Label>
-                          <Input value={proj.startDate} onChange={e => handleGenericChange('projects', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
+                          <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} />
                       </div>
                       <div className="space-y-2">
                           <Label>End Date</Label>
-                          <Input value={proj.endDate} onChange={e => handleGenericChange('projects', index, 'endDate', e.target.value)} placeholder="Feb 2024" />
+                          <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} />
                       </div>
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
@@ -919,7 +920,7 @@ export function ResumeForm() {
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label>Date Issued</Label>
-                  <Input value={cert.date} onChange={e => handleGenericChange('certifications', index, 'date', e.target.value)} placeholder="e.g., May 2024" />
+                  <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} />
                 </div>
                 <div className="sm:col-span-2 space-y-2">
                     <div className="flex justify-between items-center">
@@ -993,7 +994,7 @@ export function ResumeForm() {
                     </div>
                     <div className="space-y-2 sm:col-span-2">
                       <Label>Date</Label>
-                      <Input value={ach.date} onChange={e => handleGenericChange('achievements', index, 'date', e.target.value)} placeholder="e.g., March 2024" />
+                      <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} />
                     </div>
                     <div className="sm:col-span-2 space-y-2">
                         <div className="flex justify-between items-center">
@@ -1034,11 +1035,11 @@ export function ResumeForm() {
                       </div>
                       <div className="space-y-2">
                           <Label>Start Date</Label>
-                          <Input value={exp.startDate} onChange={e => handleGenericChange('experience', index, 'startDate', e.target.value)} placeholder="Jan 2024" />
+                          <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} />
                       </div>
                       <div className="space-y-2">
                           <Label>End Date</Label>
-                          <Input value={exp.endDate} onChange={e => handleGenericChange('experience', index, 'endDate', e.target.value)} placeholder="Present" />
+                          <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} />
                       </div>
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">

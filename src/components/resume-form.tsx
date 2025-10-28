@@ -536,64 +536,65 @@ export function ResumeForm() {
                   <DialogDescription>
                     Provide a few key details, and our AI will craft a professional and personalized objective for you.
                   </DialogDescription>
-                   <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
-                    <X className="h-4 w-4" />
-                    <span className="sr-only">Close</span>
-                  </DialogClose>
                 </DialogHeader>
-                <div className="py-4 space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="year">Year / Level of Study</Label>
-                         <Select
-                            value={summaryAiState.year}
-                            onValueChange={(value) => {
-                                setSummaryAiState(prev => ({...prev, year: value}));
-                            }}
-                         >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a level" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="First-year">First-year</SelectItem>
-                                <SelectItem value="Second-year">Second-year</SelectItem>
-                                <SelectItem value="Third-year">Third-year</SelectItem>
-                                <SelectItem value="Final-year">Final-year</SelectItem>
-                                <SelectItem value="Other">Other (Specify Below)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <Input id="year" name="year" value={summaryAiState.year} onChange={handleSummaryAiStateChange} placeholder="e.g., Final-year" className="mt-2" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="major">Major / Field of Study</Label>
-                        <Input id="major" name="major" value={summaryAiState.major} onChange={handleSummaryAiStateChange} placeholder="e.g., Computer Science" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="specialization">Specialization (Optional)</Label>
-                        <Input id="specialization" name="specialization" value={summaryAiState.specialization} onChange={handleSummaryAiStateChange} placeholder="e.g., AI/ML" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="jobType">Desired Role</Label>
-                        <Input id="jobType" name="jobType" value={summaryAiState.jobType} onChange={handleSummaryAiStateChange} placeholder="e.g., Software Internship" />
-                      </div>
-                      <div className="sm:col-span-2 space-y-2">
-                        <Label htmlFor="skills">Top Skills</Label>
-                        <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
-                      </div>
-                  </div>
-                  <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="w-full">
-                    {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Generate Objective
-                  </Button>
-                  {generatedSummary && (
-                    <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                      <Label>Generated Objective:</Label>
-                      <p className="text-sm">{generatedSummary}</p>
+                
+                <ScrollArea className="max-h-[60vh] p-1">
+                    <div className="p-4 space-y-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2 sm:col-span-2">
+                                <Label htmlFor="year">Year / Level of Study</Label>
+                                <Select
+                                    value={summaryAiState.year}
+                                    onValueChange={(value) => {
+                                        setSummaryAiState(prev => ({...prev, year: value}));
+                                    }}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select a level" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="First-year">First-year</SelectItem>
+                                        <SelectItem value="Second-year">Second-year</SelectItem>
+                                        <SelectItem value="Third-year">Third-year</SelectItem>
+                                        <SelectItem value="Final-year">Final-year</SelectItem>
+                                        <SelectItem value="Other">Other</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="major">Major / Field of Study</Label>
+                                <Input id="major" name="major" value={summaryAiState.major} onChange={handleSummaryAiStateChange} placeholder="e.g., Computer Science" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="specialization">Specialization (Optional)</Label>
+                                <Input id="specialization" name="specialization" value={summaryAiState.specialization} onChange={handleSummaryAiStateChange} placeholder="e.g., AI/ML" />
+                            </div>
+                            <div className="space-y-2 sm:col-span-2">
+                                <Label htmlFor="jobType">Desired Role</Label>
+                                <Input id="jobType" name="jobType" value={summaryAiState.jobType} onChange={handleSummaryAiStateChange} placeholder="e.g., Software Internship" />
+                            </div>
+                            <div className="sm:col-span-2 space-y-2">
+                                <Label htmlFor="skills">Top Skills</Label>
+                                <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
+                            </div>
+                        </div>
+                        <Button onClick={handleGenerateSummary} disabled={isGeneratingSummary} className="w-full">
+                            {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                            Generate Objective
+                        </Button>
+                        {generatedSummary && (
+                            <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                            <Label>Generated Objective:</Label>
+                            <p className="text-sm">{generatedSummary}</p>
+                            </div>
+                        )}
                     </div>
-                  )}
-                </div>
-                <DialogFooter>
-                  <Button variant="secondary" onClick={() => setIsSummaryAiDialogOpen(false)}>Cancel</Button>
+                </ScrollArea>
+                
+                <DialogFooter className="pr-5">
+                  <DialogClose asChild>
+                    <Button variant="secondary">Cancel</Button>
+                  </DialogClose>
                   <Button onClick={handleUseSummary} disabled={!generatedSummary}>
                     Use This Objective
                   </Button>

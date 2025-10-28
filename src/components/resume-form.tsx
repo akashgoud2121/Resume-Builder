@@ -90,11 +90,11 @@ type AiExperienceState = {
 };
 
 const initialSummaryAiState: GenerateSummaryInput = {
-    year: 'Final-year',
-    major: 'Computer Science',
-    specialization: 'AI/ML',
-    skills: 'React, Python, SQL',
-    jobType: 'Software Engineering Internship'
+    year: '',
+    major: '',
+    specialization: '',
+    skills: '',
+    jobType: ''
 };
 
 const SKILL_CATEGORIES = [
@@ -257,9 +257,9 @@ export function ResumeForm() {
       } else if (section === 'experience') {
         newEntry = { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'projects') {
-        newEntry = { id: `proj_${Date.now()}`, title: '', projectType: 'Personal Project', organization: '', startDate: '', endDate: '', description: '' };
+        newEntry = { id: `proj_${Date.now()}`, title: '', projectType: '', organization: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'skills') {
-        newEntry = { id: `skillcat_${Date.now()}`, name: 'Programming Languages', skills: '' };
+        newEntry = { id: `skillcat_${Date.now()}`, name: '', skills: '' };
       } else if (section === 'certifications') {
         newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '', technologies: '' };
       } else if (section === 'achievements') {
@@ -921,20 +921,16 @@ export function ResumeForm() {
     },
   };
   
-  const hasExperience = resumeData.experience.length > 0 && resumeData.experience.some(exp => exp.title);
-
-  const allSections = React.useMemo(() => {
-    const { contact, summary, skills, education, projects, certifications, achievements, experience } = sectionDefinitions;
-    const baseSections = [contact, summary, skills];
-    const remainingSections = [education, projects, certifications, achievements];
-
-    if (hasExperience) {
-      return [...baseSections, experience, ...remainingSections];
-    } else {
-      return [...baseSections, ...remainingSections, experience];
-    }
-  }, [hasExperience]);
-
+  const allSections = [
+    sectionDefinitions.contact,
+    sectionDefinitions.summary,
+    sectionDefinitions.skills,
+    sectionDefinitions.education,
+    sectionDefinitions.projects,
+    sectionDefinitions.certifications,
+    sectionDefinitions.achievements,
+    sectionDefinitions.experience,
+  ];
 
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, allSections.length - 1));
@@ -1077,5 +1073,3 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    

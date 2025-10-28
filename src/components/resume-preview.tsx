@@ -30,7 +30,7 @@ const addHttp = (url: string) => {
 const renderDescription = (text: string) => {
   if (!text) return null;
   const bulletPoints = text
-    .split(/\n|(?=- )/)
+    .split(/\\n|(?=- )/)
     .map(line => line.trim())
     .filter(line => line.startsWith('-'));
 
@@ -55,6 +55,8 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
   
   const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
+  const hasExperience = experience.length > 0 && experience.some(e => e.title);
+
 
   const groupedEducation = education.reduce((acc, edu) => {
     const category = edu.category || 'higher';
@@ -93,6 +95,21 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       </div>
     );
   };
+  
+  const ExperienceSection = (
+      <Section title="Work Experience" hasData={hasExperience}>
+          {experience.map(exp => exp.title && (
+            <div key={exp.id} className="mb-4 break-inside-avoid">
+              <div className="flex justify-between items-baseline mb-1">
+                <h3 className="text-base font-bold text-gray-900">{exp.title}</h3>
+                <p className="text-sm text-gray-600 font-medium">{exp.startDate} - {exp.endDate}</p>
+              </div>
+              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{exp.company}</p>
+              {renderDescription(exp.description)}
+            </div>
+          ))}
+      </Section>
+  );
 
 
   return (
@@ -154,6 +171,8 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             })}
           </div>
       </Section>
+      
+      {hasExperience && ExperienceSection}
 
       <Section title="Education" hasData={education.some(e => e.school)}>
         <div className="space-y-3">
@@ -190,7 +209,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
                  {proj.projectType}
-                 {proj.organization && proj.organization.toLowerCase() !== 'personal project' && ` at ${proj.organization}`}
+                 {(proj.organization && proj.organization.toLowerCase() !== 'personal project') && ` at ${proj.organization}`}
               </p>
               {renderDescription(proj.description)}
             </div>
@@ -239,18 +258,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           })}
       </Section>
       
-      <Section title="Work Experience" hasData={experience.length > 0 && experience.some(e => e.title)}>
-          {experience.map(exp => exp.title && (
-            <div key={exp.id} className="mb-4 break-inside-avoid">
-              <div className="flex justify-between items-baseline mb-1">
-                <h3 className="text-base font-bold text-gray-900">{exp.title}</h3>
-                <p className="text-sm text-gray-600 font-medium">{exp.startDate} - {exp.endDate}</p>
-              </div>
-              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{exp.company}</p>
-              {renderDescription(exp.description)}
-            </div>
-          ))}
-      </Section>
+      {!hasExperience && ExperienceSection}
 
     </div>
   );

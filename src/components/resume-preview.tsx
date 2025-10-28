@@ -6,7 +6,7 @@ import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
 import type { EducationCategory, Achievement, AchievementCategory, Certification } from '@/lib/types';
-import { Github, Linkedin, Mail, Phone, Link as LinkIcon } from 'lucide-react';
+import { Github, Linkedin, Mail, Phone, Link as LinkIcon, MapPin } from 'lucide-react';
 
 
 const achievementCategoryTitles: Record<AchievementCategory, string> = {
@@ -135,6 +135,12 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                 <div className="flex items-center gap-1.5">
                    <Phone className="h-3.5 w-3.5" />
                    <span>{contact.phone}</span>
+                </div>
+              )}
+               {contact.location && (
+                <div className="flex items-center gap-1.5">
+                   <MapPin className="h-3.5 w-3.5" />
+                   <span>{contact.location}</span>
                 </div>
               )}
                {contact.linkedin && (

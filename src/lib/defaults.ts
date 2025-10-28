@@ -9,6 +9,7 @@ export const initialResumeData: ResumeData = {
     phone: '',
     linkedin: '',
     github: '',
+    location: '',
     otherLinks: [],
   },
   summary: '',

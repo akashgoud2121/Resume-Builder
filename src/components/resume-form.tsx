@@ -481,6 +481,10 @@ export function ResumeForm() {
             <Input id="phone" name="phone" value={resumeData.contact.phone} onChange={handleContactChange} placeholder="(123) 456-7890" />
           </div>
           <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input id="location" name="location" value={resumeData.contact.location} onChange={handleContactChange} placeholder="City, Country" />
+          </div>
+          <div className="sm:col-span-2 space-y-2">
             <Label htmlFor="linkedin">LinkedIn URL</Label>
             <Input id="linkedin" name="linkedin" value={resumeData.contact.linkedin} onChange={handleContactChange} placeholder="linkedin.com/in/johndoe" />
           </div>

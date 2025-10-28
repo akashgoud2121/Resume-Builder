@@ -12,6 +12,7 @@ export type ContactInfo = {
   phone: string;
   linkedin: string;
   github: string;
+  location: string;
   otherLinks: OtherLink[];
 };
 

@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X } from 'lucide-react';
 import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from './ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { generateExperience } from '@/ai/flows/generate-experience-flow';
 import { generateSkills } from '@/ai/flows/generate-skills-flow';
@@ -27,8 +27,8 @@ const educationCategoryConfig: Record<EducationCategory, any> = {
     fields: {
       school: { label: 'School Name', placeholder: 'e.g., Delhi Public School' },
       degree: { label: 'Board (e.g., CBSE, ICSE) or Class', placeholder: 'e.g., CBSE Class XII' },
-      startDate: { label: 'Start Year', placeholder: 'e.g., 2019' },
-      endDate: { label: 'End Year', placeholder: 'e.g., 2020' },
+      startDate: { label: 'Start Date', placeholder: 'e.g., May 2019' },
+      endDate: { label: 'End Date', placeholder: 'e.g., May 2020' },
       city: { label: 'City / State', placeholder: 'e.g., New Delhi, Delhi' },
       grades: { label: 'Grades / Percentage', placeholder: 'e.g., 95% or 10 CGPA' },
     }
@@ -38,8 +38,8 @@ const educationCategoryConfig: Record<EducationCategory, any> = {
     fields: {
       school: { label: 'College / Institute Name', placeholder: 'e.g., Sri Chaitanya Junior College' },
       degree: { label: 'Group / Specialization', placeholder: 'e.g., MPC' },
-      startDate: { label: 'Start Year', placeholder: 'e.g., 2020' },
-      endDate: { label: 'End Year', placeholder: 'e.g., 2022' },
+      startDate: { label: 'Start Date', placeholder: 'e.g., June 2020' },
+      endDate: { label: 'End Date', placeholder: 'e.g., May 2022' },
       city: { label: 'City / State', placeholder: 'e.g., Hyderabad, Telangana' },
       grades: { label: 'Grades / Percentage', placeholder: 'e.g., 98%' },
     }
@@ -49,8 +49,8 @@ const educationCategoryConfig: Record<EducationCategory, any> = {
     fields: {
       school: { label: 'University / College Name', placeholder: 'e.g., Indian Institute of Technology Bombay' },
       degree: { label: 'Degree & Major', placeholder: 'e.g., B.Tech in Computer Science' },
-      startDate: { label: 'Start Year', placeholder: 'e.g., 2022' },
-      endDate: { label: 'End Year (or Expected)', placeholder: 'e.g., 2026' },
+      startDate: { label: 'Start Date', placeholder: 'e.g., July 2022' },
+      endDate: { label: 'End Date (or Expected)', placeholder: 'e.g., May 2026' },
       city: { label: 'City / State', placeholder: 'e.g., Mumbai, Maharashtra' },
       grades: { label: 'CGPA / Percentage', placeholder: 'e.g., 8.5 CGPA' },
     }
@@ -639,9 +639,7 @@ export function ResumeForm() {
                 </ScrollArea>
                 
                 <DialogFooter className="pr-5">
-                  <DialogClose asChild>
-                    <Button variant="secondary">Cancel</Button>
-                  </DialogClose>
+                  <Button variant="secondary" onClick={() => setIsSummaryAiDialogOpen(false)}>Cancel</Button>
                   <Button onClick={handleUseSummary} disabled={!generatedSummary}>
                     Use This Objective
                   </Button>
@@ -659,14 +657,14 @@ export function ResumeForm() {
       content: (
           <div className="space-y-4">
             <div className="flex justify-end">
-                 <Dialog open={aiSkillsState.isOpen} onOpenChange={(isOpen) => setAiSkillsState(prev => ({...prev, isOpen}))} on-close={resetAiSkillsDialog}>
+                 <Dialog open={aiSkillsState.isOpen} onOpenChange={(isOpen) => { if (!isOpen) resetAiSkillsDialog(); setAiSkillsState(prev => ({...prev, isOpen}))}}>
                     <DialogTrigger asChild>
                         <Button variant="outline" size="sm" onClick={() => setAiSkillsState(prev => ({...prev, isOpen: true}))}>
                             <Sparkles className="mr-2 h-4 w-4" />
                             AI Assist: Suggest Skills
                         </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent className="sm:max-w-md">
                         <DialogHeader>
                             <DialogTitle>
                                 {aiSkillsState.step === 'confirm' ? 'Generate Skills with AI' : 'Suggested Skills'}
@@ -684,12 +682,12 @@ export function ResumeForm() {
                                 <div className="space-y-4 pr-4">
                                 {aiSkillsState.generatedSkills.skillCategories.map((cat, index) => (
                                     <div key={index} className="p-3 border rounded-md bg-muted/50">
-                                        <div className="grid grid-cols-3 gap-2 items-center">
-                                            <div className="col-span-2 space-y-1">
+                                        <div className="grid grid-cols-[1fr_auto] gap-2 items-start">
+                                            <div className="space-y-2">
                                                 <p className="font-semibold text-sm">{cat.categoryName}</p>
                                                 {cat.skills && <p className="text-sm text-muted-foreground">{cat.skills}</p>}
                                             </div>
-                                            <div className="flex flex-col gap-2">
+                                            <div className="flex flex-col gap-2 items-stretch">
                                                 <Button variant="ghost" size="sm" className='justify-start' onClick={() => handleCopySkill(cat.categoryName, 'Category')}>
                                                     <Copy className="mr-2 h-3.5 w-3.5" />
                                                     Copy Category
@@ -1207,3 +1205,6 @@ export function ResumeForm() {
     
 
 
+
+
+    

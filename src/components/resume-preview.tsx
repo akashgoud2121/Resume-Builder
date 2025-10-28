@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React, { forwardRef } from 'react';
@@ -148,12 +149,12 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                    <span>GitHub</span>
                  </a>
               )}
-              {contact.portfolio && (
-                 <a href={addHttp(contact.portfolio)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
+              {contact.otherLinks && contact.otherLinks.map(link => link.url && (
+                 <a key={link.id} href={addHttp(link.url)} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 hover:text-primary transition-colors">
                     <LinkIcon className="h-3.5 w-3.5" />
-                   <span>Portfolio</span>
+                   <span>{link.label || 'Link'}</span>
                  </a>
-              )}
+              ))}
             </div>
         </header>
 

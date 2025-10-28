@@ -1,11 +1,18 @@
 
+
+export type OtherLink = {
+  id: string;
+  label: string;
+  url: string;
+};
+
 export type ContactInfo = {
   name: string;
   email: string;
   phone: string;
   linkedin: string;
   github: string;
-  portfolio: string;
+  otherLinks: OtherLink[];
 };
 
 export type EducationCategory = 'schooling' | 'intermediate' | 'higher' | 'other';
@@ -78,3 +85,4 @@ export type ResumeData = {
 };
 
     
+

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import React from 'react';
@@ -8,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X } from 'lucide-react';
-import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory } from '@/lib/types';
+import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription, DialogClose } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
@@ -210,6 +211,34 @@ export function ResumeForm() {
 
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [e.target.name]: e.target.value } }));
+  };
+
+  const handleOtherLinkChange = (index: number, field: 'label' | 'url', value: string) => {
+    setResumeData(prev => {
+        const newLinks = [...prev.contact.otherLinks];
+        newLinks[index] = {...newLinks[index], [field]: value};
+        return {...prev, contact: {...prev.contact, otherLinks: newLinks}};
+    });
+  };
+
+  const addOtherLink = () => {
+    setResumeData(prev => ({
+      ...prev,
+      contact: {
+        ...prev.contact,
+        otherLinks: [...prev.contact.otherLinks, { id: `link_${Date.now()}`, label: 'Portfolio', url: '' }]
+      }
+    }));
+  };
+  
+  const removeOtherLink = (id: string) => {
+    setResumeData(prev => ({
+      ...prev,
+      contact: {
+        ...prev.contact,
+        otherLinks: prev.contact.otherLinks.filter(link => link.id !== id)
+      }
+    }));
   };
 
   const handleSummaryChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -455,13 +484,30 @@ export function ResumeForm() {
             <Label htmlFor="linkedin">LinkedIn URL</Label>
             <Input id="linkedin" name="linkedin" value={resumeData.contact.linkedin} onChange={handleContactChange} placeholder="linkedin.com/in/johndoe" />
           </div>
-          <div className="space-y-2">
+          <div className="sm:col-span-2 space-y-2">
             <Label htmlFor="github">GitHub URL</Label>
             <Input id="github" name="github" value={resumeData.contact.github} onChange={handleContactChange} placeholder="github.com/johndoe" />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="portfolio">Portfolio/Other Link</Label>
-            <Input id="portfolio" name="portfolio" value={resumeData.contact.portfolio} onChange={handleContactChange} placeholder="your-portfolio.com" />
+           <div className="sm:col-span-2 space-y-4">
+              <Label>Other Links</Label>
+              {resumeData.contact.otherLinks.map((link, index) => (
+                  <div key={link.id} className="flex items-end gap-2 p-2 border rounded-md relative">
+                    <div className="grid grid-cols-2 gap-2 flex-1">
+                        <div className="space-y-1">
+                          <Label htmlFor={`link-label-${index}`} className="text-xs">Label</Label>
+                          <Input id={`link-label-${index}`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor={`link-url-${index}`} className="text-xs">URL</Label>
+                          <Input id={`link-url-${index}`} value={link.url} onChange={(e) => handleOtherLinkChange(index, 'url', e.target.value)} placeholder="your-portfolio.com" />
+                        </div>
+                    </div>
+                    <Button variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => removeOtherLink(link.id)}>
+                        <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+              ))}
+              <Button variant="outline" size="sm" onClick={addOtherLink}><PlusCircle className="mr-2 h-4 w-4" /> Add Link</Button>
           </div>
         </div>
       )

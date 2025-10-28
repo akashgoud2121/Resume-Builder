@@ -433,8 +433,8 @@ export function ResumeForm() {
   };
 
 
-  const allSections = [
-    {
+  const sectionDefinitions = {
+    contact: {
       title: "Contact Info",
       shortTitle: "Contact",
       content: (
@@ -462,7 +462,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    {
+    summary: {
       title: "Professional Summary",
       shortTitle: "Summary",
       content: (
@@ -551,7 +551,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    {
+    skills: {
       title: "Skills",
       shortTitle: "Skills",
       content: (
@@ -635,7 +635,7 @@ export function ResumeForm() {
           </div>
       )
     },
-    {
+    education: {
       title: "Education",
       shortTitle: "Education",
       content: (
@@ -698,7 +698,7 @@ export function ResumeForm() {
         </div>
       )
     },
-    {
+    projects: {
         title: "Projects",
         shortTitle: "Projects",
         content: (
@@ -760,7 +760,7 @@ export function ResumeForm() {
           </div>
         )
     },
-    {
+    certifications: {
       title: "Certifications",
       shortTitle: "Cert.",
       content: (
@@ -810,7 +810,7 @@ export function ResumeForm() {
         </div>
       ),
     },
-    {
+    achievements: {
         title: "Achievements & Activities",
         shortTitle: "Achievements",
         content: (
@@ -875,7 +875,7 @@ export function ResumeForm() {
           </div>
         ),
     },
-    {
+    experience: {
         title: "Work Experience",
         shortTitle: "Experience",
         content: (
@@ -919,8 +919,23 @@ export function ResumeForm() {
           </div>
         )
     },
-  ];
+  };
   
+  const hasExperience = resumeData.experience.length > 0 && resumeData.experience.some(exp => exp.title);
+
+  const allSections = React.useMemo(() => {
+    const { contact, summary, skills, education, projects, certifications, achievements, experience } = sectionDefinitions;
+    const baseSections = [contact, summary, skills];
+    const remainingSections = [education, projects, certifications, achievements];
+
+    if (hasExperience) {
+      return [...baseSections, experience, ...remainingSections];
+    } else {
+      return [...baseSections, ...remainingSections, experience];
+    }
+  }, [hasExperience]);
+
+
   const handleNext = () => {
     setCurrentStep((prev) => Math.min(prev + 1, allSections.length - 1));
   };

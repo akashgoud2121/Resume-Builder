@@ -13,12 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { generateExperience } from '@/ai/flows/generate-experience-flow';
-import { generateSkills } from '@/ai/flows/generate-skills-flow';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
-import type { GenerateSummaryInput, GenerateSkillsOutput } from '@/ai/schemas';
+import type { GenerateSummaryInput } from '@/ai/schemas';
 import { MonthYearPicker } from './date-picker';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 
@@ -91,13 +90,6 @@ type AiExperienceState = {
   targetType: 'experience' | 'projects' | 'achievements' | 'certifications' | 'other';
 };
 
-type AiSkillsState = {
-    isOpen: boolean;
-    isGenerating: boolean;
-    step: 'confirm' | 'results';
-    generatedSkills: GenerateSkillsOutput | null;
-};
-
 const initialSummaryAiState: GenerateSummaryInput = {
     year: '',
     major: '',
@@ -117,6 +109,18 @@ const SKILL_CATEGORIES = [
   'AI/ML Concepts',
   'Other',
 ];
+
+const SUGGESTED_SKILLS: Record<string, string[]> = {
+    'Programming Languages': ['Python', 'Java', 'C++', 'JavaScript', 'TypeScript', 'SQL', 'Go', 'Rust', 'Kotlin', 'Swift'],
+    'Frontend Frameworks & Libraries': ['React', 'Next.js', 'Vue.js', 'Angular', 'Svelte', 'jQuery'],
+    'Backend Frameworks & Libraries': ['Node.js', 'Express', 'Django', 'Flask', 'Spring Boot', 'Ruby on Rails', 'ASP.NET'],
+    'Styling & UI Libraries': ['Tailwind CSS', 'Bootstrap', 'Material-UI (MUI)', 'Chakra UI', 'Sass', 'LESS'],
+    'Databases': ['MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'Firebase Firestore'],
+    'Cloud & DevOps': ['AWS', 'Google Cloud (GCP)', 'Azure', 'Docker', 'Kubernetes', 'Terraform', 'Jenkins', 'GitHub Actions'],
+    'Developer Tools': ['Git', 'GitHub', 'VS Code', 'Jira', 'Figma', 'Postman', 'Webpack'],
+    'AI/ML Concepts': ['TensorFlow', 'PyTorch', 'Scikit-learn', 'Pandas', 'NumPy', 'OpenCV', 'NLTK', 'Spacy'],
+};
+
 
 const PROJECT_TYPES = [
     'Major Project',
@@ -161,13 +165,6 @@ export function ResumeForm() {
   const { toast } = useToast();
 
   const [dateErrors, setDateErrors] = React.useState<Record<string, string | null>>({});
-
-  const [aiSkillsState, setAiSkillsState] = React.useState<AiSkillsState>({
-    isOpen: false,
-    isGenerating: false,
-    step: 'confirm',
-    generatedSkills: null,
-  });
   const [currentStep, setCurrentStep] = React.useState(0);
 
 
@@ -499,60 +496,14 @@ export function ResumeForm() {
     });
   };
 
-  const handleGenerateSkills = async () => {
-    setAiSkillsState(prev => ({ ...prev, isGenerating: true }));
-    try {
-      const experienceText = resumeData.experience.map(e => e.description).join('\\n');
-      const projectsText = resumeData.projects.map(p => p.description).join('\\n');
-      
-      const result = await generateSkills({
-        summary: resumeData.summary,
-        experience: experienceText,
-        projects: projectsText,
-        userApiKey,
-      });
+  const handleSkillAdd = (index: number, skillToAdd: string) => {
+    const currentSkills = resumeData.skills[index].skills;
+    const skillsArray = currentSkills.split(',').map(s => s.trim()).filter(Boolean);
 
-      if (result.skillCategories && result.skillCategories.length > 0) {
-        setAiSkillsState(prev => ({
-            ...prev,
-            generatedSkills: result,
-            isGenerating: false,
-            step: 'results'
-        }));
-      } else {
-        toast({
-          title: "No Skills Generated",
-          description: "The AI couldn't suggest any skills. Try adding more content to your resume.",
-          variant: "destructive"
-        });
-        setAiSkillsState(prev => ({ ...prev, isGenerating: false, step: 'confirm' }));
-      }
-    } catch (error) {
-       console.error(error);
-       toast({
-        title: "Generation Failed",
-        description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
-        variant: "destructive",
-      });
-      setAiSkillsState(prev => ({ ...prev, isGenerating: false, step: 'confirm' }));
+    if (!skillsArray.includes(skillToAdd)) {
+        const newValue = currentSkills ? `${currentSkills}, ${skillToAdd}` : skillToAdd;
+        handleGenericChange('skills', index, 'skills', newValue);
     }
-  };
-
-  const handleCopySkill = (text: string, type: 'Category' | 'Skills') => {
-    navigator.clipboard.writeText(text);
-    toast({
-        title: `${type} Copied!`,
-        description: `The ${type.toLowerCase()} have been copied to your clipboard.`,
-    });
-  };
-  
-  const resetAiSkillsDialog = () => {
-    setAiSkillsState({
-        isOpen: false,
-        isGenerating: false,
-        step: 'confirm',
-        generatedSkills: null,
-    });
   };
 
   const allSections = [
@@ -724,77 +675,11 @@ export function ResumeForm() {
       shortTitle: "Skills",
       content: (
           <div className="space-y-4">
-            <div className="flex justify-end">
-                 <Dialog open={aiSkillsState.isOpen} onOpenChange={(isOpen) => { if (!isOpen) resetAiSkillsDialog(); setAiSkillsState(prev => ({...prev, isOpen}))}}>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                            <Sparkles className="mr-2 h-4 w-4" />
-                            AI Assist: Suggest Skills
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-md">
-                        <DialogHeader>
-                            <DialogTitle>
-                                {aiSkillsState.step === 'confirm' ? 'Generate Skills with AI' : 'Suggested Skills'}
-                            </DialogTitle>
-                            <DialogDescription>
-                                {aiSkillsState.step === 'confirm'
-                                  ? "The AI will analyze your resume to suggest technical skills. Your existing skills won't be changed."
-                                  : "Here are some skills suggested by the AI. Copy them to add them to your resume."
-                                }
-                            </DialogDescription>
-                        </DialogHeader>
+            {resumeData.skills.map((category, index) => {
+              const suggestions = SUGGESTED_SKILLS[category.name] || [];
+              const existingSkills = new Set(category.skills.split(',').map(s => s.trim().toLowerCase()));
 
-                        {aiSkillsState.step === 'results' && aiSkillsState.generatedSkills ? (
-                             <ScrollArea className="max-h-[50vh] p-1">
-                                <div className="space-y-4 pr-4">
-                                {aiSkillsState.generatedSkills.skillCategories.map((cat, index) => (
-                                    <div key={index} className="p-3 border rounded-md bg-muted/50">
-                                        <div className="grid grid-cols-[1fr_auto] gap-2 items-start">
-                                            <div className="space-y-2">
-                                                <p className="font-semibold text-sm">{cat.categoryName}</p>
-                                                {cat.skills && <p className="text-sm text-muted-foreground">{cat.skills}</p>}
-                                            </div>
-                                            <div className="flex flex-col gap-2 items-stretch">
-                                                <Button variant="ghost" size="sm" className='justify-start' onClick={() => handleCopySkill(cat.categoryName, 'Category')}>
-                                                    <Copy className="mr-2 h-3.5 w-3.5" />
-                                                    Copy Category
-                                                </Button>
-                                                {cat.skills && (
-                                                    <Button variant="ghost" size="sm" className='justify-start' onClick={() => handleCopySkill(cat.skills, 'Skills')}>
-                                                        <Copy className="mr-2 h-3.5 w-3.5" />
-                                                        Copy Skills
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                                </div>
-                            </ScrollArea>
-                        ) : (
-                            <div className="py-4 text-center text-sm text-muted-foreground">
-                                {aiSkillsState.isGenerating ? "Analyzing your resume..." : "Click below to start."}
-                            </div>
-                        )}
-
-                        <DialogFooter>
-                            {aiSkillsState.step === 'confirm' ? (
-                                <>
-                                    <Button variant="secondary" onClick={resetAiSkillsDialog}>Cancel</Button>
-                                    <Button onClick={handleGenerateSkills} disabled={aiSkillsState.isGenerating}>
-                                        {aiSkillsState.isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                        Analyze and Suggest
-                                    </Button>
-                                </>
-                            ) : (
-                                <Button onClick={resetAiSkillsDialog}>Done</Button>
-                            )}
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </div>
-            {resumeData.skills.map((category, index) => (
+              return (
                 <Card key={category.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 p-2">
                     <div className="space-y-2">
@@ -833,13 +718,35 @@ export function ResumeForm() {
                         rows={3}
                       />
                       <p className="text-sm text-muted-foreground">Separate skills with a comma.</p>
+                       {suggestions.length > 0 && (
+                        <div className="space-y-2 pt-2">
+                          <Label className="text-xs text-muted-foreground">Suggestions</Label>
+                           <div className="flex flex-wrap gap-2">
+                             {suggestions.map(skill => {
+                                const isAdded = existingSkills.has(skill.toLowerCase());
+                                return (
+                                  <Button
+                                    key={skill}
+                                    variant={isAdded ? "secondary" : "outline"}
+                                    size="sm"
+                                    className="h-7 text-xs px-2"
+                                    onClick={() => handleSkillAdd(index, skill)}
+                                    disabled={isAdded}
+                                  >
+                                    {skill}
+                                  </Button>
+                                );
+                             })}
+                           </div>
+                        </div>
+                       )}
                     </div>
                   </CardContent>
                   <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('skills', category.id)}>
                       <Trash2 className="h-4 w-4" />
                   </Button>
                 </Card>
-            ))}
+            )})}
             <Button variant="outline" onClick={() => addEntry('skills')}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill Category</Button>
           </div>
       )
@@ -1353,5 +1260,7 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    
 
     

@@ -868,7 +868,7 @@ export function ResumeForm() {
                       </div>
                        <div className="space-y-2">
                           <Label>Project Link (Optional)</Label>
-                          <Input value={proj.link} onChange={e => handleGenericChange('projects', index, 'link', e.target.value)} placeholder="e.g., github.com/user/repo" />
+                          <Input value={proj.link || ''} onChange={e => handleGenericChange('projects', index, 'link', e.target.value)} placeholder="e.g., github.com/user/repo" />
                       </div>
                       <div className="space-y-2">
                         <Label>Project Type</Label>
@@ -1242,6 +1242,9 @@ export function ResumeForm() {
     
 
 
+
+
+    
 
 
     

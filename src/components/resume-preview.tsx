@@ -224,16 +224,16 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       <Section title="Projects" hasData={projects.length > 0 && projects.some(p => p.title)}>
           {projects.map(proj => proj.title && (
             <div key={proj.id} className="mb-4 break-inside-avoid">
-              <div className="flex justify-between items-baseline mb-1">
-                <div className="flex items-center gap-2">
-                    <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
-                    {proj.link && (
-                        <a href={addHttp(proj.link)} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
-                            <LinkIcon className="h-4 w-4" />
-                        </a>
-                    )}
-                </div>
-                <p className="text-sm text-gray-600 font-medium">{proj.startDate} - {proj.endDate}</p>
+              <div className="flex justify-between items-start gap-4 mb-1">
+                  <div className="flex items-start gap-2">
+                      <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
+                      {proj.link && (
+                          <a href={addHttp(proj.link)} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors shrink-0 pt-1">
+                              <LinkIcon className="h-4 w-4" />
+                          </a>
+                      )}
+                  </div>
+                  <p className="text-sm text-gray-600 font-medium text-right whitespace-nowrap shrink-0">{proj.startDate} - {proj.endDate}</p>
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
                  {proj.projectType}

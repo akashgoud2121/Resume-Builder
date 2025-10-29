@@ -495,7 +495,7 @@ export function ResumeForm() {
           <Info className="h-4 w-4 text-muted-foreground cursor-help" />
         </TooltipTrigger>
         <TooltipContent>
-          <p>For bullet points, start each line with a hyphen (-) or just use separate lines.</p>
+          <p>To create bullet points, start each line with a hyphen (-) or press Enter to create a new point on a new line.</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -693,7 +693,7 @@ export function ResumeForm() {
                         </DialogHeader>
 
                         {aiSkillsState.step === 'results' && aiSkillsState.generatedSkills ? (
-                            <ScrollArea className="max-h-[50vh] p-1">
+                             <ScrollArea className="max-h-[50vh] p-1">
                                 <div className="space-y-4 pr-4">
                                 {aiSkillsState.generatedSkills.skillCategories.map((cat, index) => (
                                     <div key={index} className="p-3 border rounded-md bg-muted/50">
@@ -1083,8 +1083,7 @@ export function ResumeForm() {
                   </Button>
                 </Card>
             ))}
-            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
-          </div>
+            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>          </div>
         )
     },
   ];
@@ -1239,3 +1238,6 @@ export function ResumeForm() {
     
 
 
+
+
+    

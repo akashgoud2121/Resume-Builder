@@ -31,28 +31,31 @@ const addHttp = (url: string) => {
 const renderDescription = (text: string) => {
   if (!text) return null;
 
-  // Pre-process to handle cases where bullets are not newline separated
-  const processedText = text.replace(/\.-\s*/g, '.\n-');
-  
-  const lines = processedText.split('\n').map(line => line.trim()).filter(Boolean);
+  const trimmedText = text.trim();
 
-  if (lines.length <= 1 && !processedText.trim().startsWith('-')) {
-    return <p className="text-sm text-gray-800 leading-relaxed">{processedText}</p>;
+  // If there are newlines, treat each line as a bullet point.
+  // Also handles cases where text is just a single line starting with '-'.
+  if (trimmedText.includes('\n') || trimmedText.startsWith('-')) {
+    const points = trimmedText
+      .split('\n')
+      .flatMap(line => line.split(/(?=- )/)) // Also split by hyphen if they are on the same line
+      .map(point => point.replace(/^- ?/, '').trim())
+      .filter(Boolean);
+
+    return (
+      <ul className="list-none space-y-1 pl-4">
+        {points.map((point, index) => (
+          <li key={index} className="text-sm text-gray-800 relative">
+            <span className="absolute -left-4 text-primary top-0.5">•</span>
+            <span>{point}</span>
+          </li>
+        ))}
+      </ul>
+    );
   }
 
-  // If there are newlines, split by them. Otherwise, if it starts with a hyphen, split by that.
-  const points = lines.length > 1 ? lines : processedText.split(/(?=- )/).map(p => p.trim()).filter(Boolean);
-
-  return (
-    <ul className="list-none space-y-1 pl-4">
-      {points.map((line, index) => (
-        <li key={index} className="text-sm text-gray-800 relative">
-          <span className="absolute -left-4 text-primary top-0.5">•</span>
-          <span>{line.replace(/^- ?/, '')}</span>
-        </li>
-      ))}
-    </ul>
-  );
+  // Otherwise, render as a single paragraph.
+  return <p className="text-sm text-gray-800 leading-relaxed">{trimmedText}</p>;
 };
 
 

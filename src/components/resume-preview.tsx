@@ -31,21 +31,18 @@ const addHttp = (url: string) => {
 const renderDescription = (text: string) => {
   if (!text) return null;
   
-  // If the text doesn't contain newlines, render it as a single paragraph.
-  if (!text.includes('\n')) {
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
+  
+  if (lines.length <= 1 && !text.startsWith('-')) {
     return <p className="text-sm text-gray-800 leading-relaxed">{text}</p>;
   }
-
-  // If it contains newlines, treat each line as a potential bullet point.
-  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
 
   return (
     <ul className="list-none space-y-1 pl-4">
       {lines.map((line, index) => (
         <li key={index} className="text-sm text-gray-800 relative">
           <span className="absolute -left-4 text-primary top-0.5">•</span>
-          {/* Also remove leading hyphens if they exist for cleaner output */}
-          <span>{line.replace(/^- /, '')}</span>
+          <span>{line.replace(/^- ?/, '')}</span>
         </li>
       ))}
     </ul>
@@ -74,9 +71,8 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         if (dateA && dateB) {
             return dateB.getTime() - dateA.getTime();
         }
-        // Handle cases where dates might be missing or invalid
-        if (dateA) return -1; // A comes first
-        if (dateB) return 1;  // B comes first
+        if (dateA) return -1;
+        if (dateB) return 1;
         return 0;
     });
 

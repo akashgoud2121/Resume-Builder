@@ -19,4 +19,5 @@ export const initialResumeData: ResumeData = {
   skills: [],
   certifications: [],
   achievements: [],
+  other: [],
 };

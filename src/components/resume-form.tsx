@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X, Info } from 'lucide-react';
-import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink } from '@/lib/types';
+import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink, Other } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
@@ -88,7 +88,7 @@ type AiExperienceState = {
   generatedBulletPoints: string;
   isGenerating: boolean;
   targetIndex: number | null;
-  targetType: 'experience' | 'projects' | 'achievements' | 'certifications';
+  targetType: 'experience' | 'projects' | 'achievements' | 'certifications' | 'other';
 };
 
 type AiSkillsState = {
@@ -239,6 +239,17 @@ export function ResumeForm() {
             description: "Our team developed a solution for urban waste management that won 1st place out of over 500 competing teams. The project involved creating a full-stack web application with a predictive model for optimizing garbage collection routes.",
             technologies: "Python, Flask, React, Scikit-learn, Google Maps API"
         }
+    },
+    other: {
+        title: "Generate Custom Section Description",
+        descriptionLabel: "Briefly describe the item",
+        techLabel: "Relevant Skills/Technologies (Optional)",
+        descriptionPlaceholder: "e.g., 'Co-authored a paper on...', 'Organized a coding workshop for 50+ students...'",
+        techPlaceholder: "e.g., LaTeX, Python, Public Speaking",
+        template: {
+            description: "Presented research on the topic of 'Efficient Deep Learning Models for Edge Devices' at a university-level symposium. Our work focused on model quantization and knowledge distillation techniques to reduce computational overhead.",
+            technologies: "Python, TensorFlow Lite, Quantization"
+        }
     }
   };
 
@@ -295,8 +306,8 @@ export function ResumeForm() {
     return false;
   };
 
-  const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType | Certification | Achievement>(
-    section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements',
+  const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType | Certification | Achievement | Other>(
+    section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements' | 'other',
     index: number,
     field: keyof T,
     value: string
@@ -339,7 +350,7 @@ export function ResumeForm() {
     });
   };
 
-  const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements') => {
+  const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements' | 'other') => {
     setResumeData(prev => {
       let newEntry;
       if (section === 'education') {
@@ -354,6 +365,8 @@ export function ResumeForm() {
         newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '', technologies: '' };
       } else if (section === 'achievements') {
         newEntry = { id: `ach_${Date.now()}`, category: 'other' as AchievementCategory, name: '', context: '', date: '', description: '' };
+      } else if (section === 'other') {
+        newEntry = { id: `other_${Date.now()}`, title: '', description: '' };
       }
       else {
         return prev;
@@ -362,7 +375,7 @@ export function ResumeForm() {
     });
   };
   
-  const removeEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements', id: string) => {
+  const removeEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements' | 'other', id: string) => {
     setResumeData(prev => ({
       ...prev,
       [section]: (prev[section] as any[]).filter(item => item.id !== id),
@@ -404,8 +417,8 @@ export function ResumeForm() {
     });
   };
   
-  const openExperienceAiDialog = (type: 'experience' | 'projects' | 'achievements' | 'certifications', index: number) => {
-    const entry = resumeData[type][index] as Experience | Project | Achievement | Certification; // Assertion for correct type
+  const openExperienceAiDialog = (type: 'experience' | 'projects' | 'achievements' | 'certifications' | 'other', index: number) => {
+    const entry = resumeData[type][index] as Experience | Project | Achievement | Certification | Other; // Assertion for correct type
     let title = '';
     if ('title' in entry) title = entry.title;
     if ('name' in entry) title = entry.name;
@@ -903,7 +916,7 @@ export function ResumeForm() {
           <div className="space-y-4">
             {resumeData.projects.map((proj, index) => {
                 const error = dateErrors[proj.id];
-                const isOtherSelected = proj.projectType === 'Other' || !PROJECT_TYPES.includes(proj.projectType);
+                const isOtherSelected = proj.projectType === '' || !PROJECT_TYPES.includes(proj.projectType);
                 return (
                 <Card key={proj.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
@@ -1150,6 +1163,52 @@ export function ResumeForm() {
             )})}
             <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>          </div>
         )
+    },
+    {
+      title: "Other",
+      shortTitle: "Other",
+      content: (
+        <div className="space-y-4">
+          {resumeData.other.map((item, index) => (
+            <Card key={item.id} className="p-4 relative bg-background shadow-none">
+              <CardContent className="grid grid-cols-1 gap-4 p-2">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input
+                    value={item.title}
+                    onChange={(e) => handleGenericChange('other', index, 'title', e.target.value)}
+                    placeholder="e.g., Extracurricular Activities, Awards"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2">
+                      <Label>Description</Label>
+                      <BulletPointTooltip />
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('other', index)}>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Generate with AI
+                    </Button>
+                  </div>
+                  <Textarea
+                    value={item.description}
+                    onChange={(e) => handleGenericChange('other', index, 'description', e.target.value)}
+                    placeholder="- Describe your activity, award, or other information here."
+                    rows={4}
+                  />
+                </div>
+              </CardContent>
+              <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('other', item.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </Card>
+          ))}
+          <Button variant="outline" onClick={() => addEntry('other')}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Section
+          </Button>
+        </div>
+      ),
     },
   ];
 

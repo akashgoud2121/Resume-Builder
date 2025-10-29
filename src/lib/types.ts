@@ -75,6 +75,12 @@ export type Achievement = {
   description: string;
 };
 
+export type Other = {
+  id: string;
+  title: string;
+  description: string;
+}
+
 export type ResumeData = {
   contact: ContactInfo;
   summary: string;
@@ -84,8 +90,10 @@ export type ResumeData = {
   skills: SkillCategory[];
   certifications: Certification[];
   achievements: Achievement[];
+  other: Other[];
 };
 
     
+
 
 

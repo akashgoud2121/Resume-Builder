@@ -5,7 +5,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { Education, EducationCategory, Achievement, AchievementCategory, Certification, Project } from '@/lib/types';
+import type { Education, EducationCategory, Achievement, AchievementCategory, Certification, Project, Other } from '@/lib/types';
 import { Github, Linkedin, Mail, Phone, Link as LinkIcon, MapPin } from 'lucide-react';
 
 
@@ -30,11 +30,12 @@ const addHttp = (url: string) => {
 
 const renderDescription = (text: string) => {
   if (!text) return null;
-
   const trimmedText = text.trim();
 
-  // If there are no newlines and the text doesn't start with a bullet, treat it as a paragraph.
-  if (!trimmedText.includes('\n') && !trimmedText.startsWith('-')) {
+  // If the text includes hyphens or newlines, treat as a list
+  const hasBullets = trimmedText.includes('\n') || trimmedText.startsWith('- ');
+
+  if (!hasBullets) {
     return <p className="text-sm text-gray-800 leading-relaxed">{trimmedText}</p>;
   }
 
@@ -70,10 +71,11 @@ const parseDate = (dateString: string): Date | null => {
 
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { resumeData } = useResume();
-  const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
+  const { contact, summary, education, experience, projects, skills, certifications, achievements, other } = resumeData;
   
   const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
   const hasExperience = experience.length > 0 && experience.some(e => e.title);
+  const hasOther = other.length > 0 && other.some(o => o.title);
 
   const sortedEducation = [...education]
     .filter(edu => edu.school)
@@ -252,7 +254,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
                  {proj.projectType}
-                 {(proj.organization && proj.organization.toLowerCase() !== 'personal project') && ` at ${proj.organization}`}
+                 {(proj.organization && proj.projectType.toLowerCase() !== 'personal project' && proj.organization.toLowerCase() !== 'personal project' ) && ` at ${proj.organization}`}
               </p>
               {renderDescription(proj.description)}
             </div>
@@ -301,6 +303,12 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           })}
       </Section>
       
+      {other.map((item: Other) => item.title && (
+        <Section key={item.id} title={item.title} hasData={true}>
+          {renderDescription(item.description)}
+        </Section>
+      ))}
+
       {!hasExperience && ExperienceSection}
 
     </div>

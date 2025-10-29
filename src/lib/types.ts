@@ -46,6 +46,7 @@ export type Project = {
   startDate: string;
   endDate: string;
   description: string;
+  link?: string;
 };
 
 export type SkillCategory = {
@@ -86,4 +87,5 @@ export type ResumeData = {
 };
 
     
+
 

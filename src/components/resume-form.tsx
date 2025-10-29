@@ -300,7 +300,7 @@ export function ResumeForm() {
       } else if (section === 'experience') {
         newEntry = { id: `exp_${Date.now()}`, title: '', company: '', startDate: '', endDate: '', description: '' };
       } else if (section === 'projects') {
-        newEntry = { id: `proj_${Date.now()}`, title: '', projectType: '', organization: '', startDate: '', endDate: '', description: '' };
+        newEntry = { id: `proj_${Date.now()}`, title: '', projectType: '', organization: '', startDate: '', endDate: '', description: '', link: '' };
       } else if (section === 'skills') {
         newEntry = { id: `skillcat_${Date.now()}`, name: '', skills: '' };
       } else if (section === 'certifications') {
@@ -862,9 +862,13 @@ export function ResumeForm() {
             {resumeData.projects.map((proj, index) => (
                 <Card key={proj.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                      <div className="space-y-2 sm:col-span-2">
+                      <div className="space-y-2">
                           <Label>Project Title</Label>
                           <Input value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" />
+                      </div>
+                       <div className="space-y-2">
+                          <Label>Project Link (Optional)</Label>
+                          <Input value={proj.link} onChange={e => handleGenericChange('projects', index, 'link', e.target.value)} placeholder="e.g., github.com/user/repo" />
                       </div>
                       <div className="space-y-2">
                         <Label>Project Type</Label>

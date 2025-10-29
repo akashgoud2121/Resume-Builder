@@ -33,29 +33,32 @@ const renderDescription = (text: string) => {
 
   const trimmedText = text.trim();
 
-  // If there are newlines, treat each line as a bullet point.
-  // Also handles cases where text is just a single line starting with '-'.
-  if (trimmedText.includes('\n') || trimmedText.startsWith('-')) {
-    const points = trimmedText
-      .split('\n')
-      .flatMap(line => line.split(/(?=- )/)) // Also split by hyphen if they are on the same line
-      .map(point => point.replace(/^- ?/, '').trim())
-      .filter(Boolean);
-
-    return (
-      <ul className="list-none space-y-1 pl-4">
-        {points.map((point, index) => (
-          <li key={index} className="text-sm text-gray-800 relative">
-            <span className="absolute -left-4 text-primary top-0.5">•</span>
-            <span>{point}</span>
-          </li>
-        ))}
-      </ul>
-    );
+  // If there are no newlines and the text doesn't start with a bullet, treat it as a paragraph.
+  if (!trimmedText.includes('\n') && !trimmedText.startsWith('-')) {
+    return <p className="text-sm text-gray-800 leading-relaxed">{trimmedText}</p>;
   }
 
-  // Otherwise, render as a single paragraph.
-  return <p className="text-sm text-gray-800 leading-relaxed">{trimmedText}</p>;
+  // Handle various bullet point formats
+  const points = trimmedText
+    // Split by newlines first
+    .split('\n')
+    // Then, for each line, split by a hyphen that might be run-on with previous text
+    .flatMap(line => line.split(/(?=- )/))
+    // Clean up each resulting string
+    .map(point => point.replace(/^- ?/, '').trim())
+    // Filter out any empty strings that might result from splitting
+    .filter(Boolean);
+
+  return (
+    <ul className="list-none space-y-1 pl-4">
+      {points.map((point, index) => (
+        <li key={index} className="text-sm text-gray-800 relative">
+          <span className="absolute -left-4 text-primary top-0.5">•</span>
+          <span>{point}</span>
+        </li>
+      ))}
+    </ul>
+  );
 };
 
 
@@ -222,7 +225,14 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           {projects.map(proj => proj.title && (
             <div key={proj.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
-                <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
+                <div className="flex items-center gap-2">
+                    <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
+                    {proj.link && (
+                        <a href={addHttp(proj.link)} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors">
+                            <LinkIcon className="h-4 w-4" />
+                        </a>
+                    )}
+                </div>
                 <p className="text-sm text-gray-600 font-medium">{proj.startDate} - {proj.endDate}</p>
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">

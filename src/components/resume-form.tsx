@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -19,7 +20,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { GenerateSummaryInput, GenerateSkillsOutput } from '@/ai/schemas';
 import { MonthYearPicker } from './date-picker';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
@@ -287,22 +288,28 @@ export function ResumeForm() {
     field: keyof T,
     value: string
   ) => {
-    setResumeData(prev => {
-      const newSection = [...prev[section]] as T[];
-      const updatedItem = { ...newSection[index], [field]: value };
-      newSection[index] = updatedItem;
+    // 1. Calculate the new state for the resume data
+    const newResumeData = { ...resumeData };
+    const newSection = [...newResumeData[section]] as T[];
+    const updatedItem = { ...newSection[index], [field]: value };
+    newSection[index] = updatedItem;
+    (newResumeData as any)[section] = newSection;
 
-      if (field === 'startDate' || field === 'endDate') {
+    // 2. Set the resume data state
+    setResumeData(newResumeData);
+
+    // 3. Perform validation and set error state separately
+    if (field === 'startDate' || field === 'endDate') {
         const id = (updatedItem as any).id;
-        const isInvalid = validateDateRange(updatedItem.startDate, updatedItem.endDate);
+        const isInvalid = validateDateRange(
+            (updatedItem as any).startDate,
+            (updatedItem as any).endDate
+        );
         setDateErrors(prevErrors => ({
             ...prevErrors,
             [id]: isInvalid ? "Start date cannot be after end date." : null
         }));
-      }
-
-      return { ...prev, [section]: newSection };
-    });
+    }
   };
 
   const handleEducationCategoryChange = (index: number, value: EducationCategory) => {
@@ -1279,20 +1286,5 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    
-
-    
-
-
-
-
-    
-
-
-
-
-    
-
 
     

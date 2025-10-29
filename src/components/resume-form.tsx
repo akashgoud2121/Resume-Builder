@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React from 'react';
@@ -130,6 +128,12 @@ const PROJECT_TYPES = [
     'Other'
 ];
 
+const parseDate = (dateString: string): Date | null => {
+  if (!dateString) return null;
+  const date = new Date(dateString);
+  return isNaN(date.getTime()) ? null : date;
+};
+
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
   const [userApiKey, setUserApiKey] = React.useState<string | null>(null);
@@ -139,6 +143,8 @@ export function ResumeForm() {
   const [generatedSummary, setGeneratedSummary] = React.useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
   const { toast } = useToast();
+
+  const [dateErrors, setDateErrors] = React.useState<Record<string, string | null>>({});
 
   const [aiSkillsState, setAiSkillsState] = React.useState<AiSkillsState>({
     isOpen: false,
@@ -262,6 +268,18 @@ export function ResumeForm() {
   const handleSummaryAiStateChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setSummaryAiState(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
+  
+  const validateDateRange = (startDateStr: string, endDateStr: string): boolean => {
+    if (!startDateStr || !endDateStr) return false;
+
+    const startDate = parseDate(startDateStr);
+    const endDate = parseDate(endDateStr);
+
+    if (startDate && endDate) {
+      return startDate > endDate;
+    }
+    return false;
+  };
 
   const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType | Certification | Achievement>(
     section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements',
@@ -271,7 +289,18 @@ export function ResumeForm() {
   ) => {
     setResumeData(prev => {
       const newSection = [...prev[section]] as T[];
-      newSection[index] = { ...newSection[index], [field]: value };
+      const updatedItem = { ...newSection[index], [field]: value };
+      newSection[index] = updatedItem;
+
+      if (field === 'startDate' || field === 'endDate') {
+        const id = (updatedItem as any).id;
+        const isInvalid = validateDateRange(updatedItem.startDate, updatedItem.endDate);
+        setDateErrors(prevErrors => ({
+            ...prevErrors,
+            [id]: isInvalid ? "Start date cannot be after end date." : null
+        }));
+      }
+
       return { ...prev, [section]: newSection };
     });
   };
@@ -320,6 +349,11 @@ export function ResumeForm() {
       ...prev,
       [section]: (prev[section] as any[]).filter(item => item.id !== id),
     }));
+    setDateErrors(prevErrors => {
+        const newErrors = {...prevErrors};
+        delete newErrors[id];
+        return newErrors;
+    })
   };
 
   const handleGenerateSummary = async () => {
@@ -799,6 +833,7 @@ export function ResumeForm() {
           {resumeData.education.map((edu, index) => {
             const config = educationCategoryConfig[edu.category];
             if (!config) return null;
+            const error = dateErrors[edu.id];
             return (
               <Card key={edu.id} className="p-4 relative bg-background shadow-none">
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
@@ -827,14 +862,17 @@ export function ResumeForm() {
                     <Label>{config.fields.degree.label}</Label>
                     <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} />
                   </div>
-                  <div className="space-y-2">
-                    <Label>{config.fields.startDate.label}</Label>
-                    <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} />
+                  <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                     <div className="space-y-2">
+                        <Label>{config.fields.startDate.label}</Label>
+                        <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} hasError={!!error} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>{config.fields.endDate.label}</Label>
+                        <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} hasError={!!error} />
+                      </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>{config.fields.endDate.label}</Label>
-                    <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} />
-                  </div>
+                   {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
                    <div className="space-y-2">
                     <Label>{config.fields.grades.label}</Label>
                     <Input value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
@@ -859,7 +897,9 @@ export function ResumeForm() {
         shortTitle: "Projects",
         content: (
           <div className="space-y-4">
-            {resumeData.projects.map((proj, index) => (
+            {resumeData.projects.map((proj, index) => {
+                const error = dateErrors[proj.id];
+                return (
                 <Card key={proj.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                       <div className="space-y-2">
@@ -892,14 +932,17 @@ export function ResumeForm() {
                           <Label>Organization / Affiliation</Label>
                           <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" />
                       </div>
-                      <div className="space-y-2">
-                          <Label>Start Date</Label>
-                          <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>End Date</Label>
-                          <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} />
-                      </div>
+                       <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Start Date</Label>
+                                <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} hasError={!!error}/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>End Date</Label>
+                                <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} hasError={!!error} />
+                            </div>
+                        </div>
+                        {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
                             <div className='flex items-center gap-2'>
@@ -918,7 +961,7 @@ export function ResumeForm() {
                       <Trash2 className="h-4 w-4" />
                   </Button>
                 </Card>
-            ))}
+            )})}
             <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
           </div>
         )
@@ -1049,7 +1092,9 @@ export function ResumeForm() {
         shortTitle: "Experience",
         content: (
           <div className="space-y-4">
-            {resumeData.experience.map((exp, index) => (
+            {resumeData.experience.map((exp, index) => {
+                const error = dateErrors[exp.id];
+                return (
                 <Card key={exp.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                       <div className="space-y-2">
@@ -1060,14 +1105,17 @@ export function ResumeForm() {
                           <Label>Company</Label>
                           <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
                       </div>
-                      <div className="space-y-2">
-                          <Label>Start Date</Label>
-                          <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>End Date</Label>
-                          <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} />
-                      </div>
+                       <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label>Start Date</Label>
+                                <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error}/>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>End Date</Label>
+                                <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error}/>
+                            </div>
+                        </div>
+                        {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
                             <div className='flex items-center gap-2'>
@@ -1086,7 +1134,7 @@ export function ResumeForm() {
                       <Trash2 className="h-4 w-4" />
                   </Button>
                 </Card>
-            ))}
+            )})}
             <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>          </div>
         )
     },

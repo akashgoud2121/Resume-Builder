@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June', 
@@ -24,9 +25,10 @@ interface MonthYearPickerProps {
   onChange: (value: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  hasError?: boolean;
 }
 
-export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({ value, onChange, placeholder = "Select date", disabled }) => {
+export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({ value, onChange, placeholder = "Select date", disabled, hasError }) => {
   const [month, year] = value ? value.split(' ') : ['', ''];
 
   const handleMonthChange = (newMonth: string) => {
@@ -40,7 +42,7 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({ value, onChang
   return (
     <div className="flex gap-2">
       <Select value={month} onValueChange={handleMonthChange} disabled={disabled}>
-        <SelectTrigger>
+        <SelectTrigger className={cn(hasError && "border-destructive")}>
           <SelectValue placeholder="Month" />
         </SelectTrigger>
         <SelectContent>
@@ -48,7 +50,7 @@ export const MonthYearPicker: React.FC<MonthYearPickerProps> = ({ value, onChang
         </SelectContent>
       </Select>
       <Select value={year} onValueChange={handleYearChange} disabled={disabled}>
-        <SelectTrigger>
+        <SelectTrigger className={cn(hasError && "border-destructive")}>
           <SelectValue placeholder="Year" />
         </SelectTrigger>
         <SelectContent>

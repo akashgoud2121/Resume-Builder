@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X } from 'lucide-react';
+import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X, Info } from 'lucide-react';
 import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
@@ -21,6 +21,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { GenerateSummaryInput, GenerateSkillsOutput } from '@/ai/schemas';
 import { MonthYearPicker } from './date-picker';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
@@ -258,7 +259,7 @@ export function ResumeForm() {
     setResumeData(prev => ({ ...prev, summary: e.target.value }));
   };
   
-  const handleSummaryAiStateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSummaryAiStateChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setSummaryAiState(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
@@ -487,6 +488,19 @@ export function ResumeForm() {
     });
   };
 
+  const BulletPointTooltip = () => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>For bullet points, start each line with a hyphen (-) or just use separate lines.</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+
 
   const allSections = [
     {
@@ -549,7 +563,7 @@ export function ResumeForm() {
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <Label htmlFor="summary">Summary/Objective</Label>
-            <Dialog open={isSummaryAiDialogOpen} onOpenChange={setIsSummaryAiDialogOpen}>
+            <Dialog open={isSummaryAiDialogOpen} onOpenChange={(isOpen) => { setIsSummaryAiDialogOpen(isOpen); if (!isOpen) setGeneratedSummary(''); }}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
                   <Sparkles className="mr-2 h-4 w-4" />
@@ -640,7 +654,7 @@ export function ResumeForm() {
                 </ScrollArea>
                 
                 <DialogFooter className="pr-5">
-                  <Button variant="secondary" onClick={() => setIsSummaryAiDialogOpen(false)}>Cancel</Button>
+                  <Button variant="secondary" onClick={() => {setIsSummaryAiDialogOpen(false); setGeneratedSummary(''); }}>Cancel</Button>
                   <Button onClick={handleUseSummary} disabled={!generatedSummary}>
                     Use This Objective
                   </Button>
@@ -884,7 +898,10 @@ export function ResumeForm() {
                       </div>
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
-                            <Label>Bullet Points / Description</Label>
+                            <div className='flex items-center gap-2'>
+                                <Label>Bullet Points / Description</Label>
+                                <BulletPointTooltip />
+                            </div>
                             <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('projects', index)}>
                               <Sparkles className="mr-2 h-4 w-4" />
                               Generate with AI
@@ -924,7 +941,10 @@ export function ResumeForm() {
                 </div>
                 <div className="sm:col-span-2 space-y-2">
                     <div className="flex justify-between items-center">
-                      <Label>Description (Optional)</Label>
+                       <div className='flex items-center gap-2'>
+                          <Label>Description (Optional)</Label>
+                          <BulletPointTooltip />
+                        </div>
                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('certifications', index)}>
                           <Sparkles className="mr-2 h-4 w-4" />
                           Generate with AI
@@ -998,7 +1018,10 @@ export function ResumeForm() {
                     </div>
                     <div className="sm:col-span-2 space-y-2">
                         <div className="flex justify-between items-center">
-                          <Label>Description (Optional)</Label>
+                          <div className='flex items-center gap-2'>
+                            <Label>Description (Optional)</Label>
+                            <BulletPointTooltip />
+                          </div>
                           <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('achievements', index)}>
                               <Sparkles className="mr-2 h-4 w-4" />
                               Generate with AI
@@ -1043,7 +1066,10 @@ export function ResumeForm() {
                       </div>
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
-                            <Label>Description</Label>
+                            <div className='flex items-center gap-2'>
+                              <Label>Description</Label>
+                              <BulletPointTooltip />
+                            </div>
                             <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
                               <Sparkles className="mr-2 h-4 w-4" />
                               Generate with AI
@@ -1211,4 +1237,5 @@ export function ResumeForm() {
 
 
     
+
 

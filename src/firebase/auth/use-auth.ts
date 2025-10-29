@@ -5,6 +5,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   updateProfile,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from 'firebase/auth';
 import { useFirebase } from '../provider';
 
@@ -25,6 +27,11 @@ export function useAuthActions() {
   const signIn = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
+  
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider();
+    return await signInWithPopup(auth, provider);
+  };
 
-  return { signUp, signIn };
+  return { signUp, signIn, signInWithGoogle };
 }

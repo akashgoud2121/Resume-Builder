@@ -529,11 +529,11 @@ export function ResumeForm() {
             <Input id="location" name="location" value={resumeData.contact.location} onChange={handleContactChange} placeholder="City, Country" />
           </div>
           <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="linkedin">LinkedIn URL</Label>
+            <Label htmlFor="linkedin">LinkedIn URL<RequiredIndicator /></Label>
             <Input id="linkedin" name="linkedin" value={resumeData.contact.linkedin} onChange={handleContactChange} placeholder="linkedin.com/in/johndoe" />
           </div>
           <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="github">GitHub URL</Label>
+            <Label htmlFor="github">GitHub URL<RequiredIndicator /></Label>
             <Input id="github" name="github" value={resumeData.contact.github} onChange={handleContactChange} placeholder="github.com/johndoe" />
           </div>
            <div className="sm:col-span-2 space-y-4">

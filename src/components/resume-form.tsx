@@ -301,16 +301,15 @@ export function ResumeForm() {
     field: keyof T,
     value: string
   ) => {
-    
     const newSectionData = [...resumeData[section]] as T[];
     const updatedItem = { ...newSectionData[index], [field]: value };
     newSectionData[index] = updatedItem;
 
     setResumeData(prev => ({
-        ...prev,
-        [section]: newSectionData,
+      ...prev,
+      [section]: newSectionData,
     }));
-
+    
     if (field === 'startDate' || field === 'endDate') {
         const itemWithId = updatedItem as any;
         const startDate = field === 'startDate' ? value : itemWithId.startDate;
@@ -319,7 +318,7 @@ export function ResumeForm() {
         
         setDateErrors(prevErrors => ({
             ...prevErrors,
-            [itemWithId.id]: isInvalid ? "Start date cannot be after end date." : null
+            [(itemWithId as any).id]: isInvalid ? "Start date cannot be after end date." : null
         }));
     }
   };
@@ -904,6 +903,7 @@ export function ResumeForm() {
           <div className="space-y-4">
             {resumeData.projects.map((proj, index) => {
                 const error = dateErrors[proj.id];
+                const isOtherSelected = proj.projectType === 'Other' || !PROJECT_TYPES.includes(proj.projectType);
                 return (
                 <Card key={proj.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
@@ -920,7 +920,7 @@ export function ResumeForm() {
                         <Select
                             value={PROJECT_TYPES.includes(proj.projectType) ? proj.projectType : 'Other'}
                             onValueChange={(value) => {
-                                handleGenericChange('projects', index, 'projectType', value);
+                                handleGenericChange('projects', index, 'projectType', value === 'Other' ? '' : value);
                             }}
                         >
                             <SelectTrigger>
@@ -932,6 +932,14 @@ export function ResumeForm() {
                                 ))}
                             </SelectContent>
                         </Select>
+                        {isOtherSelected && (
+                             <Input
+                                value={proj.projectType}
+                                onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
+                                placeholder="Please specify type"
+                                className="mt-2"
+                             />
+                        )}
                       </div>
                       <div className="space-y-2">
                           <Label>Organization / Affiliation</Label>
@@ -1284,5 +1292,3 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    

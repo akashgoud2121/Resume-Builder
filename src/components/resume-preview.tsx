@@ -5,7 +5,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { EducationCategory, Achievement, AchievementCategory, Certification } from '@/lib/types';
+import type { Education, EducationCategory, Achievement, AchievementCategory, Certification } from '@/lib/types';
 import { Github, Linkedin, Mail, Phone, Link as LinkIcon, MapPin } from 'lucide-react';
 
 
@@ -51,6 +51,12 @@ const renderDescription = (text: string) => {
   );
 };
 
+const parseDate = (dateString: string): Date | null => {
+    if (!dateString || !dateString.includes(' ')) return null;
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? null : date;
+};
+
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { resumeData } = useResume();
   const { contact, summary, education, experience, projects, skills, certifications, achievements } = resumeData;
@@ -58,19 +64,19 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
   const hasExperience = experience.length > 0 && experience.some(e => e.title);
 
-
-  const groupedEducation = education.reduce((acc, edu) => {
-    const category = edu.category || 'higher';
-    if (!acc[category]) {
-      acc[category] = [];
-    }
-    if (edu.school) {
-      acc[category].push(edu);
-    }
-    return acc;
-  }, {} as Record<EducationCategory, typeof education>);
-
-  const educationOrder: EducationCategory[] = ['higher', 'intermediate', 'schooling', 'other'];
+  const sortedEducation = [...education]
+    .filter(edu => edu.school)
+    .sort((a, b) => {
+        const dateA = parseDate(a.endDate);
+        const dateB = parseDate(b.endDate);
+        if (dateA && dateB) {
+            return dateB.getTime() - dateA.getTime();
+        }
+        // Handle cases where dates might be missing or invalid
+        if (dateA) return -1; // A comes first
+        if (dateB) return 1;  // B comes first
+        return 0;
+    });
 
   const groupedAchievements = achievements.reduce((acc, ach) => {
     const category = ach.category || 'other';
@@ -187,29 +193,21 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       
       {hasExperience && ExperienceSection}
 
-      <Section title="Education" hasData={education.some(e => e.school)}>
+      <Section title="Education" hasData={sortedEducation.length > 0}>
         <div className="space-y-3">
-          {educationOrder.map(category => {
-          const entries = groupedEducation[category];
-          if (!entries || entries.length === 0) return null;
-          return (
-              <React.Fragment key={category}>
-                {entries.map(edu => (
-                    <div key={edu.id} className="flex justify-between items-start break-inside-avoid">
-                      <div className="flex-grow">
-                          <h4 className="text-base font-bold text-gray-900">{edu.school}</h4>
-                          <p className="text-sm text-gray-700">{edu.degree}</p>
-                          {edu.grades && <p className="text-sm text-gray-600">{edu.grades}</p>}
-                      </div>
-                      <div className="text-right flex-shrink-0 ml-4">
-                          <p className="text-sm text-gray-600 font-medium">{edu.startDate} - {edu.endDate}</p>
-                          <p className="text-sm text-gray-600">{edu.city}</p>
-                      </div>
-                    </div>
-                ))}
-              </React.Fragment>
-          )
-          })}
+          {sortedEducation.map(edu => (
+            <div key={edu.id} className="flex justify-between items-start break-inside-avoid">
+              <div className="flex-grow">
+                  <h4 className="text-base font-bold text-gray-900">{edu.school}</h4>
+                  <p className="text-sm text-gray-700">{edu.degree}</p>
+                  {edu.grades && <p className="text-sm text-gray-600">{edu.grades}</p>}
+              </div>
+              <div className="text-right flex-shrink-0 ml-4">
+                  <p className="text-sm text-gray-600 font-medium">{edu.startDate} - {edu.endDate}</p>
+                  <p className="text-sm text-gray-600">{edu.city}</p>
+              </div>
+            </div>
+          ))}
         </div>
       </Section>
       

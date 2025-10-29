@@ -20,7 +20,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { GenerateSummaryInput, GenerateSkillsOutput } from '@/ai/schemas';
 import { MonthYearPicker } from './date-picker';
-import { Tooltip, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
 
 const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
@@ -134,6 +134,19 @@ const parseDate = (dateString: string): Date | null => {
   const date = new Date(dateString);
   return isNaN(date.getTime()) ? null : date;
 };
+
+const BulletPointTooltip = () => (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>To create bullet points, start each line with a hyphen (-) or press Enter to create a new point on a new line.</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+);
 
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
@@ -288,26 +301,25 @@ export function ResumeForm() {
     field: keyof T,
     value: string
   ) => {
-    // 1. Calculate the new state for the resume data
-    const newResumeData = { ...resumeData };
-    const newSection = [...newResumeData[section]] as T[];
-    const updatedItem = { ...newSection[index], [field]: value };
-    newSection[index] = updatedItem;
-    (newResumeData as any)[section] = newSection;
+    
+    const newSectionData = [...resumeData[section]] as T[];
+    const updatedItem = { ...newSectionData[index], [field]: value };
+    newSectionData[index] = updatedItem;
 
-    // 2. Set the resume data state
-    setResumeData(newResumeData);
+    setResumeData(prev => ({
+        ...prev,
+        [section]: newSectionData,
+    }));
 
-    // 3. Perform validation and set error state separately
     if (field === 'startDate' || field === 'endDate') {
-        const id = (updatedItem as any).id;
-        const isInvalid = validateDateRange(
-            (updatedItem as any).startDate,
-            (updatedItem as any).endDate
-        );
+        const itemWithId = updatedItem as any;
+        const startDate = field === 'startDate' ? value : itemWithId.startDate;
+        const endDate = field === 'endDate' ? value : itemWithId.endDate;
+        const isInvalid = validateDateRange(startDate, endDate);
+        
         setDateErrors(prevErrors => ({
             ...prevErrors,
-            [id]: isInvalid ? "Start date cannot be after end date." : null
+            [itemWithId.id]: isInvalid ? "Start date cannot be after end date." : null
         }));
     }
   };
@@ -528,20 +540,6 @@ export function ResumeForm() {
         generatedSkills: null,
     });
   };
-
-  const BulletPointTooltip = () => (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Info className="h-4 w-4 text-muted-foreground cursor-help" />
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>To create bullet points, start each line with a hyphen (-) or press Enter to create a new point on a new line.</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-
 
   const allSections = [
     {

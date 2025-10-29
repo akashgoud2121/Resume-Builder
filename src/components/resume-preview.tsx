@@ -5,7 +5,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { Education, EducationCategory, Achievement, AchievementCategory, Certification } from '@/lib/types';
+import type { Education, EducationCategory, Achievement, AchievementCategory, Certification, Project } from '@/lib/types';
 import { Github, Linkedin, Mail, Phone, Link as LinkIcon, MapPin } from 'lucide-react';
 
 
@@ -77,6 +77,19 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
   const sortedEducation = [...education]
     .filter(edu => edu.school)
+    .sort((a, b) => {
+        const dateA = parseDate(a.endDate);
+        const dateB = parseDate(b.endDate);
+        if (dateA && dateB) {
+            return dateB.getTime() - dateA.getTime();
+        }
+        if (dateA) return -1;
+        if (dateB) return 1;
+        return 0;
+    });
+
+  const sortedProjects = [...projects]
+    .filter(proj => proj.title)
     .sort((a, b) => {
         const dateA = parseDate(a.endDate);
         const dateB = parseDate(b.endDate);
@@ -221,12 +234,14 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </div>
       </Section>
       
-      <Section title="Projects" hasData={projects.length > 0 && projects.some(p => p.title)}>
-          {projects.map(proj => proj.title && (
+      <Section title="Projects" hasData={sortedProjects.length > 0}>
+          {sortedProjects.map(proj => (
             <div key={proj.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-start gap-4 mb-1">
                   <div className="flex items-start gap-2">
-                      <h3 className="text-base font-bold text-gray-900">{proj.title}</h3>
+                      <div className='flex-grow'>
+                        <h3 className="text-base font-bold text-gray-900 inline">{proj.title}</h3>
+                      </div>
                       {proj.link && (
                           <a href={addHttp(proj.link)} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors shrink-0 pt-1">
                               <LinkIcon className="h-4 w-4" />
@@ -293,5 +308,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 });
 
 ResumePreview.displayName = "ResumePreview";
+
+    
 
     

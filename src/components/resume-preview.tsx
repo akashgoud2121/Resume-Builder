@@ -30,24 +30,29 @@ const addHttp = (url: string) => {
 
 const renderDescription = (text: string) => {
   if (!text) return null;
-  const bulletPoints = text
-    .split(/\\n|(?=- )/)
-    .map(line => line.trim())
-    .filter(line => line.startsWith('-'));
+  const lines = text.split('\n').map(line => line.trim()).filter(Boolean);
 
-  if (bulletPoints.length === 0) {
-     return <p className="text-sm text-gray-800 leading-relaxed">{text}</p>;
+  const containsBullet = lines.some(line => line.startsWith('-'));
+
+  if (!containsBullet) {
+    return <p className="text-sm text-gray-800 leading-relaxed">{text}</p>;
   }
-  
+
   return (
-      <ul className="list-none space-y-1 pl-4">
-          {bulletPoints.map((line, index) => (
-          <li key={index} className="text-sm text-gray-800 relative">
-             <span className="absolute -left-4 text-primary top-0.5">•</span>
+    <ul className="list-none space-y-1 pl-4">
+      {lines.map((line, index) => {
+        if (line.startsWith('-')) {
+          return (
+            <li key={index} className="text-sm text-gray-800 relative">
+              <span className="absolute -left-4 text-primary top-0.5">•</span>
               <span>{line.replace(/^- /, '')}</span>
-          </li>
-          ))}
-      </ul>
+            </li>
+          );
+        }
+        // This case handles paragraphs mixed with bullet points, though less common.
+        return <li key={index} className="text-sm text-gray-800 leading-relaxed list-none -ml-4">{line}</li>;
+      })}
+    </ul>
   );
 };
 

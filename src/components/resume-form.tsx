@@ -148,6 +148,8 @@ const BulletPointTooltip = () => (
     </TooltipProvider>
 );
 
+const RequiredIndicator = () => <span className="text-destructive ml-1">*</span>;
+
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
   const [userApiKey, setUserApiKey] = React.useState<string | null>(null);
@@ -560,19 +562,19 @@ export function ResumeForm() {
       content: (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name">Full Name<RequiredIndicator /></Label>
             <Input id="name" name="name" value={resumeData.contact.name} onChange={handleContactChange} placeholder="John Doe" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email<RequiredIndicator /></Label>
             <Input id="email" name="email" type="email" value={resumeData.contact.email} onChange={handleContactChange} placeholder="john.doe@email.com" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
+            <Label htmlFor="phone">Phone<RequiredIndicator /></Label>
             <Input id="phone" name="phone" value={resumeData.contact.phone} onChange={handleContactChange} placeholder="(123) 456-7890" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">Location<RequiredIndicator /></Label>
             <Input id="location" name="location" value={resumeData.contact.location} onChange={handleContactChange} placeholder="City, Country" />
           </div>
           <div className="sm:col-span-2 space-y-2">
@@ -589,11 +591,11 @@ export function ResumeForm() {
                   <div key={link.id} className="flex items-end gap-2 p-2 border rounded-md relative">
                     <div className="grid grid-cols-2 gap-2 flex-1">
                         <div className="space-y-1">
-                          <Label htmlFor={`link-label-${index}`} className="text-xs">Label</Label>
+                          <Label htmlFor={`link-label-${index}`} className="text-xs">Label<RequiredIndicator /></Label>
                           <Input id={`link-label-${index}`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" />
                         </div>
                         <div className="space-y-1">
-                          <Label htmlFor={`link-url-${index}`} className="text-xs">URL</Label>
+                          <Label htmlFor={`link-url-${index}`} className="text-xs">URL<RequiredIndicator /></Label>
                           <Input id={`link-url-${index}`} value={link.url} onChange={(e) => handleOtherLinkChange(index, 'url', e.target.value)} placeholder="your-portfolio.com" />
                         </div>
                     </div>
@@ -633,7 +635,7 @@ export function ResumeForm() {
                     <div className="p-4 space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="year">Year / Level of Study</Label>
+                                <Label htmlFor="year">Year / Level of Study<RequiredIndicator /></Label>
                                 <Select
                                     name="year"
                                     value={summaryAiState.year}
@@ -664,7 +666,7 @@ export function ResumeForm() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="major">Major / Field of Study</Label>
+                                <Label htmlFor="major">Major / Field of Study<RequiredIndicator /></Label>
                                 <Input id="major" name="major" value={summaryAiState.major} onChange={handleSummaryAiStateChange} placeholder="e.g., Computer Science" />
                             </div>
                             <div className="space-y-2">
@@ -672,11 +674,11 @@ export function ResumeForm() {
                                 <Input id="specialization" name="specialization" value={summaryAiState.specialization} onChange={handleSummaryAiStateChange} placeholder="e.g., AI/ML" />
                             </div>
                             <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="jobType">Desired Role</Label>
+                                <Label htmlFor="jobType">Desired Role<RequiredIndicator /></Label>
                                 <Input id="jobType" name="jobType" value={summaryAiState.jobType} onChange={handleSummaryAiStateChange} placeholder="e.g., Software Internship" />
                             </div>
                             <div className="sm:col-span-2 space-y-2">
-                                <Label htmlFor="skills">Top Skills</Label>
+                                <Label htmlFor="skills">Top Skills<RequiredIndicator /></Label>
                                 <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
                             </div>
                         </div>
@@ -796,7 +798,7 @@ export function ResumeForm() {
                 <Card key={category.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 p-2">
                     <div className="space-y-2">
-                      <Label>Skill Category</Label>
+                      <Label>Skill Category<RequiredIndicator /></Label>
                       <Select
                         value={SKILL_CATEGORIES.includes(category.name) ? category.name : 'Other'}
                         onValueChange={(value) => {
@@ -823,7 +825,7 @@ export function ResumeForm() {
                        <p className="text-xs text-muted-foreground">Select a category or type your own if you choose 'Other'.</p>
                     </div>
                     <div className="space-y-2">
-                      <Label>Skills</Label>
+                      <Label>Skills<RequiredIndicator /></Label>
                       <Textarea
                         value={category.skills}
                         onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)}
@@ -855,7 +857,7 @@ export function ResumeForm() {
               <Card key={edu.id} className="p-4 relative bg-background shadow-none">
                 <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                   <div className="sm:col-span-2 space-y-2">
-                    <Label>Education Category</Label>
+                    <Label>Education Category<RequiredIndicator /></Label>
                     <Select
                       value={edu.category}
                       onValueChange={(value: EducationCategory) => handleEducationCategoryChange(index, value)}
@@ -872,20 +874,20 @@ export function ResumeForm() {
                     </Select>
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>{config.fields.school.label}</Label>
+                    <Label>{config.fields.school.label}<RequiredIndicator /></Label>
                     <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} />
                   </div>
                   <div className="space-y-2 sm:col-span-2">
-                    <Label>{config.fields.degree.label}</Label>
+                    <Label>{config.fields.degree.label}<RequiredIndicator /></Label>
                     <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} />
                   </div>
                   <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <div className="space-y-2">
-                        <Label>{config.fields.startDate.label}</Label>
+                        <Label>{config.fields.startDate.label}<RequiredIndicator /></Label>
                         <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} hasError={!!error} />
                       </div>
                       <div className="space-y-2">
-                        <Label>{config.fields.endDate.label}</Label>
+                        <Label>{config.fields.endDate.label}<RequiredIndicator /></Label>
                         <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} hasError={!!error} />
                       </div>
                   </div>
@@ -895,7 +897,7 @@ export function ResumeForm() {
                     <Input value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
                   </div>
                   <div className="space-y-2">
-                    <Label>{config.fields.city.label}</Label>
+                    <Label>{config.fields.city.label}<RequiredIndicator /></Label>
                     <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
                   </div>
                 </CardContent>
@@ -916,12 +918,12 @@ export function ResumeForm() {
           <div className="space-y-4">
             {resumeData.projects.map((proj, index) => {
                 const error = dateErrors[proj.id];
-                const isOtherSelected = proj.projectType === '' || !PROJECT_TYPES.includes(proj.projectType);
+                const isOtherSelected = proj.projectType === 'Other' || !PROJECT_TYPES.includes(proj.projectType);
                 return (
                 <Card key={proj.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                       <div className="space-y-2">
-                          <Label>Project Title</Label>
+                          <Label>Project Title<RequiredIndicator /></Label>
                           <Input value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" />
                       </div>
                        <div className="space-y-2">
@@ -929,11 +931,11 @@ export function ResumeForm() {
                           <Input value={proj.link || ''} onChange={e => handleGenericChange('projects', index, 'link', e.target.value)} placeholder="e.g., github.com/user/repo" />
                       </div>
                       <div className="space-y-2">
-                        <Label>Project Type</Label>
+                        <Label>Project Type<RequiredIndicator /></Label>
                         <Select
                             value={PROJECT_TYPES.includes(proj.projectType) ? proj.projectType : 'Other'}
                             onValueChange={(value) => {
-                                handleGenericChange('projects', index, 'projectType', value === 'Other' ? '' : value);
+                                handleGenericChange('projects', index, 'projectType', value);
                             }}
                         >
                             <SelectTrigger>
@@ -947,7 +949,7 @@ export function ResumeForm() {
                         </Select>
                         {isOtherSelected && (
                              <Input
-                                value={proj.projectType}
+                                value={proj.projectType === 'Other' ? '' : proj.projectType}
                                 onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
                                 placeholder="Please specify type"
                                 className="mt-2"
@@ -955,16 +957,16 @@ export function ResumeForm() {
                         )}
                       </div>
                       <div className="space-y-2">
-                          <Label>Organization / Affiliation</Label>
+                          <Label>Organization / Affiliation<RequiredIndicator /></Label>
                           <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" />
                       </div>
                        <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Start Date</Label>
+                                <Label>Start Date<RequiredIndicator /></Label>
                                 <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} hasError={!!error}/>
                             </div>
                             <div className="space-y-2">
-                                <Label>End Date</Label>
+                                <Label>End Date<RequiredIndicator /></Label>
                                 <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} hasError={!!error} />
                             </div>
                         </div>
@@ -972,7 +974,7 @@ export function ResumeForm() {
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
                             <div className='flex items-center gap-2'>
-                                <Label>Bullet Points / Description</Label>
+                                <Label>Bullet Points / Description<RequiredIndicator /></Label>
                                 <BulletPointTooltip />
                             </div>
                             <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('projects', index)}>
@@ -1001,15 +1003,15 @@ export function ResumeForm() {
             <Card key={cert.id} className="p-4 relative bg-background shadow-none">
               <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                 <div className="space-y-2">
-                  <Label>Certification Name</Label>
+                  <Label>Certification Name<RequiredIndicator /></Label>
                   <Input value={cert.name} onChange={e => handleGenericChange('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" />
                 </div>
                 <div className="space-y-2">
-                  <Label>Issuing Body</Label>
+                  <Label>Issuing Body<RequiredIndicator /></Label>
                   <Input value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label>Date Issued</Label>
+                  <Label>Date Issued<RequiredIndicator /></Label>
                   <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} />
                 </div>
                 <div className="sm:col-span-2 space-y-2">
@@ -1057,7 +1059,7 @@ export function ResumeForm() {
                 <Card key={ach.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                      <div className="sm:col-span-2 space-y-2">
-                        <Label>Category</Label>
+                        <Label>Category<RequiredIndicator /></Label>
                         <Select
                         value={ach.category}
                         onValueChange={(value: AchievementCategory) => handleAchievementCategoryChange(index, value)}
@@ -1078,15 +1080,15 @@ export function ResumeForm() {
                         </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>{config.nameLabel}</Label>
+                      <Label>{config.nameLabel}<RequiredIndicator /></Label>
                       <Input value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} />
                     </div>
                     <div className="space-y-2">
-                      <Label>{config.contextLabel}</Label>
+                      <Label>{config.contextLabel}<RequiredIndicator /></Label>
                       <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" />
                     </div>
                     <div className="space-y-2 sm:col-span-2">
-                      <Label>Date</Label>
+                      <Label>Date<RequiredIndicator /></Label>
                       <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} />
                     </div>
                     <div className="sm:col-span-2 space-y-2">
@@ -1124,20 +1126,20 @@ export function ResumeForm() {
                 <Card key={exp.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                       <div className="space-y-2">
-                          <Label>Job Title/Role</Label>
+                          <Label>Job Title/Role<RequiredIndicator /></Label>
                           <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
                       </div>
                       <div className="space-y-2">
-                          <Label>Company</Label>
+                          <Label>Company<RequiredIndicator /></Label>
                           <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
                       </div>
                        <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Start Date</Label>
+                                <Label>Start Date<RequiredIndicator /></Label>
                                 <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error}/>
                             </div>
                             <div className="space-y-2">
-                                <Label>End Date</Label>
+                                <Label>End Date<RequiredIndicator /></Label>
                                 <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error}/>
                             </div>
                         </div>
@@ -1145,7 +1147,7 @@ export function ResumeForm() {
                       <div className="sm:col-span-2 space-y-2">
                           <div className="flex justify-between items-center">
                             <div className='flex items-center gap-2'>
-                              <Label>Description</Label>
+                              <Label>Description<RequiredIndicator /></Label>
                               <BulletPointTooltip />
                             </div>
                             <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
@@ -1173,7 +1175,7 @@ export function ResumeForm() {
             <Card key={item.id} className="p-4 relative bg-background shadow-none">
               <CardContent className="grid grid-cols-1 gap-4 p-2">
                 <div className="space-y-2">
-                  <Label>Title</Label>
+                  <Label>Title<RequiredIndicator /></Label>
                   <Input
                     value={item.title}
                     onChange={(e) => handleGenericChange('other', index, 'title', e.target.value)}
@@ -1183,7 +1185,7 @@ export function ResumeForm() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center gap-2">
-                      <Label>Description</Label>
+                      <Label>Description<RequiredIndicator /></Label>
                       <BulletPointTooltip />
                     </div>
                     <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('other', index)}>
@@ -1298,7 +1300,7 @@ export function ResumeForm() {
                         <p className="pr-8"><span className="font-medium">{templateTexts[aiExperienceState.targetType]?.techLabel}:</span> {templateTexts[aiExperienceState.targetType]?.template.technologies}</p>
                     </div>
                     <div className="space-y-2">
-                      <Label>Title / Name</Label>
+                      <Label>Title / Name<RequiredIndicator /></Label>
                       <Input
                         value={aiExperienceState.projectTitle}
                         readOnly
@@ -1307,7 +1309,7 @@ export function ResumeForm() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}</Label>
+                      <Label>{templateTexts[aiExperienceState.targetType]?.descriptionLabel}<RequiredIndicator /></Label>
                       <Textarea
                         value={aiExperienceState.projectDescription}
                         onChange={(e) => setAiExperienceState(prev => ({ ...prev, projectDescription: e.target.value }))}
@@ -1351,3 +1353,5 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    

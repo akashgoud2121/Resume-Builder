@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, Settings, LogOut } from 'lucide-react';
+import { FileText, GraduationCap, Settings, LogOut, LayoutDashboard, User as UserIcon } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/auth/use-user';
 import { useAuthActions } from '@/firebase/auth/use-auth';
 import { useRouter } from 'next/navigation';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 export default function Home() {
@@ -118,14 +120,29 @@ export default function Home() {
                 </DialogContent>
             </Dialog>
             {user ? (
-                <div className="flex items-center gap-2">
-                    <Button variant="outline" asChild>
-                        <Link href="/build">Go to Builder</Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-2">
+                       <Avatar className="h-8 w-8">
+                        <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
+                        <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <span className="hidden sm:inline-block">{user.displayName || 'My Account'}</span>
                     </Button>
-                    <Button variant="ghost" onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" /> Logout
-                    </Button>
-                </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                       <Link href="/build"><LayoutDashboard className="mr-2 h-4 w-4" />Go to Builder</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
             ) : (
                 <Button asChild>
                     <Link href="/build">Get Started</Link>

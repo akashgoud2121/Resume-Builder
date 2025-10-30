@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, Settings, LogOut, LayoutDashboard } from 'lucide-react';
+import { FileText, GraduationCap, Settings, LogOut, LayoutDashboard, ArrowRight } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -78,60 +78,102 @@ export default function Home() {
         <div className="flex items-center gap-4">
             {user ? (
                 <div className="flex items-center gap-4">
-                  <span className="hidden sm:inline-block text-sm">Welcome, {user.displayName || 'User'}</span>
-                  <Button variant="outline" size="sm" asChild>
-                      <Link href="/build"><LayoutDashboard className="mr-2 h-4 w-4" />Go to Builder</Link>
-                  </Button>
+                  <span className="hidden sm:inline-block text-sm font-medium">Welcome, {user.displayName || 'User'}</span>
                   <Button variant="ghost" size="sm" onClick={handleLogout}>
                     <LogOut className="mr-2 h-4 w-4" />
                     Logout
                   </Button>
+                   <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                      <DialogTrigger asChild>
+                          <Button variant="ghost" size="icon" aria-label="Settings">
+                              <Settings className="h-5 w-5" />
+                          </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                          <DialogHeader>
+                              <DialogTitle>Settings</DialogTitle>
+                              <DialogDescription>
+                                  Provide your own Google AI API key to use the AI generation features. Your key is stored securely in your browser's local storage and never sent to our servers.
+                              </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-2">
+                              <Label htmlFor="apiKey">Google AI API Key</Label>
+                              <Input 
+                                  id="apiKey" 
+                                  type="password" 
+                                  value={apiKey} 
+                                  onChange={(e) => setApiKey(e.target.value)}
+                                  placeholder="Enter your API key"
+                              />
+                               <p className="text-xs text-muted-foreground">
+                                  You can get your free API key from{' '}
+                                  <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">
+                                      Google AI Studio
+                                  </a>.
+                              </p>
+                          </div>
+                          <DialogFooter className='sm:justify-between'>
+                             <Button variant="destructive" onClick={handleRemoveApiKey} disabled={!apiKey}>
+                                 Remove Key
+                             </Button>
+                             <div className="flex gap-2">
+                                 <Button variant="secondary" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
+                                 <Button onClick={handleSaveApiKey}>Save</Button>
+                             </div>
+                          </DialogFooter>
+                      </DialogContent>
+                  </Dialog>
+                  <Button asChild className="rounded-full w-10 h-10 p-0">
+                      <Link href="/build" aria-label="Go to builder"><ArrowRight className="h-5 w-5" /></Link>
+                  </Button>
                 </div>
             ) : (
+              <>
                 <Button asChild>
                     <Link href="/login">Get Started</Link>
                 </Button>
+                <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+                    <DialogTrigger asChild>
+                        <Button variant="ghost" size="icon" aria-label="Settings">
+                            <Settings className="h-5 w-5" />
+                        </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Settings</DialogTitle>
+                            <DialogDescription>
+                                Provide your own Google AI API key to use the AI generation features. Your key is stored securely in your browser's local storage and never sent to our servers.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-2">
+                            <Label htmlFor="apiKey">Google AI API Key</Label>
+                            <Input 
+                                id="apiKey" 
+                                type="password" 
+                                value={apiKey} 
+                                onChange={(e) => setApiKey(e.target.value)}
+                                placeholder="Enter your API key"
+                            />
+                             <p className="text-xs text-muted-foreground">
+                                You can get your free API key from{' '}
+                                <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">
+                                    Google AI Studio
+                                </a>.
+                            </p>
+                        </div>
+                        <DialogFooter className='sm:justify-between'>
+                           <Button variant="destructive" onClick={handleRemoveApiKey} disabled={!apiKey}>
+                               Remove Key
+                           </Button>
+                           <div className="flex gap-2">
+                               <Button variant="secondary" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
+                               <Button onClick={handleSaveApiKey}>Save</Button>
+                           </div>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+              </>
             )}
-            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Settings">
-                        <Settings className="h-5 w-5" />
-                    </Button>
-                </DialogTrigger>
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Settings</DialogTitle>
-                        <DialogDescription>
-                            Provide your own Google AI API key to use the AI generation features. Your key is stored securely in your browser's local storage and never sent to our servers.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-2">
-                        <Label htmlFor="apiKey">Google AI API Key</Label>
-                        <Input 
-                            id="apiKey" 
-                            type="password" 
-                            value={apiKey} 
-                            onChange={(e) => setApiKey(e.target.value)}
-                            placeholder="Enter your API key"
-                        />
-                         <p className="text-xs text-muted-foreground">
-                            You can get your free API key from{' '}
-                            <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">
-                                Google AI Studio
-                            </a>.
-                        </p>
-                    </div>
-                    <DialogFooter className='sm:justify-between'>
-                       <Button variant="destructive" onClick={handleRemoveApiKey} disabled={!apiKey}>
-                           Remove Key
-                       </Button>
-                       <div className="flex gap-2">
-                           <Button variant="secondary" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
-                           <Button onClick={handleSaveApiKey}>Save</Button>
-                       </div>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
       </header>
       <main className="flex-1 flex flex-col items-center justify-center text-center">
@@ -152,3 +194,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

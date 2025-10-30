@@ -89,14 +89,14 @@ export function AuthForm({ mode }: AuthFormProps) {
           title: 'Account Created',
           description: "You've been successfully signed up!",
         });
-        router.push('/build');
+        router.push('/');
       } else {
         await signIn(data.email, data.password);
         toast({
           title: 'Logged In',
           description: "You've been successfully logged in!",
         });
-        router.push('/build');
+        router.push('/');
       }
     } catch (error: any) {
       toast({
@@ -117,7 +117,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           title: 'Logged In',
           description: "You've been successfully logged in with Google!",
         });
-        router.push('/build');
+        router.push('/');
     } catch (error: any) {
         toast({
             variant: 'destructive',

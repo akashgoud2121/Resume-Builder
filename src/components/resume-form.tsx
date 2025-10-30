@@ -1001,7 +1001,7 @@ export function ResumeForm() {
                     <div className="sm:col-span-2 space-y-2">
                         <div className="flex justify-between items-center">
                           <div className='flex items-center gap-2'>
-                            <Label>Description (Optional)</Label>
+                            <Label>Description<RequiredIndicator /></Label>
                             <BulletPointTooltip />
                           </div>
                           <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('achievements', index)}>
@@ -1070,7 +1070,8 @@ export function ResumeForm() {
                   </Button>
                 </Card>
             )})}
-            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>          </div>
+            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+          </div>
         )
     },
     {
@@ -1260,8 +1261,3 @@ export function ResumeForm() {
     </div>
   );
 }
-
-    
-
-    
-

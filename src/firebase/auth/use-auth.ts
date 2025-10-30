@@ -7,6 +7,7 @@ import {
   updateProfile,
   GoogleAuthProvider,
   signInWithPopup,
+  signOut as firebaseSignOut,
 } from 'firebase/auth';
 import { useFirebase } from '../provider';
 
@@ -33,5 +34,9 @@ export function useAuthActions() {
     return await signInWithPopup(auth, provider);
   };
 
-  return { signUp, signIn, signInWithGoogle };
+  const signOut = () => {
+    return firebaseSignOut(auth);
+  };
+
+  return { signUp, signIn, signInWithGoogle, signOut };
 }

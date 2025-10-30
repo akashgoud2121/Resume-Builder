@@ -4,18 +4,25 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, Settings } from 'lucide-react';
+import { FileText, GraduationCap, Settings, LogOut } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase/auth/use-user';
+import { useAuthActions } from '@/firebase/auth/use-auth';
+import { useRouter } from 'next/navigation';
 
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { toast } = useToast();
+  const { user } = useUser();
+  const { signOut } = useAuthActions();
+  const router = useRouter();
+
 
   useEffect(() => {
     const storedKey = localStorage.getItem('userApiKey');
@@ -43,6 +50,24 @@ export default function Home() {
       variant: "destructive"
     });
   }
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+      router.push('/');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Logout Failed',
+        description: error.message || 'An unexpected error occurred.',
+      });
+    }
+  };
+
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -92,9 +117,20 @@ export default function Home() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-          <Button asChild>
-            <Link href="/build">Get Started</Link>
-          </Button>
+            {user ? (
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" asChild>
+                        <Link href="/build">Go to Builder</Link>
+                    </Button>
+                    <Button variant="ghost" onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" /> Logout
+                    </Button>
+                </div>
+            ) : (
+                <Button asChild>
+                    <Link href="/build">Get Started</Link>
+                </Button>
+            )}
         </div>
       </header>
       <main className="flex-1 flex flex-col items-center justify-center text-center">

@@ -62,6 +62,7 @@ export type Certification = {
   date: string;
   description: string;
   technologies: string;
+  link?: string;
 };
 
 export type AchievementCategory = 'workshop' | 'hackathon' | 'poster' | 'techfest' | 'leadership' | 'volunteering' | 'publication' | 'other';
@@ -73,6 +74,7 @@ export type Achievement = {
   context: string;
   date: string;
   description: string;
+  link?: string;
 };
 
 export type Other = {
@@ -94,6 +96,7 @@ export type ResumeData = {
 };
 
     
+
 
 
 

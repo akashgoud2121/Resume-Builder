@@ -361,9 +361,9 @@ export function ResumeForm() {
       } else if (section === 'skills') {
         newEntry = { id: `skillcat_${Date.now()}`, name: '', skills: '' };
       } else if (section === 'certifications') {
-        newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '', technologies: '' };
+        newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '', technologies: '', link: '' };
       } else if (section === 'achievements') {
-        newEntry = { id: `ach_${Date.now()}`, category: 'other' as AchievementCategory, name: '', context: '', date: '', description: '' };
+        newEntry = { id: `ach_${Date.now()}`, category: 'other' as AchievementCategory, name: '', context: '', date: '', description: '', link: '' };
       } else if (section === 'other') {
         newEntry = { id: `other_${Date.now()}`, title: '', description: '' };
       }
@@ -917,9 +917,13 @@ export function ResumeForm() {
                   <Label>Issuing Body<RequiredIndicator /></Label>
                   <Input value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" />
                 </div>
-                <div className="space-y-2 sm:col-span-2">
+                <div className="space-y-2">
                   <Label>Date Issued<RequiredIndicator /></Label>
                   <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Certification Link (Optional)</Label>
+                  <Input value={cert.link || ''} onChange={e => handleGenericChange('certifications', index, 'link', e.target.value)} placeholder="e.g., your-credential-link.com" />
                 </div>
                 <div className="sm:col-span-2 space-y-2">
                     <div className="flex justify-between items-center">
@@ -994,9 +998,13 @@ export function ResumeForm() {
                       <Label>{config.contextLabel}<RequiredIndicator /></Label>
                       <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" />
                     </div>
-                    <div className="space-y-2 sm:col-span-2">
+                    <div className="space-y-2">
                       <Label>Date<RequiredIndicator /></Label>
                       <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Achievement Link (Optional)</Label>
+                      <Input value={ach.link || ''} onChange={e => handleGenericChange('achievements', index, 'link', e.target.value)} placeholder="e.g., your-project-link.com" />
                     </div>
                     <div className="sm:col-span-2 space-y-2">
                         <div className="flex justify-between items-center">

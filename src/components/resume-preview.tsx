@@ -265,7 +265,14 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           {certifications.map((cert: Certification) => cert.name && (
             <div key={cert.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
-                <h3 className="text-base font-bold text-gray-900">{cert.name}</h3>
+                 <div className="flex items-start gap-2">
+                      <h3 className="text-base font-bold text-gray-900 inline">{cert.name}</h3>
+                      {cert.link && (
+                          <a href={addHttp(cert.link)} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors shrink-0 pt-1">
+                              <LinkIcon className="h-4 w-4" />
+                          </a>
+                      )}
+                  </div>
                 <p className="text-sm text-gray-600 font-medium">{cert.date}</p>
               </div>
               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{cert.issuer}</p>
@@ -291,7 +298,14 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                       {entries.map(ach => (
                            <div key={ach.id} className="mb-4 break-inside-avoid">
                               <div className="flex justify-between items-baseline mb-1">
-                                  <h4 className="text-base font-bold text-gray-900">{ach.name}</h4>
+                                  <div className="flex items-start gap-2">
+                                    <h4 className="text-base font-bold text-gray-900 inline">{ach.name}</h4>
+                                    {ach.link && (
+                                        <a href={addHttp(ach.link)} target="_blank" rel="noopener noreferrer" className="text-primary hover:text-primary/80 transition-colors shrink-0 pt-1">
+                                            <LinkIcon className="h-4 w-4" />
+                                        </a>
+                                    )}
+                                  </div>
                                   <p className="text-sm text-gray-600 font-medium">{ach.date}</p>
                               </div>
                               <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{ach.context}</p>
@@ -320,3 +334,4 @@ ResumePreview.displayName = "ResumePreview";
     
 
     
+

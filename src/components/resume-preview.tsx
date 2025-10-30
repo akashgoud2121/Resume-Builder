@@ -36,7 +36,7 @@ const renderDescription = (text: string) => {
   const hasBullets = trimmedText.includes('\n') || trimmedText.startsWith('- ');
 
   if (!hasBullets) {
-    return <p className="text-sm text-gray-800 leading-relaxed">{trimmedText}</p>;
+    return <p className="text-sm text-gray-800 leading-relaxed text-justify">{trimmedText}</p>;
   }
 
   // Handle various bullet point formats
@@ -196,7 +196,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </header>
 
       <Section title="Summary" hasData={!!summary}>
-          <p className="text-sm text-gray-700 leading-normal">{summary}</p>
+          <p className="text-sm text-gray-700 leading-normal text-justify">{summary}</p>
       </Section>
 
       <Section title="Skills" hasData={hasSkills}>
@@ -334,4 +334,5 @@ ResumePreview.displayName = "ResumePreview";
     
 
     
+
 

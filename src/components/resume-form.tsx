@@ -566,7 +566,7 @@ export function ResumeForm() {
       content: (
         <div className="space-y-2">
           <div className="flex justify-between items-center">
-            <Label htmlFor="summary">Summary/Objective</Label>
+            <Label htmlFor="summary">Summary/Objective<RequiredIndicator /></Label>
             <Dialog open={isSummaryAiDialogOpen} onOpenChange={(isOpen) => { setIsSummaryAiDialogOpen(isOpen); if (!isOpen) setGeneratedSummary(''); }}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">

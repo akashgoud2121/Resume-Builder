@@ -13,9 +13,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/auth/use-user';
 import { useAuthActions } from '@/firebase/auth/use-auth';
 import { useRouter } from 'next/navigation';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
@@ -120,32 +117,19 @@ export default function Home() {
                 </DialogContent>
             </Dialog>
             {user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center gap-2">
-                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.photoURL || ''} alt={user.displayName || 'User'} />
-                        <AvatarFallback>{user.displayName?.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="hidden sm:inline-block">{user.displayName || 'My Account'}</span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>{user.email}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                       <Link href="/build"><LayoutDashboard className="mr-2 h-4 w-4" />Go to Builder</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="flex items-center gap-4">
+                  <span className="hidden sm:inline-block text-sm">Welcome, {user.displayName || 'User'}</span>
+                  <Button variant="outline" asChild>
+                      <Link href="/build"><LayoutDashboard className="mr-2 h-4 w-4" />Go to Builder</Link>
+                  </Button>
+                  <Button variant="ghost" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
             ) : (
                 <Button asChild>
-                    <Link href="/build">Get Started</Link>
+                    <Link href="/login">Get Started</Link>
                 </Button>
             )}
         </div>

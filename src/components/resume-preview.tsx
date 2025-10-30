@@ -53,7 +53,7 @@ const renderDescription = (text: string) => {
   return (
     <ul className="list-none space-y-1 pl-4">
       {points.map((point, index) => (
-        <li key={index} className="text-sm text-gray-800 relative">
+        <li key={index} className="text-sm text-gray-800 relative text-justify">
           <span className="absolute -left-4 text-primary top-0.5">•</span>
           <span>{point}</span>
         </li>
@@ -334,5 +334,6 @@ ResumePreview.displayName = "ResumePreview";
     
 
     
+
 
 

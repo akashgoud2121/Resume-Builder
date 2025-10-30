@@ -924,7 +924,7 @@ export function ResumeForm() {
                 <div className="sm:col-span-2 space-y-2">
                     <div className="flex justify-between items-center">
                        <div className='flex items-center gap-2'>
-                          <Label>Description (Optional)</Label>
+                          <Label>Description<RequiredIndicator /></Label>
                           <BulletPointTooltip />
                         </div>
                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('certifications', index)}>
@@ -935,7 +935,7 @@ export function ResumeForm() {
                     <Textarea value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} />
                 </div>
                 <div className="sm:col-span-2 space-y-2">
-                  <Label>Technologies/Skills Covered</Label>
+                  <Label>Technologies/Skills Covered<RequiredIndicator /></Label>
                   <Textarea
                     value={cert.technologies}
                     onChange={e => handleGenericChange('certifications', index, 'technologies', e.target.value)}
@@ -1264,3 +1264,4 @@ export function ResumeForm() {
     
 
     
+

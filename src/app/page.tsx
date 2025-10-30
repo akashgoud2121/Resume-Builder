@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, Settings, LogOut, LayoutDashboard, User as UserIcon } from 'lucide-react';
+import { FileText, GraduationCap, Settings, LogOut, LayoutDashboard } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -76,7 +76,23 @@ export default function Home() {
           <span className="font-headline text-xl">Resume Builder</span>
         </Link>
         <div className="flex items-center gap-4">
-           <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+            {user ? (
+                <div className="flex items-center gap-4">
+                  <span className="hidden sm:inline-block text-sm">Welcome, {user.displayName || 'User'}</span>
+                  <Button variant="outline" size="sm" asChild>
+                      <Link href="/build"><LayoutDashboard className="mr-2 h-4 w-4" />Go to Builder</Link>
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
+            ) : (
+                <Button asChild>
+                    <Link href="/login">Get Started</Link>
+                </Button>
+            )}
+            <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                 <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Settings">
                         <Settings className="h-5 w-5" />
@@ -116,22 +132,6 @@ export default function Home() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            {user ? (
-                <div className="flex items-center gap-4">
-                  <span className="hidden sm:inline-block text-sm">Welcome, {user.displayName || 'User'}</span>
-                  <Button variant="outline" asChild>
-                      <Link href="/build"><LayoutDashboard className="mr-2 h-4 w-4" />Go to Builder</Link>
-                  </Button>
-                  <Button variant="ghost" onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </Button>
-                </div>
-            ) : (
-                <Button asChild>
-                    <Link href="/login">Get Started</Link>
-                </Button>
-            )}
         </div>
       </header>
       <main className="flex-1 flex flex-col items-center justify-center text-center">

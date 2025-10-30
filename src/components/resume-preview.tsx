@@ -36,7 +36,7 @@ const renderDescription = (text: string) => {
   const hasBullets = trimmedText.includes('\n') || trimmedText.startsWith('- ');
 
   if (!hasBullets) {
-    return <p className="text-sm text-gray-800 leading-relaxed text-justify">{trimmedText}</p>;
+    return <p className="text-sm text-gray-900 leading-relaxed text-justify">{trimmedText}</p>;
   }
 
   // Handle various bullet point formats
@@ -53,7 +53,7 @@ const renderDescription = (text: string) => {
   return (
     <ul className="list-none space-y-1 pl-4">
       {points.map((point, index) => (
-        <li key={index} className="text-sm text-gray-800 relative text-justify">
+        <li key={index} className="text-sm text-gray-900 relative text-justify">
           <span className="absolute -left-4 text-primary top-0.5">•</span>
           <span>{point}</span>
         </li>
@@ -134,9 +134,9 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             <div key={exp.id} className="mb-4 break-inside-avoid">
               <div className="flex justify-between items-baseline mb-1">
                 <h3 className="text-base font-bold text-gray-900">{exp.title}</h3>
-                <p className="text-sm text-gray-600 font-medium">{exp.startDate} - {exp.endDate}</p>
+                <p className="text-sm text-gray-700 font-medium">{exp.startDate} - {exp.endDate}</p>
               </div>
-              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{exp.company}</p>
+              <p className="text-sm font-semibold text-gray-800 italic mb-1.5">{exp.company}</p>
               {renderDescription(exp.description)}
             </div>
           ))}
@@ -155,7 +155,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     >
         <header data-section="contact" className="text-center mb-6">
             {contact.name && <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-2">{contact.name}</h1>}
-             <div className="flex justify-center items-center gap-x-6 gap-y-1 text-sm text-gray-600 flex-wrap">
+             <div className="flex justify-center items-center gap-x-6 gap-y-1 text-sm text-gray-700 flex-wrap">
               {contact.email && (
                  <a href={`mailto:${contact.email}`} className="flex items-center gap-1.5 hover:text-primary transition-colors">
                    <Mail className="h-3.5 w-3.5" />
@@ -196,17 +196,17 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
         </header>
 
       <Section title="Summary" hasData={!!summary}>
-          <p className="text-sm text-gray-700 leading-normal text-justify">{summary}</p>
+          <p className="text-sm text-gray-900 leading-normal text-justify">{summary}</p>
       </Section>
 
       <Section title="Skills" hasData={hasSkills}>
-          <div className="text-sm text-gray-700 space-y-1.5">
+          <div className="text-sm text-gray-900 space-y-1.5">
             {skills.map((category) => {
               const trimmedSkills = category.skills.split(',').map(s => s.trim()).filter(Boolean).join(', ');
               if (category.name && trimmedSkills) {
                 return (
                   <div key={category.id} className="flex items-start">
-                    <p className="w-1/3 font-bold text-gray-800">{category.name}:</p>
+                    <p className="w-1/3 font-bold text-gray-900">{category.name}:</p>
                     <p className="w-2/3">{trimmedSkills}</p>
                   </div>
                 )
@@ -224,12 +224,12 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
             <div key={edu.id} className="flex justify-between items-start break-inside-avoid">
               <div className="flex-grow">
                   <h4 className="text-base font-bold text-gray-900">{edu.school}</h4>
-                  <p className="text-sm text-gray-700">{edu.degree}</p>
-                  {edu.grades && <p className="text-sm text-gray-600">{edu.grades}</p>}
+                  <p className="text-sm text-gray-900">{edu.degree}</p>
+                  {edu.grades && <p className="text-sm text-gray-700">{edu.grades}</p>}
               </div>
               <div className="text-right flex-shrink-0 ml-4">
-                  <p className="text-sm text-gray-600 font-medium">{edu.startDate} - {edu.endDate}</p>
-                  <p className="text-sm text-gray-600">{edu.city}</p>
+                  <p className="text-sm text-gray-700 font-medium">{edu.startDate} - {edu.endDate}</p>
+                  <p className="text-sm text-gray-700">{edu.city}</p>
               </div>
             </div>
           ))}
@@ -250,9 +250,9 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                           </a>
                       )}
                   </div>
-                  <p className="text-sm text-gray-600 font-medium text-right whitespace-nowrap shrink-0">{proj.startDate} - {proj.endDate}</p>
+                  <p className="text-sm text-gray-700 font-medium text-right whitespace-nowrap shrink-0">{proj.startDate} - {proj.endDate}</p>
               </div>
-              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">
+              <p className="text-sm font-semibold text-gray-800 italic mb-1.5">
                  {proj.projectType}
                  {(proj.organization && proj.projectType.toLowerCase() !== 'personal project' && proj.organization.toLowerCase() !== 'personal project' ) && ` at ${proj.organization}`}
               </p>
@@ -273,14 +273,14 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                           </a>
                       )}
                   </div>
-                <p className="text-sm text-gray-600 font-medium">{cert.date}</p>
+                <p className="text-sm text-gray-700 font-medium">{cert.date}</p>
               </div>
-              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{cert.issuer}</p>
+              <p className="text-sm font-semibold text-gray-800 italic mb-1.5">{cert.issuer}</p>
               {renderDescription(cert.description)}
               {cert.technologies && (
                   <div className="mt-1.5 text-sm">
-                      <span className="font-bold text-gray-800">Skills Covered: </span>
-                      <span className="text-gray-700">{cert.technologies}</span>
+                      <span className="font-bold text-gray-900">Skills Covered: </span>
+                      <span className="text-gray-800">{cert.technologies}</span>
                   </div>
               )}
             </div>
@@ -294,7 +294,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
 
               return (
                   <div key={category} className="mb-3 break-inside-avoid">
-                      <h3 className="text-base font-semibold text-gray-800 underline mb-2">{achievementCategoryTitles[category]}</h3>
+                      <h3 className="text-base font-semibold text-gray-900 underline mb-2">{achievementCategoryTitles[category]}</h3>
                       {entries.map(ach => (
                            <div key={ach.id} className="mb-4 break-inside-avoid">
                               <div className="flex justify-between items-baseline mb-1">
@@ -306,9 +306,9 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
                                         </a>
                                     )}
                                   </div>
-                                  <p className="text-sm text-gray-600 font-medium">{ach.date}</p>
+                                  <p className="text-sm text-gray-700 font-medium">{ach.date}</p>
                               </div>
-                              <p className="text-sm font-semibold text-gray-700 italic mb-1.5">{ach.context}</p>
+                              <p className="text-sm font-semibold text-gray-800 italic mb-1.5">{ach.context}</p>
                               {renderDescription(ach.description)}
                           </div>
                       ))}
@@ -334,6 +334,7 @@ ResumePreview.displayName = "ResumePreview";
     
 
     
+
 
 
 

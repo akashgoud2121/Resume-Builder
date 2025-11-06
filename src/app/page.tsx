@@ -88,9 +88,6 @@ export default function Home() {
             {user ? (
                 <div className="flex items-center gap-4">
                   <span className="hidden sm:inline-block text-sm font-medium">Welcome, {user.displayName || 'User'}</span>
-                  <Button variant="ghost" size="sm" onClick={handleLogout}>
-                    Logout
-                  </Button>
                    <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                       <DialogTrigger asChild>
                           <Button variant="ghost" size="icon" aria-label="Settings">
@@ -140,15 +137,16 @@ export default function Home() {
                           </DialogFooter>
                       </DialogContent>
                   </Dialog>
+                  <Button variant="ghost" size="sm" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
                   <Button onClick={handleGoToBuilderClick} className="rounded-full w-10 h-10 p-0" aria-label="Go to builder">
                     <ArrowRight className="h-5 w-5" />
                   </Button>
                 </div>
             ) : (
               <>
-                <Button asChild>
-                    <Link href="/login">Get Started</Link>
-                </Button>
                 <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                     <DialogTrigger asChild>
                         <Button variant="ghost" size="icon" aria-label="Settings">
@@ -198,6 +196,9 @@ export default function Home() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
+                <Button asChild>
+                    <Link href="/login">Get Started</Link>
+                </Button>
               </>
             )}
         </div>
@@ -220,3 +221,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

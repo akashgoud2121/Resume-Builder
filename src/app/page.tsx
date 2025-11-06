@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, Settings, LogOut, LayoutDashboard, ArrowRight } from 'lucide-react';
+import { FileText, GraduationCap, Settings, LogOut, ArrowRight } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -64,6 +64,15 @@ export default function Home() {
         title: 'Logout Failed',
         description: error.message || 'An unexpected error occurred.',
       });
+    }
+  };
+
+  const handleGoToBuilderClick = () => {
+    const storedKey = localStorage.getItem('userApiKey');
+    if (storedKey) {
+        router.push('/build');
+    } else {
+        setIsSettingsOpen(true);
     }
   };
 
@@ -131,8 +140,8 @@ export default function Home() {
                           </DialogFooter>
                       </DialogContent>
                   </Dialog>
-                  <Button asChild className="rounded-full w-10 h-10 p-0">
-                      <Link href="/build" aria-label="Go to builder"><ArrowRight className="h-5 w-5" /></Link>
+                  <Button onClick={handleGoToBuilderClick} className="rounded-full w-10 h-10 p-0" aria-label="Go to builder">
+                    <ArrowRight className="h-5 w-5" />
                   </Button>
                 </div>
             ) : (
@@ -175,8 +184,8 @@ export default function Home() {
                                   <li>Click <span className="font-bold">"Create API key in new project"</span>. It's free.</li>
                                   <li>Copy the generated API key.</li>
                                   <li>Paste it into the input box above and click "Save".</li>
-                              </ol>
-                          </div>
+                                  </ol>
+                              </div>
                         </div>
                         <DialogFooter className='sm:justify-between pt-4'>
                            <Button variant="destructive" onClick={handleRemoveApiKey} disabled={!apiKey}>
@@ -202,8 +211,8 @@ export default function Home() {
           <p className="mt-4 text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
             Build a standout resume for internships, part-time jobs, and your first career step. It's fast, easy, and completely free.
           </p>
-          <Button asChild size="lg" className="mt-8">
-            <Link href="/build">Create My Resume</Link>
+          <Button onClick={handleGoToBuilderClick} size="lg" className="mt-8">
+            Create My Resume
           </Button>
         </div>
       </main>

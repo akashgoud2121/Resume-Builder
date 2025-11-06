@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, Settings, LogOut, ArrowRight, User } from 'lucide-react';
+import { FileText, GraduationCap, Settings, LogOut, ArrowRight, User, Edit, Loader2 } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -25,9 +25,12 @@ import {
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [displayName, setDisplayName] = useState('');
   const { toast } = useToast();
   const { user } = useUser();
-  const { signOut } = useAuthActions();
+  const { signOut, updateUserProfile } = useAuthActions();
   const router = useRouter();
 
 
@@ -37,6 +40,12 @@ export default function Home() {
       setApiKey(storedKey);
     }
   }, []);
+
+  useEffect(() => {
+    if (user?.displayName) {
+        setDisplayName(user.displayName);
+    }
+  }, [user]);
 
   const handleSaveApiKey = () => {
     localStorage.setItem('userApiKey', apiKey);
@@ -84,6 +93,34 @@ export default function Home() {
     }
   };
 
+  const handleProfileUpdate = async () => {
+    if (!user || !displayName.trim()) {
+        toast({
+            variant: 'destructive',
+            title: 'Validation Error',
+            description: 'Display name cannot be empty.'
+        });
+        return;
+    }
+    setIsUpdatingProfile(true);
+    try {
+        await updateUserProfile(displayName);
+        toast({
+            title: 'Profile Updated',
+            description: 'Your display name has been updated successfully.'
+        });
+        setIsProfileOpen(false);
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Update Failed',
+            description: error.message || 'Could not update your profile.'
+        });
+    } finally {
+        setIsUpdatingProfile(false);
+    }
+  };
+
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -103,11 +140,49 @@ export default function Home() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="flex flex-col items-start gap-1">
+                       <DropdownMenuSeparator />
+                      <DropdownMenuItem className="flex flex-col items-start gap-1 focus:bg-transparent">
                           <span className='font-semibold'>{user.displayName}</span>
                           <span className='text-xs text-muted-foreground'>{user.email}</span>
                       </DropdownMenuItem>
+                       <DropdownMenuSeparator />
+                        <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+                            <DialogTrigger asChild>
+                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    <span>Edit Profile</span>
+                                </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Edit Profile</DialogTitle>
+                                    <DialogDescription>
+                                        Update your account information. Click save when you're done.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="displayName">Display Name</Label>
+                                        <Input
+                                            id="displayName"
+                                            value={displayName}
+                                            onChange={(e) => setDisplayName(e.target.value)}
+                                        />
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="email">Email</Label>
+                                        <Input id="email" value={user.email || ''} disabled />
+                                    </div>
+                                </div>
+                                <DialogFooter>
+                                    <Button variant="secondary" onClick={() => setIsProfileOpen(false)}>Cancel</Button>
+                                    <Button onClick={handleProfileUpdate} disabled={isUpdatingProfile}>
+                                        {isUpdatingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                        Save Changes
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </Dialog>
                     </DropdownMenuContent>
                   </DropdownMenu>
 

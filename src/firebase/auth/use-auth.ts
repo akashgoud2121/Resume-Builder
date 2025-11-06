@@ -38,5 +38,12 @@ export function useAuthActions() {
     return firebaseSignOut(auth);
   };
 
-  return { signUp, signIn, signInWithGoogle, signOut };
+  const updateUserProfile = (displayName: string) => {
+    if (!auth.currentUser) {
+      throw new Error('No user is currently signed in.');
+    }
+    return updateProfile(auth.currentUser, { displayName });
+  };
+
+  return { signUp, signIn, signInWithGoogle, signOut, updateUserProfile };
 }

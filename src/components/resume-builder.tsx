@@ -148,11 +148,11 @@ export function ResumeBuilder() {
         </header>
 
         <div className="grid flex-1 md:grid-cols-2 overflow-hidden">
-            <div className="overflow-y-auto p-4 md:p-6 no-print">
+            <div className="overflow-y-auto p-4 md:p-6 no-print no-scrollbar">
                 <ResumeForm />
             </div>
 
-            <main id="resume-preview-container" className="hidden md:block bg-muted/30 overflow-y-auto">
+            <main id="resume-preview-container" className="hidden md:block bg-muted/30 overflow-y-auto no-scrollbar">
               <div className="flex flex-col items-center py-8 h-full">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <div id="resume-preview-wrapper" className="origin-top" style={{ transform: 'scale(0.75)' }}>

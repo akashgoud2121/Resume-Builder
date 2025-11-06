@@ -57,7 +57,7 @@ export default function Home() {
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
       });
-      router.push('/');
+      router.push('/login');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -194,5 +194,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

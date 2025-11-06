@@ -137,7 +137,7 @@ export default function Home() {
                         Welcome, {user.displayName || 'User'}
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
+                    <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                        <DropdownMenuSeparator />
                       <DropdownMenuItem className="flex flex-col items-start gap-1 focus:bg-transparent">
@@ -318,5 +318,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

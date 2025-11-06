@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { FileText, GraduationCap, Settings, LogOut, ArrowRight } from 'lucide-react';
+import { FileText, GraduationCap, Settings, LogOut, ArrowRight, User } from 'lucide-react';
 import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useUser } from '@/firebase/auth/use-user';
 import { useAuthActions } from '@/firebase/auth/use-auth';
 import { useRouter } from 'next/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export default function Home() {
   const [apiKey, setApiKey] = useState('');
@@ -87,7 +95,22 @@ export default function Home() {
         <div className="flex items-center gap-4">
             {user ? (
                 <div className="flex items-center gap-4">
-                  <span className="hidden sm:inline-block text-sm font-medium">Welcome, {user.displayName || 'User'}</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="hidden sm:inline-flex">
+                        Welcome, {user.displayName || 'User'}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem className="flex flex-col items-start gap-1">
+                          <span className='font-semibold'>{user.displayName}</span>
+                          <span className='text-xs text-muted-foreground'>{user.email}</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
                    <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                       <DialogTrigger asChild>
                           <Button variant="ghost" size="icon" aria-label="Settings">
@@ -221,5 +244,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

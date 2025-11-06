@@ -114,6 +114,9 @@
     min-height: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+  
+  .page-container:not(:first-child) {
     page-break-before: always;
   }
   

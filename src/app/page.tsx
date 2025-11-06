@@ -32,6 +32,7 @@ export default function Home() {
   const { user } = useUser();
   const { signOut, updateUserProfile } = useAuthActions();
   const router = useRouter();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
 
   useEffect(() => {
@@ -131,8 +132,12 @@ export default function Home() {
         </Link>
         <div className="flex items-center gap-4">
             {user ? (
-                <div className="flex items-center gap-4">
-                  <DropdownMenu>
+                 <div
+                    className="flex items-center gap-2"
+                    onMouseEnter={() => setIsMenuOpen(true)}
+                    onMouseLeave={() => setIsMenuOpen(false)}
+                  >
+                  <DropdownMenu open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="hidden sm:inline-flex">
                         Welcome, {user.displayName || 'User'}

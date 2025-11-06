@@ -114,6 +114,8 @@
     min-height: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    padding-top: 0 !important; /* Fix for extra top gap */
+    padding-bottom: 0 !important; /* Fix for extra bottom gap */
   }
   
   .page-container:not(:first-child) {

@@ -73,34 +73,43 @@ export function ResumeBuilder() {
                 </DialogTrigger>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Settings</DialogTitle>
+                        <DialogTitle>AI Generation Settings</DialogTitle>
                         <DialogDescription>
-                            Provide your own Google AI API key to use the AI generation features. Your key is stored securely in your browser's local storage and never sent to our servers.
+                            To use the AI features, you need a Google AI API key. Your key is stored securely in your browser's local storage and is never sent to our servers.
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="space-y-2">
-                        <Label htmlFor="apiKey">Google AI API Key</Label>
+                    <div className="space-y-4">
+                       <div className="space-y-2">
+                        <Label htmlFor="apiKey-builder">Your Google AI API Key</Label>
                         <Input 
-                            id="apiKey" 
+                            id="apiKey-builder" 
                             type="password" 
                             value={apiKey} 
                             onChange={(e) => setApiKey(e.target.value)}
                             placeholder="Enter your API key"
                         />
-                         <p className="text-xs text-muted-foreground">
-                            You can get your free API key from{' '}
-                            <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline">
-                                Google AI Studio
-                            </a>.
-                        </p>
+                       </div>
+                       <div className="text-xs text-muted-foreground space-y-2 p-3 bg-muted/50 rounded-md border">
+                          <p className="font-semibold text-foreground">How to get your API key:</p>
+                          <ol className="list-decimal list-inside space-y-1">
+                              <li>Go to{' '}
+                                  <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline font-medium">
+                                      Google AI Studio
+                                  </a>.
+                              </li>
+                              <li>Click <span className="font-bold">"Create API key in new project"</span>. It's free.</li>
+                              <li>Copy the generated API key.</li>
+                              <li>Paste it into the input box above and click "Save".</li>
+                          </ol>
+                      </div>
                     </div>
-                    <DialogFooter className='sm:justify-between'>
+                    <DialogFooter className='sm:justify-between pt-4'>
                        <Button variant="destructive" onClick={handleRemoveApiKey} disabled={!apiKey}>
                            Remove Key
                        </Button>
                        <div className="flex gap-2">
                            <Button variant="secondary" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
-                           <Button onClick={handleSaveApiKey}>Save</Button>
+                           <Button onClick={handleSaveApiKey} disabled={!apiKey}>Save</Button>
                        </div>
                     </DialogFooter>
                 </DialogContent>

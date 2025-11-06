@@ -14,12 +14,14 @@ import { Label } from './ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/lib/store';
 import { initialResumeData } from '@/lib/defaults';
+import { useUser } from '@/firebase/auth/use-user';
 
 export function ResumeBuilder() {
   const [apiKey, setApiKey] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { toast } = useToast();
   const { setResumeData } = useResume();
+  const { user } = useUser();
 
   useEffect(() => {
     const storedKey = localStorage.getItem('userApiKey');
@@ -63,6 +65,12 @@ export function ResumeBuilder() {
               <span className="font-headline text-xl font-bold">Resume Builder</span>
             </Link>
           </div>
+          
+          {user && (
+            <div className="hidden sm:flex items-center gap-2 text-sm font-medium">
+              Welcome, {user.displayName || 'User'}
+            </div>
+          )}
 
           <div className="flex items-center gap-2 md:gap-4">
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
@@ -127,8 +135,8 @@ export function ResumeBuilder() {
                   <SheetHeader className="p-4 border-b">
                     <SheetTitle>Live Resume Preview</SheetTitle>
                   </SheetHeader>
-                  <div className="flex-1 overflow-auto p-4">
-                     <div className="mx-auto w-fit" style={{ transform: 'scale(0.8)', transformOrigin: 'top' }}>
+                  <div className="flex flex-1 justify-center overflow-auto p-4">
+                     <div className="w-fit" style={{ transform: 'scale(0.8)', transformOrigin: 'top left' }}>
                         <ResumePreview />
                      </div>
                   </div>
@@ -148,7 +156,7 @@ export function ResumeBuilder() {
         </header>
 
         <div className="grid flex-1 md:grid-cols-2 overflow-hidden">
-            <div className="overflow-y-auto p-4 md:p-6 no-print no-scrollbar">
+            <div className="overflow-y-auto p-4 md:p-6 no-scrollbar">
                 <ResumeForm />
             </div>
 

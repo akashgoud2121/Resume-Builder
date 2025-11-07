@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, Download, FileText, Settings } from 'lucide-react';
+import { Eye, Download, FileText, Settings, User, Edit, Loader2, LogOut } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
@@ -13,15 +13,28 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/lib/store';
-import { initialResumeData } from '@/lib/defaults';
 import { useUser } from '@/firebase/auth/use-user';
+import { useAuthActions } from '@/firebase/auth/use-auth';
+import { useRouter } from 'next/navigation';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function ResumeBuilder() {
   const [apiKey, setApiKey] = useState('');
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
+  const [displayName, setDisplayName] = useState('');
   const { toast } = useToast();
-  const { setResumeData } = useResume();
   const { user } = useUser();
+  const { signOut, updateUserProfile } = useAuthActions();
+  const router = useRouter();
 
   useEffect(() => {
     const storedKey = localStorage.getItem('userApiKey');
@@ -29,12 +42,17 @@ export function ResumeBuilder() {
       setApiKey(storedKey);
     }
   }, []);
+  
+  useEffect(() => {
+    if (user?.displayName) {
+        setDisplayName(user.displayName);
+    }
+  }, [user]);
 
   const handleDownloadPdf = () => {
     alert("Your browser's print dialog will now open. Please choose 'Save as PDF' as the destination to download your resume.");
     window.print();
   };
-
 
   const handleSaveApiKey = () => {
     localStorage.setItem('userApiKey', apiKey);
@@ -56,6 +74,51 @@ export function ResumeBuilder() {
     });
   }
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+      router.push('/login');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Logout Failed',
+        description: error.message || 'An unexpected error occurred.',
+      });
+    }
+  };
+
+  const handleProfileUpdate = async () => {
+    if (!user || !displayName.trim()) {
+        toast({
+            variant: 'destructive',
+            title: 'Validation Error',
+            description: 'Display name cannot be empty.'
+        });
+        return;
+    }
+    setIsUpdatingProfile(true);
+    try {
+        await updateUserProfile(displayName);
+        toast({
+            title: 'Profile Updated',
+            description: 'Your display name has been updated successfully.'
+        });
+        setIsProfileOpen(false);
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Update Failed',
+            description: error.message || 'Could not update your profile.'
+        });
+    } finally {
+        setIsUpdatingProfile(false);
+    }
+  };
+
   return (
       <div className="flex h-screen w-full flex-col bg-background">
         <header className="no-print flex h-16 shrink-0 items-center justify-between border-b-2 px-4 md:px-6 sticky top-0 z-30 bg-background">
@@ -66,13 +129,69 @@ export function ResumeBuilder() {
             </Link>
           </div>
           
-          {user && (
-            <div className="hidden sm:flex items-center gap-2 text-sm font-medium">
-              Welcome, {user.displayName || 'User'}
-            </div>
-          )}
-
           <div className="flex items-center gap-2 md:gap-4">
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="hidden sm:flex items-center gap-2">
+                     <span>Welcome, {user.displayName || 'User'}</span>
+                     <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem className="flex flex-col items-start gap-1 focus:bg-transparent cursor-default">
+                      <span className='font-semibold'>{user.displayName}</span>
+                      <span className='text-xs text-muted-foreground'>{user.email}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+                      <DialogTrigger asChild>
+                          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              <span>Edit Profile</span>
+                          </DropdownMenuItem>
+                      </DialogTrigger>
+                      <DialogContent>
+                          <DialogHeader>
+                              <DialogTitle>Edit Profile</DialogTitle>
+                              <DialogDescription>
+                                  Update your account information. Click save when you're done.
+                              </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                              <div className="space-y-2">
+                                  <Label htmlFor="displayName-builder">Display Name</Label>
+                                  <Input
+                                      id="displayName-builder"
+                                      value={displayName}
+                                      onChange={(e) => setDisplayName(e.target.value)}
+                                  />
+                              </div>
+                                <div className="space-y-2">
+                                  <Label htmlFor="email-builder">Email</Label>
+                                  <Input id="email-builder" value={user.email || ''} disabled />
+                              </div>
+                          </div>
+                          <DialogFooter>
+                              <Button variant="secondary" onClick={() => setIsProfileOpen(false)}>Cancel</Button>
+                              <Button onClick={handleProfileUpdate} disabled={isUpdatingProfile}>
+                                  {isUpdatingProfile && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                  Save Changes
+                              </Button>
+                          </DialogFooter>
+                      </DialogContent>
+                  </Dialog>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+
             <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
                 <DialogTrigger asChild>
                     <Button variant="ghost" size="icon" aria-label="Settings">
@@ -172,3 +291,5 @@ export function ResumeBuilder() {
       </div>
   );
 }
+
+    

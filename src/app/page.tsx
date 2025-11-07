@@ -133,14 +133,15 @@ export default function Home() {
                  <div className="flex items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="hidden sm:inline-flex">
-                        Welcome, {user.displayName || 'User'}
+                      <Button variant="ghost" className="flex items-center gap-2">
+                        <span>Welcome, {user.displayName || 'User'}</span>
+                        <User className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <DropdownMenuLabel>My Account</DropdownMenuLabel>
                        <DropdownMenuSeparator />
-                      <DropdownMenuItem className="flex flex-col items-start gap-1 focus:bg-transparent">
+                      <DropdownMenuItem className="flex flex-col items-start gap-1 focus:bg-transparent cursor-default">
                           <span className='font-semibold'>{user.displayName}</span>
                           <span className='text-xs text-muted-foreground'>{user.email}</span>
                       </DropdownMenuItem>
@@ -182,6 +183,11 @@ export default function Home() {
                                 </DialogFooter>
                             </DialogContent>
                         </Dialog>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Logout</span>
+                        </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
@@ -234,10 +240,7 @@ export default function Home() {
                           </DialogFooter>
                       </DialogContent>
                   </Dialog>
-                  <Button variant="ghost" size="sm" onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Logout
-                  </Button>
+                  
                   <Button onClick={handleGoToBuilderClick} className="rounded-full w-10 h-10 p-0" aria-label="Go to builder">
                     <ArrowRight className="h-5 w-5" />
                   </Button>
@@ -318,3 +321,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

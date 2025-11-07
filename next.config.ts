@@ -3,6 +3,12 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  compiler: {
+    // Remove console.log/info/debug in production, keep error/warn
+    removeConsole: process.env.NODE_ENV === "production" ? {
+      exclude: ['error', 'warn'],
+    } : false,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -26,12 +32,6 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'picsum.photos',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'media.licdn.com',
         port: '',
         pathname: '/**',
       }

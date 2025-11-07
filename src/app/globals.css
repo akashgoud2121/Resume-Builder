@@ -70,8 +70,19 @@
 /* Print-specific styles */
 @media print {
   /* Hide everything that shouldn't be printed by default */
-  .no-print, [data-radix-toast-viewport] {
+  .no-print, [data-radix-toast-viewport], .print-hide, .resume-form-column, nav, button {
     display: none !important;
+  }
+  
+  /* Hide the app navigation header, but NOT the resume contact header */
+  header:not([data-section="contact"]) {
+    display: none !important;
+  }
+  
+  /* Ensure contact header IS visible */
+  header[data-section="contact"] {
+    display: block !important;
+    visibility: visible !important;
   }
   
   /* Reset body styles for printing */

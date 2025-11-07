@@ -1,9 +1,9 @@
 
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, Download, FileText, Settings, User, Edit, Loader2, LogOut } from 'lucide-react';
+import { Eye, Download, FileText, Settings, User, Edit, Loader2, LogOut, Cloud, Save, CheckCircle } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
@@ -11,11 +11,14 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from './ui
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { useToast } from '@/hooks/use-toast';
 import { useResume } from '@/lib/store';
-import { useUser } from '@/firebase/auth/use-user';
-import { useAuthActions } from '@/firebase/auth/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { debounce } from '@/lib/debounce';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useNotification } from '@/lib/notification-context';
+import { NavNotification } from '@/components/nav-notification';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,10 +34,15 @@ export function ResumeBuilder() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [displayName, setDisplayName] = useState('');
-  const { toast } = useToast();
-  const { user } = useUser();
-  const { signOut, updateUserProfile } = useAuthActions();
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSavedIndicator, setShowSavedIndicator] = useState(false);
+  const [resumeId, setResumeId] = useState<string | null>(null);
+  const { showNotification } = useNotification();
+  const { resumeData, setResumeData } = useResume();
+  const { user, signOut: handleSignOut } = useAuth();
+  const { data: session } = useSession();
   const router = useRouter();
+  const token = session?.user ? 'authenticated' : null;
 
   useEffect(() => {
     const storedKey = localStorage.getItem('userApiKey');
@@ -44,8 +52,8 @@ export function ResumeBuilder() {
   }, []);
   
   useEffect(() => {
-    if (user?.displayName) {
-        setDisplayName(user.displayName);
+    if (user?.name) {
+        setDisplayName(user.name);
     }
   }, [user]);
 
@@ -57,9 +65,10 @@ export function ResumeBuilder() {
   const handleSaveApiKey = () => {
     localStorage.setItem('userApiKey', apiKey);
     setIsSettingsOpen(false);
-    toast({
+    showNotification({
       title: "API Key Saved",
       description: "Your Google AI API key has been saved locally.",
+      type: "success",
     });
   };
   
@@ -67,82 +76,344 @@ export function ResumeBuilder() {
     localStorage.removeItem('userApiKey');
     setApiKey('');
     setIsSettingsOpen(false);
-     toast({
+    showNotification({
       title: "API Key Removed",
       description: "Your Google AI API key has been removed.",
-      variant: "destructive"
+      type: "error",
     });
   }
 
   const handleLogout = async () => {
     try {
-      await signOut();
-      toast({
+      // Save resume before logging out
+      if (token && resumeData) {
+        console.log('Saving resume before logout...');
+        await performAutoSave();
+      }
+      
+      // Clear resume ID from session on logout
+      sessionStorage.removeItem('currentResumeId');
+      setResumeId(null);
+      
+      await handleSignOut();
+      showNotification({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
+        type: 'success',
       });
-      router.push('/login');
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
+      showNotification({
         title: 'Logout Failed',
         description: error.message || 'An unexpected error occurred.',
+        type: 'error',
       });
     }
   };
 
   const handleProfileUpdate = async () => {
     if (!user || !displayName.trim()) {
-        toast({
-            variant: 'destructive',
+        showNotification({
             title: 'Validation Error',
-            description: 'Display name cannot be empty.'
+            description: 'Display name cannot be empty.',
+            type: 'error',
         });
         return;
     }
     setIsUpdatingProfile(true);
     try {
-        await updateUserProfile(displayName);
-        toast({
-            title: 'Profile Updated',
-            description: 'Your display name has been updated successfully.'
+        // Profile update would require API endpoint - simplified for now
+        showNotification({
+            title: 'Profile Update',
+            description: 'Profile update feature will be available soon.',
+            type: 'info',
         });
         setIsProfileOpen(false);
     } catch (error: any) {
-        toast({
-            variant: 'destructive',
+        showNotification({
             title: 'Update Failed',
-            description: error.message || 'Could not update your profile.'
+            description: error.message || 'Could not update your profile.',
+            type: 'error',
         });
     } finally {
         setIsUpdatingProfile(false);
     }
   };
 
+  // Load user's resume from cloud
+  const handleLoadFromCloud = useCallback(async () => {
+    if (!token) return;
+    
+    try {
+      const response = await fetch('/api/resumes');
+      if (!response.ok) {
+        throw new Error('Failed to fetch resume');
+      }
+      
+      const { resumes } = await response.json();
+      
+      if (resumes && resumes.length > 0) {
+        const latestResume = resumes[0];
+        setResumeId(latestResume.id);
+        sessionStorage.setItem('currentResumeId', latestResume.id);
+        
+        const detailResponse = await fetch(`/api/resumes/${latestResume.id}`);
+        if (detailResponse.ok) {
+          const { resume } = await detailResponse.json();
+          if (resume.data && typeof resume.data === 'object') {
+            setResumeData(resume.data);
+          }
+        }
+      }
+    } catch (error: any) {
+      // Silently fail - user can still work with local data
+    }
+  }, [token, setResumeData]);
+
+  // Restore resume ID from sessionStorage on mount
+  useEffect(() => {
+    const storedResumeId = sessionStorage.getItem('currentResumeId');
+    if (storedResumeId && token) {
+      setResumeId(storedResumeId);
+    }
+  }, [token]);
+
+  // Save resume to cloud (with subtle indicator instead of toast)
+  const handleSaveToCloud = async () => {
+    if (!token) {
+      showNotification({
+        title: 'Not Authenticated',
+        description: 'Please log in to save your resume to the cloud.',
+        type: 'error',
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    setShowSavedIndicator(false);
+    
+    try {
+      let response;
+      
+      if (resumeId) {
+        response = await fetch(`/api/resumes/${resumeId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `Resume - ${new Date().toLocaleDateString()}`,
+            data: resumeData,
+          }),
+        });
+      } else {
+        response = await fetch('/api/resumes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `Resume - ${new Date().toLocaleDateString()}`,
+            data: resumeData,
+          }),
+        });
+        
+        if (response.ok) {
+          const { resume } = await response.json();
+          setResumeId(resume.id);
+          sessionStorage.setItem('currentResumeId', resume.id);
+        }
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to save resume');
+      }
+
+      setShowSavedIndicator(true);
+      setTimeout(() => {
+        setShowSavedIndicator(false);
+      }, 3000);
+      
+    } catch (error: any) {
+      showNotification({
+        title: 'Save Failed',
+        description: error.message || 'Could not save your resume.',
+        type: 'error',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Core save logic for autosave (without toast)
+  const performAutoSave = useCallback(async () => {
+    if (!token) {
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      let response;
+      let currentResumeId = resumeId;
+
+      if (!currentResumeId) {
+        const storedId = sessionStorage.getItem('currentResumeId');
+        if (storedId && storedId.trim()) {
+          currentResumeId = storedId;
+          setResumeId(storedId);
+        }
+      }
+
+      if (!currentResumeId) {
+        const checkResponse = await fetch('/api/resumes');
+        if (checkResponse.ok) {
+          const { resumes } = await checkResponse.json();
+          if (resumes && resumes.length > 0) {
+            const existingId = resumes[0].id;
+            if (existingId) {
+              currentResumeId = existingId;
+              setResumeId(existingId);
+              sessionStorage.setItem('currentResumeId', existingId);
+            }
+          }
+        }
+      }
+      
+      if (currentResumeId) {
+        response = await fetch(`/api/resumes/${currentResumeId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `Resume - ${new Date().toLocaleDateString()}`,
+            data: resumeData,
+          }),
+        });
+      } else {
+        response = await fetch('/api/resumes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: `Resume - ${new Date().toLocaleDateString()}`,
+            data: resumeData,
+          }),
+        });
+        
+        if (response.ok) {
+          const { resume } = await response.json();
+          setResumeId(resume.id);
+          sessionStorage.setItem('currentResumeId', resume.id);
+        }
+      }
+    } catch (error) {
+      // Silently fail
+    } finally {
+      setIsSaving(false);
+    }
+  }, [token, resumeId, resumeData, setResumeId]);
+
+  // Load user's resume when component mounts (auto-load on login)
+  const hasLoadedRef = useRef(false);
+  
+  useEffect(() => {
+    if (token && !hasLoadedRef.current) {
+      handleLoadFromCloud();
+      hasLoadedRef.current = true;
+    }
+    
+    if (!token) {
+      hasLoadedRef.current = false;
+    }
+  }, [token, handleLoadFromCloud]);
+
+  // Save on page unload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (token && resumeData) {
+        performAutoSave();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [token, resumeData, performAutoSave]);
+
+  // Multi-browser sync
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      // Disabled for now
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [token, handleLoadFromCloud]);
+
   return (
       <div className="flex h-screen w-full flex-col bg-background">
         <header className="no-print flex h-16 shrink-0 items-center justify-between border-b-2 px-4 md:px-6 sticky top-0 z-30 bg-background">
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
-              <FileText className="h-6 w-6 text-primary" />
+              <img 
+                src="/images/cognisys-logo.svg" 
+                alt="Cognisys AI Logo" 
+                className="h-8 w-8 object-contain"
+              />
               <span className="font-headline text-xl font-bold">Resume Builder</span>
             </Link>
           </div>
+
+          {/* Notification indicator in nav */}
+          <NavNotification />
           
           <div className="flex items-center gap-2 md:gap-4">
+            {/* Save button with indicator */}
+            {token && (
+              <Button
+                onClick={handleSaveToCloud}
+                variant="ghost"
+                className="hidden md:flex items-center gap-2"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : showSavedIndicator ? (
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
+                <span className={showSavedIndicator ? "text-green-500" : ""}>
+                  {isSaving ? "Saving..." : showSavedIndicator ? "Saved!" : "Save"}
+                </span>
+              </Button>
+            )}
+
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="hidden sm:flex items-center gap-2">
-                     <span>Welcome, {user.displayName || 'User'}</span>
-                     <User className="h-5 w-5" />
+                  <Button variant="ghost" className="flex items-center gap-2">
+                    <span>Welcome, {user.name || 'User'}</span>
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.image || undefined} alt={user.name || 'User'} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {user.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.image || undefined} alt={user.name || 'User'} />
+                      <AvatarFallback className="bg-primary text-primary-foreground">
+                        {user.name?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>My Account</span>
+                  </DropdownMenuLabel>
+                   <DropdownMenuSeparator />
                   <DropdownMenuItem className="flex flex-col items-start gap-1 focus:bg-transparent cursor-default">
-                      <span className='font-semibold'>{user.displayName}</span>
+                      <span className='font-semibold'>{user.name}</span>
                       <span className='text-xs text-muted-foreground'>{user.email}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

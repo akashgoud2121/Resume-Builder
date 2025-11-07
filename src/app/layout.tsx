@@ -1,9 +1,9 @@
 
 import type { Metadata } from 'next';
 import './globals.css';
-import { Toaster } from "@/components/ui/toaster";
-import { FirebaseClientProvider } from '@/firebase/client-provider';
-import FirebaseErrorListener from '@/components/FirebaseErrorListener';
+import { AuthProvider } from '@/lib/auth-context';
+import { NotificationProvider } from '@/lib/notification-context';
+import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
   title: 'Resume Builder',
@@ -23,11 +23,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-        <FirebaseClientProvider>
-          {children}
-          <Toaster />
-          <FirebaseErrorListener />
-        </FirebaseClientProvider>
+        <AuthProvider>
+          <NotificationProvider>
+            {children}
+            <Toaster />
+          </NotificationProvider>
+        </AuthProvider>
       </body>
     </html>
   );

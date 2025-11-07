@@ -9,10 +9,11 @@ import Footer from '@/components/footer';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase/auth/use-user';
-import { useAuthActions } from '@/firebase/auth/use-auth';
+import { useAuth } from '@/hooks/use-auth';
 import { useRouter } from 'next/navigation';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useNotification } from '@/lib/notification-context';
+import { NavNotification } from '@/components/nav-notification';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,9 +29,8 @@ export default function Home() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [displayName, setDisplayName] = useState('');
-  const { toast } = useToast();
-  const { user } = useUser();
-  const { signOut, updateUserProfile } = useAuthActions();
+  const { showNotification } = useNotification();
+  const { user, signOut: handleSignOut, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -41,17 +41,18 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (user?.displayName) {
-        setDisplayName(user.displayName);
+    if (user?.name) {
+        setDisplayName(user.name);
     }
   }, [user]);
 
   const handleSaveApiKey = () => {
     localStorage.setItem('userApiKey', apiKey);
     setIsSettingsOpen(false);
-    toast({
+    showNotification({
       title: "API Key Saved",
       description: "Your Google AI API key has been saved locally.",
+      type: "success",
     });
   };
   
@@ -59,26 +60,26 @@ export default function Home() {
     localStorage.removeItem('userApiKey');
     setApiKey('');
     setIsSettingsOpen(false);
-     toast({
+    showNotification({
       title: "API Key Removed",
       description: "Your Google AI API key has been removed.",
-      variant: "destructive"
+      type: "error",
     });
   }
 
   const handleLogout = async () => {
     try {
-      await signOut();
-      toast({
+      await handleSignOut();
+      showNotification({
         title: 'Logged Out',
         description: 'You have been successfully logged out.',
+        type: 'success',
       });
-      router.push('/login');
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
+      showNotification({
         title: 'Logout Failed',
         description: error.message || 'An unexpected error occurred.',
+        type: 'error',
       });
     }
   };
@@ -94,26 +95,27 @@ export default function Home() {
 
   const handleProfileUpdate = async () => {
     if (!user || !displayName.trim()) {
-        toast({
-            variant: 'destructive',
+        showNotification({
             title: 'Validation Error',
-            description: 'Display name cannot be empty.'
+            description: 'Display name cannot be empty.',
+            type: 'error',
         });
         return;
     }
     setIsUpdatingProfile(true);
     try {
-        await updateUserProfile(displayName);
-        toast({
-            title: 'Profile Updated',
-            description: 'Your display name has been updated successfully.'
+        // Profile update would require API endpoint - simplified for now
+        showNotification({
+            title: 'Profile Update',
+            description: 'Profile update feature will be available soon.',
+            type: 'info',
         });
         setIsProfileOpen(false);
     } catch (error: any) {
-        toast({
-            variant: 'destructive',
+        showNotification({
             title: 'Update Failed',
-            description: error.message || 'Could not update your profile.'
+            description: error.message || 'Could not update your profile.',
+            type: 'error',
         });
     } finally {
         setIsUpdatingProfile(false);
@@ -125,24 +127,45 @@ export default function Home() {
     <div className="flex min-h-screen w-full flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
-          <FileText className="h-6 w-6 text-primary" />
+          <img 
+            src="/images/cognisys-logo.svg" 
+            alt="Cognisys AI Logo" 
+            className="h-8 w-8 object-contain"
+          />
           <span className="font-headline text-xl">Resume Builder</span>
         </Link>
+        
+        {/* Notification indicator in nav */}
+        <NavNotification />
+        
         <div className="flex items-center gap-4">
             {user ? (
                  <div className="flex items-center gap-2">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center gap-2">
-                        <span>Welcome, {user.displayName || 'User'}</span>
-                        <User className="h-5 w-5" />
+                        <span>Welcome, {user.name || 'User'}</span>
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.image || undefined} alt={user.name || 'User'} />
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {user.name?.charAt(0).toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuLabel className="flex items-center gap-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={user.image || undefined} alt={user.name || 'User'} />
+                          <AvatarFallback className="bg-primary text-primary-foreground">
+                            {user.name?.charAt(0).toUpperCase() || 'U'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>My Account</span>
+                      </DropdownMenuLabel>
                        <DropdownMenuSeparator />
                       <DropdownMenuItem className="flex flex-col items-start gap-1 focus:bg-transparent cursor-default">
-                          <span className='font-semibold'>{user.displayName}</span>
+                          <span className='font-semibold'>{user.name}</span>
                           <span className='text-xs text-muted-foreground'>{user.email}</span>
                       </DropdownMenuItem>
                        <DropdownMenuSeparator />

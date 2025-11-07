@@ -11,7 +11,7 @@ export default function Footer() {
           <h4 className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">Powered by</h4>
           <div className="flex items-center gap-3">
             <Image
-              src="https://media.licdn.com/dms/image/v2/D560BAQFK4uppQGwRcg/company-logo_200_200/company-logo_200_200/0/1735737431638?e=1762387200&v=beta&t=Xbh4cXQiNT16QKv_YTNoxdzEfN9TVrpbfxh4rR1sd-U"
+              src="/images/cognisys-logo.svg"
               alt="Cognisys AI Logo"
               width={32}
               height={32}

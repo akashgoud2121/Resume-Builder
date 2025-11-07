@@ -37,9 +37,22 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# AI
 .genkit/*
-.env*
 
-# firebase
+# environment variables
+.env*
+!.env.example
+
+# firebase (legacy)
 firebase-debug.log
 firestore-debug.log
+/src/generated/prisma
+
+# temp files
+*.tmp
+*.temp
+*-temp.*
+
+# logs
+*.log

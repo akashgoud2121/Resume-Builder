@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,31 +8,28 @@ import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useAuthActions } from '@/firebase/auth/use-auth';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import { useAuthActions } from '@/hooks/use-auth';
 import Link from 'next/link';
 
-const signupSchema = z
-  .object({
-    name: z.string().min(2, 'Name must be at least 2 characters'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters'),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ['confirmPassword'],
-  });
+const signupStepOneSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters'),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ['confirmPassword'],
+});
+
+const otpSchema = z.object({
+  otp: z.string().length(6, 'OTP must be 6 digits'),
+});
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
-});
-
-const resetPasswordSchema = z.object({
-  email: z.string().email('Invalid email address'),
 });
 
 type AuthFormProps = {
@@ -67,25 +64,25 @@ const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
 );
 
 const GitHubIcon = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.89 1.53 2.34 1.09 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.95c0-1.1.39-1.99 1.03-2.69c-.1-.25-.45-1.27.1-2.65c0 0 .84-.27 2.75 1.02A9.58 9.58 0 0 1 12 6.84c.85 0 1.7.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.38.2 2.4.1 2.65c.64.7 1.03 1.59 1.03 2.69c0 3.85-2.34 4.7-4.57 4.95c.36.31.68.92.68 1.85v2.72c0 .27.18.58.69.48A10 10 0 0 0 22 12A10 10 0 0 0 12 2"/>
-    </svg>
+  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+    <path fill="currentColor" d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34c-.46-1.16-1.11-1.47-1.11-1.47c-.91-.62.07-.6.07-.6c1 .07 1.53 1.03 1.53 1.03c.89 1.53 2.34 1.09 2.91.83c.09-.65.35-1.09.63-1.34c-2.22-.25-4.55-1.11-4.55-4.95c0-1.1.39-1.99 1.03-2.69c-.1-.25-.45-1.27.1-2.65c0 0 .84-.27 2.75 1.02A9.58 9.58 0 0 1 12 6.84c.85 0 1.7.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02c.55 1.38.2 2.4.1 2.65c.64.7 1.03 1.59 1.03 2.69c0 3.85-2.34 4.7-4.57 4.95c.36.31.68.92.68 1.85v2.72c0 .27.18.58.69.48A10 10 0 0 0 22 12A10 10 0 0 0 12 2"/>
+  </svg>
 );
-
 
 export function AuthForm({ mode }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGitHubLoading, setIsGitHubLoading] = useState(false);
-  const [isResetLoading, setIsResetLoading] = useState(false);
-  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
+  const [showOtpStep, setShowOtpStep] = useState(false);
+  const [signupData, setSignupData] = useState<any>(null);
+  const [isResending, setIsResending] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { signUp, signIn, signInWithGoogle, signInWithGitHub, sendPasswordResetEmail } = useAuthActions();
+  const { signInWithGoogle, signInWithGitHub, signIn } = useAuthActions();
 
-  const emailSchema = mode === 'signup' ? signupSchema : loginSchema;
+  const emailSchema = mode === 'signup' ? signupStepOneSchema : loginSchema;
   type EmailFormData = z.infer<typeof emailSchema>;
-  
+
   const {
     register,
     handleSubmit,
@@ -95,138 +92,253 @@ export function AuthForm({ mode }: AuthFormProps) {
   });
 
   const {
-    register: registerReset,
-    handleSubmit: handleResetSubmit,
-    formState: { errors: resetErrors },
-    reset,
-  } = useForm<z.infer<typeof resetPasswordSchema>>({
-    resolver: zodResolver(resetPasswordSchema),
+    register: registerOtp,
+    handleSubmit: handleOtpSubmit,
+    formState: { errors: otpErrors },
+  } = useForm<z.infer<typeof otpSchema>>({
+    resolver: zodResolver(otpSchema),
   });
 
   const onSubmit = async (data: EmailFormData) => {
     setIsLoading(true);
     try {
       if (mode === 'signup') {
-        const { name, email, password } = data as z.infer<typeof signupSchema>;
-        await signUp(email, password, name);
-        toast({
-          title: 'Account Created',
-          description: "You've been successfully signed up!",
+        const signupFormData = data as z.infer<typeof signupStepOneSchema>;
+        
+        // Send OTP
+        const response = await fetch('/api/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: signupFormData.email }),
         });
-        router.push('/');
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to send OTP');
+        }
+
+        setSignupData(signupFormData);
+        setShowOtpStep(true);
+        toast({
+          variant: 'success',
+          title: 'OTP Sent',
+          description: 'Please check your email for the verification code.',
+        });
       } else {
-        await signIn(data.email, data.password);
-        toast({
-          title: 'Logged In',
-          description: "You've been successfully logged in!",
-        });
-        router.push('/');
+        // Login with credentials
+        const result = await signIn(data.email, data.password);
+        
+        if (result?.error) {
+          throw new Error(result.error);
+        }
+
+        // NextAuth will handle the redirect automatically to /build
+        // No need to manually redirect or show toast here
       }
     } catch (error: any) {
       toast({
         variant: 'destructive',
         title: 'Authentication Failed',
-        description:
-          error.message || 'An unexpected error occurred. Please try again.',
+        description: error.message || 'An unexpected error occurred. Please try again.',
       });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
+    }
+  };
+
+  const onOtpSubmit = async (data: z.infer<typeof otpSchema>) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: signupData.email,
+          otp: data.otp,
+          password: signupData.password,
+          name: signupData.name,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to verify OTP');
+      }
+
+      toast({
+        variant: 'success',
+        title: 'Account Created',
+        description: "You've been successfully signed up! Please log in.",
+      });
+      
+      // Redirect to login
+      router.push('/login');
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Verification Failed',
+        description: error.message || 'Invalid OTP code. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setIsResending(true);
+    try {
+      const response = await fetch('/api/auth/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: signupData.email }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to resend OTP');
+      }
+
+      toast({
+        variant: 'success',
+        title: 'OTP Resent',
+        description: 'A new verification code has been sent to your email.',
+      });
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Resend Failed',
+        description: error.message || 'Failed to resend OTP. Please try again.',
+      });
+    } finally {
+      setIsResending(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
-        await signInWithGoogle();
-        toast({
-          title: 'Logged In',
-          description: "You've been successfully logged in with Google!",
-        });
-        router.push('/');
+      await signInWithGoogle();
     } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Google Sign-In Failed',
-            description: error.message || 'Could not sign in with Google. Please try again.',
-        });
-    } finally {
-        setIsGoogleLoading(false);
+      setIsGoogleLoading(false);
+      toast({
+        variant: 'destructive',
+        title: 'Google Sign-In Failed',
+        description: error.message || 'Could not sign in with Google. Please try again.',
+      });
     }
   };
 
   const handleGitHubSignIn = async () => {
     setIsGitHubLoading(true);
     try {
-        await signInWithGitHub();
-        toast({
-          title: 'Logged In',
-          description: "You've been successfully logged in with GitHub!",
-        });
-        router.push('/');
+      await signInWithGitHub();
     } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'GitHub Sign-In Failed',
-            description: error.message || 'Could not sign in with GitHub. Please try again.',
-        });
-    } finally {
-        setIsGitHubLoading(false);
+      setIsGitHubLoading(false);
+      toast({
+        variant: 'destructive',
+        title: 'GitHub Sign-In Failed',
+        description: error.message || 'Could not sign in with GitHub. Please try again.',
+      });
     }
   };
 
-  const onPasswordReset = async (data: z.infer<typeof resetPasswordSchema>) => {
-    setIsResetLoading(true);
-    try {
-        await sendPasswordResetEmail(data.email);
-        setIsResetDialogOpen(false);
-        reset();
-        toast({
-            title: 'Password Reset Email Sent',
-            description: `If an account exists for ${data.email}, you will receive an email with instructions to reset your password.`,
-        });
-    } catch (error: any) {
-        toast({
-            variant: 'destructive',
-            title: 'Password Reset Failed',
-            description: error.message || 'An unexpected error occurred. Please try again.',
-        });
-    } finally {
-        setIsResetLoading(false);
-    }
-  };
+  if (showOtpStep) {
+    return (
+      <div className="space-y-6">
+        <Button
+          variant="ghost"
+          onClick={() => setShowOtpStep(false)}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back
+        </Button>
+
+        <div className="text-center space-y-2">
+          <h3 className="text-lg font-semibold">Verify Your Email</h3>
+          <p className="text-sm text-muted-foreground">
+            We've sent a 6-digit code to <strong>{signupData?.email}</strong>
+          </p>
+        </div>
+
+        <form onSubmit={handleOtpSubmit(onOtpSubmit)} className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="otp">Enter OTP Code</Label>
+            <Input
+              id="otp"
+              {...registerOtp('otp')}
+              placeholder="000000"
+              maxLength={6}
+              className="text-center text-2xl tracking-widest"
+            />
+            {otpErrors.otp && (
+              <p className="text-sm text-destructive">{otpErrors.otp.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Verify & Create Account
+            </Button>
+
+            <div className="text-center">
+              <Button
+                type="button"
+                variant="link"
+                onClick={handleResendOtp}
+                disabled={isResending}
+                className="text-sm"
+              >
+                {isResending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Resending...
+                  </>
+                ) : (
+                  'Resend OTP'
+                )}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-        <div className="space-y-2">
-            <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading || isGoogleLoading || isGitHubLoading}
-            >
-                {isGoogleLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                <GoogleIcon className="mr-2 h-5 w-5" />
-                )}
-                Continue with Google
-            </Button>
-            <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleGitHubSignIn}
-                disabled={isLoading || isGoogleLoading || isGitHubLoading}
-            >
-                {isGitHubLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                <GitHubIcon className="mr-2 h-5 w-5" />
-                )}
-                Continue with GitHub
-            </Button>
-        </div>
-      
-      <div id="recaptcha-container"></div>
+      <div className="space-y-2">
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleGoogleSignIn}
+          disabled={isLoading || isGoogleLoading || isGitHubLoading}
+        >
+          {isGoogleLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <GoogleIcon className="mr-2 h-5 w-5" />
+          )}
+          Continue with Google
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={handleGitHubSignIn}
+          disabled={isLoading || isGoogleLoading || isGitHubLoading}
+        >
+          {isGitHubLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <GitHubIcon className="mr-2 h-5 w-5" />
+          )}
+          Continue with GitHub
+        </Button>
+      </div>
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
@@ -239,92 +351,64 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
       </div>
 
-       
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {mode === 'signup' && (
-            <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input id="name" {...register('name')} />
-                {errors.name && (
-                <p className="text-sm text-destructive">{errors.name.message}</p>
-                )}
-            </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        {mode === 'signup' && (
+          <div className="space-y-2">
+            <Label htmlFor="name">Full Name</Label>
+            <Input id="name" {...register('name')} />
+            {errors.name && (
+              <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
-            <div className="space-y-2">
-            <Label htmlFor="email">Email address</Label>
-            <Input id="email" type="email" {...register('email')} />
-            {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
+          </div>
+        )}
+        <div className="space-y-2">
+          <Label htmlFor="email">Email address</Label>
+          <Input id="email" type="email" {...register('email')} />
+          {errors.email && (
+            <p className="text-sm text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">Password</Label>
+            {mode === 'login' && (
+              <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                Forgot Password?
+              </Link>
             )}
-            </div>
-            <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
-                    {mode === 'login' && (
-                        <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
-                            <DialogTrigger asChild>
-                                <Button variant="link" className="p-0 h-auto text-xs">
-                                    Forgot Password?
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                                <DialogHeader>
-                                    <DialogTitle>Reset Your Password</DialogTitle>
-                                    <DialogDescription>
-                                        Enter your email address below and we'll send you a link to reset your password.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <form onSubmit={handleResetSubmit(onPasswordReset)} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="reset-email">Email Address</Label>
-                                        <Input
-                                            id="reset-email"
-                                            type="email"
-                                            {...registerReset('email')}
-                                        />
-                                        {resetErrors.email && <p className="text-sm text-destructive">{resetErrors.email.message}</p>}
-                                    </div>
-                                    <DialogFooter>
-                                        <Button type="button" variant="secondary" onClick={() => setIsResetDialogOpen(false)}>
-                                            Cancel
-                                        </Button>
-                                        <Button type="submit" disabled={isResetLoading}>
-                                            {isResetLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                                            Send Reset Link
-                                        </Button>
-                                    </DialogFooter>
-                                </form>
-                            </DialogContent>
-                        </Dialog>
-                    )}
-                </div>
-                <Input id="password" type="password" {...register('password')} />
-                {errors.password && (
-                    <p className="text-sm text-destructive">{errors.password.message}</p>
-                )}
-            </div>
-            {mode === 'signup' && (
-            <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                id="confirmPassword"
-                type="password"
-                {...register('confirmPassword')}
-                />
-                {errors.confirmPassword && (
-                <p className="text-sm text-destructive">
-                    {errors.confirmPassword.message}
-                </p>
-                )}
-            </div>
+          </div>
+          <Input id="password" type="password" {...register('password')} />
+          {errors.password && (
+            <p className="text-sm text-destructive">{errors.password.message}</p>
+          )}
+        </div>
+        {mode === 'signup' && (
+          <div className="space-y-2">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Input
+              id="confirmPassword"
+              type="password"
+              {...register('confirmPassword')}
+            />
+            {errors.confirmPassword && (
+              <p className="text-sm text-destructive">
+                {errors.confirmPassword.message}
+              </p>
             )}
-            <div>
-            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isGitHubLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {mode === 'signup' ? 'Sign Up' : 'Sign In'}
-            </Button>
-            </div>
-        </form>
+          </div>
+        )}
+        <div>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || isGoogleLoading || isGitHubLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {mode === 'signup' ? 'Continue' : 'Sign In'}
+          </Button>
+        </div>
+      </form>
     </div>
   );
 }
+

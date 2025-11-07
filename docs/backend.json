@@ -23,7 +23,7 @@
     }
   },
   "auth": {
-    "providers": ["email", "google"]
+    "providers": ["email", "google", "github", "phone"]
   },
   "firestore": {}
 }

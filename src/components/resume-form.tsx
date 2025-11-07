@@ -172,10 +172,10 @@ const formSteps = [
     { id: 'summary', name: 'Summary' },
     { id: 'skills', name: 'Skills' },
     { id: 'education', name: 'Education' },
-    { id: 'experience', name: 'Experience' },
     { id: 'projects', name: 'Projects' },
-    { id: 'certifications', name: 'Certifications' },
+    { id: 'certifications', name: 'Cert.' },
     { id: 'achievements', name: 'Achievements' },
+    { id: 'experience', name: 'Experience' },
     { id: 'other', name: 'Other' },
 ];
 
@@ -856,58 +856,6 @@ export function ResumeForm() {
         case 4:
             return (
                 <div>
-                    <CardTitle className="text-xl mb-4">Work Experience</CardTitle>
-                    <div className="space-y-4">
-                        {resumeData.experience.map((exp, index) => {
-                            const error = dateErrors[exp.id];
-                            return (
-                            <Card key={exp.id} className="p-4 relative bg-background shadow-none border">
-                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                                <div className="space-y-2">
-                                    <Label>Job Title/Role<RequiredIndicator /></Label>
-                                    <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Company<RequiredIndicator /></Label>
-                                    <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
-                                </div>
-                                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Start Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error}/>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>End Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error}/>
-                                        </div>
-                                    </div>
-                                    {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
-                                <div className="sm:col-span-2 space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <div className='flex items-center gap-2'>
-                                        <Label>Description<RequiredIndicator /></Label>
-                                        <BulletPointTooltip />
-                                        </div>
-                                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
-                                        <Sparkles className="mr-2 h-4 w-4" />
-                                        Generate with AI
-                                        </Button>
-                                    </div>
-                                    <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
-                                </div>
-                            </CardContent>
-                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                            </Card>
-                        )})}
-                        <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
-                    </div>
-                </div>
-            );
-        case 5:
-            return (
-                <div>
                     <CardTitle className="text-xl mb-4">Projects</CardTitle>
                     <div className="space-y-4">
                         {resumeData.projects.map((proj, index) => {
@@ -988,7 +936,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 6:
+        case 5:
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Certifications</CardTitle>
@@ -1045,7 +993,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 7:
+        case 6:
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Achievements & Activities</CardTitle>
@@ -1122,6 +1070,58 @@ export function ResumeForm() {
                         )
                         })}
                         <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
+                    </div>
+                </div>
+            );
+        case 7:
+            return (
+                <div>
+                    <CardTitle className="text-xl mb-4">Work Experience</CardTitle>
+                    <div className="space-y-4">
+                        {resumeData.experience.map((exp, index) => {
+                            const error = dateErrors[exp.id];
+                            return (
+                            <Card key={exp.id} className="p-4 relative bg-background shadow-none border">
+                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                                <div className="space-y-2">
+                                    <Label>Job Title/Role<RequiredIndicator /></Label>
+                                    <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Company<RequiredIndicator /></Label>
+                                    <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
+                                </div>
+                                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Start Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error}/>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>End Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error}/>
+                                        </div>
+                                    </div>
+                                    {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
+                                <div className="sm:col-span-2 space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className='flex items-center gap-2'>
+                                        <Label>Description<RequiredIndicator /></Label>
+                                        <BulletPointTooltip />
+                                        </div>
+                                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
+                                        <Sparkles className="mr-2 h-4 w-4" />
+                                        Generate with AI
+                                        </Button>
+                                    </div>
+                                    <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
+                                </div>
+                            </CardContent>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            </Card>
+                        )})}
+                        <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
                     </div>
                 </div>
             );

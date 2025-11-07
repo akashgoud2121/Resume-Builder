@@ -319,7 +319,7 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           })}
       </Section>
       
-      {other.map((item: Other) => item.title && (
+      {other.map((item: Other) => (item.title && item.description) && (
         <Section key={item.id} title={item.title} hasData={true}>
           {renderDescription(item.description)}
         </Section>

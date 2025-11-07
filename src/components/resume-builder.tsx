@@ -546,7 +546,7 @@ export function ResumeBuilder() {
         </header>
 
         <div className="grid flex-1 md:grid-cols-2 overflow-hidden">
-            <div className="overflow-y-auto p-4 md:p-6 no-scrollbar">
+            <div className="overflow-y-auto p-4 md:p-6 no-scrollbar no-print resume-form-column">
                 <ResumeForm />
             </div>
 

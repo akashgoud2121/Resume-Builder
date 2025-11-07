@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
 import { generateExperience } from '@/ai/flows/generate-experience-flow';
-import { useToast } from '@/hooks/use-toast';
+import { useNotification } from '@/lib/notification-context';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { ScrollArea } from './ui/scroll-area';
 import { cn } from '@/lib/utils';
@@ -187,7 +187,7 @@ export function ResumeForm() {
   const [otherYear, setOtherYear] = React.useState('');
   const [generatedSummary, setGeneratedSummary] = React.useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
-  const { toast } = useToast();
+  const { showNotification } = useNotification();
 
   const [dateErrors, setDateErrors] = React.useState<Record<string, string | null>>({});
   const [validationErrors, setValidationErrors] = React.useState<Record<string, boolean>>({});
@@ -292,8 +292,8 @@ export function ResumeForm() {
         setValidationErrors({});
         setCurrentStep(prev => (prev < formSteps.length - 1 ? prev + 1 : prev));
     } else {
-        toast({
-            variant: "destructive",
+        showNotification({
+            type: "error",
             title: "Missing Fields",
             description: "Please fill out all required fields before continuing.",
         });
@@ -529,10 +529,10 @@ export function ResumeForm() {
       }
     } catch (error) {
       console.error(error);
-      toast({
+      showNotification({
         title: "Generation Failed",
         description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
-        variant: "destructive",
+        type: "error",
       });
     } finally {
       setIsGeneratingSummary(false);
@@ -542,9 +542,10 @@ export function ResumeForm() {
   const handleUseSummary = () => {
     setResumeData(prev => ({ ...prev, summary: generatedSummary }));
     setIsSummaryAiDialogOpen(false);
-    toast({
+    showNotification({
       title: "Summary Updated!",
       description: "The AI-generated summary has been added to your resume.",
+      type: "success",
     });
   };
   
@@ -569,10 +570,10 @@ export function ResumeForm() {
 
   const handleGenerateExperience = async () => {
     if (!aiExperienceState.projectDescription.trim()) {
-       toast({
+       showNotification({
         title: "Description is missing",
         description: "Please provide a description.",
-        variant: "destructive",
+        type: "error",
       });
       return;
     }
@@ -594,10 +595,10 @@ export function ResumeForm() {
     } catch (error) {
        console.error(error);
        setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
-      toast({
+      showNotification({
         title: "Generation Failed",
         description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
-        variant: "destructive",
+        type: "error",
       });
     }
   };
@@ -608,9 +609,10 @@ export function ResumeForm() {
     handleGenericChange(aiExperienceState.targetType, aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
     
     setAiExperienceState(prev => ({ ...prev, isOpen: false }));
-    toast({
+    showNotification({
       title: "Description Updated!",
       description: "The AI-generated bullet points have been added.",
+      type: "success",
     });
   };
 
@@ -622,9 +624,10 @@ export function ResumeForm() {
         projectDescription: template.description,
         technologiesUsed: template.technologies,
     }));
-    toast({
+    showNotification({
         title: "Template Copied!",
         description: "The example text has been copied into the fields below.",
+        type: "success",
     });
   };
 

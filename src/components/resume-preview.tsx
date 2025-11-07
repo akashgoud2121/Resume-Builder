@@ -9,7 +9,7 @@ import type { Education, EducationCategory, Achievement, AchievementCategory, Ce
 import { Github, Linkedin, Mail, Phone, Link as LinkIcon, MapPin } from 'lucide-react';
 
 
-const achievementCategoryTitles: Record<AchievementCategory, string> = {
+const achievementCategoryTitles: Record<string, string> = {
   hackathon: 'Hackathons',
   workshop: 'Workshops',
   poster: 'Poster Presentations',
@@ -104,15 +104,14 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
     });
 
   const groupedAchievements = achievements.reduce((acc, ach) => {
+    if (!ach.name) return acc;
     const category = ach.category || 'other';
     if (!acc[category]) {
       acc[category] = [];
     }
-    if(ach.name) {
-      acc[category].push(ach);
-    }
+    acc[category].push(ach);
     return acc;
-  }, {} as Record<AchievementCategory, Achievement[]>);
+  }, {} as Record<string, Achievement[]>);
   
   const achievementOrder: AchievementCategory[] = ['hackathon', 'workshop', 'poster', 'techfest', 'leadership', 'volunteering', 'publication', 'other'];
 
@@ -288,13 +287,16 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
       </Section>
 
       <Section title="Achievements & Activities" hasData={achievements.length > 0 && achievements.some(a => a.name)}>
-          {achievementOrder.map(category => {
+          {Object.keys(groupedAchievements).map(category => {
               const entries = groupedAchievements[category];
               if (!entries || entries.length === 0) return null;
+              
+              const isStandardCategory = category in achievementCategoryTitles;
+              const categoryTitle = isStandardCategory ? achievementCategoryTitles[category] : category;
 
               return (
                   <div key={category} className="mb-3 break-inside-avoid">
-                      <h3 className="text-base font-semibold text-gray-900 underline mb-2">{achievementCategoryTitles[category]}</h3>
+                      <h3 className="text-base font-semibold text-gray-900 underline mb-2 capitalize">{categoryTitle}</h3>
                       {entries.map(ach => (
                            <div key={ach.id} className="mb-4 break-inside-avoid">
                               <div className="flex justify-between items-baseline mb-1">
@@ -334,6 +336,7 @@ ResumePreview.displayName = "ResumePreview";
     
 
     
+
 
 
 

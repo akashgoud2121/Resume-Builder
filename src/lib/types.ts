@@ -69,7 +69,7 @@ export type AchievementCategory = 'workshop' | 'hackathon' | 'poster' | 'techfes
 
 export type Achievement = {
   id: string;
-  category: AchievementCategory;
+  category: string; // Can be a standard category or a custom one
   name: string;
   context: string;
   date: string;
@@ -96,6 +96,7 @@ export type ResumeData = {
 };
 
     
+
 
 
 

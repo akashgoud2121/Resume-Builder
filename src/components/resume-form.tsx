@@ -79,6 +79,17 @@ const achievementCategoryConfig: Record<AchievementCategory, { title: string; na
     other: { title: 'Other', nameLabel: 'Activity Name', contextLabel: 'Context (e.g., Competition Name)' },
 };
 
+const ACHIEVEMENT_CATEGORIES: AchievementCategory[] = [
+    'hackathon',
+    'workshop',
+    'poster',
+    'techfest',
+    'leadership',
+    'volunteering',
+    'publication',
+    'other',
+];
+
 type AiExperienceState = {
   isOpen: boolean;
   projectTitle: string;
@@ -341,7 +352,7 @@ export function ResumeForm() {
     });
   };
   
-  const handleAchievementCategoryChange = (index: number, value: AchievementCategory) => {
+  const handleAchievementCategoryChange = (index: number, value: string) => {
     setResumeData(prev => {
       const newAchievements = [...prev.achievements];
       newAchievements[index] = { ...newAchievements[index], category: value };
@@ -964,31 +975,39 @@ export function ResumeForm() {
         content: (
           <div className="space-y-4">
             {resumeData.achievements.map((ach, index) => {
-               const config = achievementCategoryConfig[ach.category];
-               if (!config) return null;
+               const config = achievementCategoryConfig[ach.category as AchievementCategory] || achievementCategoryConfig.other;
+               const isOtherSelected = ach.category === 'other' || !ACHIEVEMENT_CATEGORIES.includes(ach.category as AchievementCategory);
                return (
                 <Card key={ach.id} className="p-4 relative bg-background shadow-none">
                   <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                      <div className="sm:col-span-2 space-y-2">
                         <Label>Category<RequiredIndicator /></Label>
                         <Select
-                        value={ach.category}
-                        onValueChange={(value: AchievementCategory) => handleAchievementCategoryChange(index, value)}
+                            value={ACHIEVEMENT_CATEGORIES.includes(ach.category as AchievementCategory) ? ach.category : 'other'}
+                            onValueChange={(value) => handleAchievementCategoryChange(index, value)}
                         >
-                        <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="hackathon">Hackathon</SelectItem>
-                            <SelectItem value="workshop">Workshop</SelectItem>
-                            <SelectItem value="poster">Poster Presentation</SelectItem>
-                            <SelectItem value="techfest">Techfest Participation</SelectItem>
-                            <SelectItem value="leadership">Leadership</SelectItem>
-                            <SelectItem value="volunteering">Volunteering</SelectItem>
-                            <SelectItem value="publication">Publication</SelectItem>
-                            <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="hackathon">Hackathon</SelectItem>
+                                <SelectItem value="workshop">Workshop</SelectItem>
+                                <SelectItem value="poster">Poster Presentation</SelectItem>
+                                <SelectItem value="techfest">Techfest Participation</SelectItem>
+                                <SelectItem value="leadership">Leadership</SelectItem>
+                                <SelectItem value="volunteering">Volunteering</SelectItem>
+                                <SelectItem value="publication">Publication</SelectItem>
+                                <SelectItem value="other">Other</SelectItem>
+                            </SelectContent>
                         </Select>
+                         {isOtherSelected && (
+                             <Input
+                                value={ach.category === 'other' ? '' : ach.category}
+                                onChange={e => handleAchievementCategoryChange(index, e.target.value)}
+                                placeholder="Please specify category"
+                                className="mt-2"
+                             />
+                        )}
                     </div>
                     <div className="space-y-2">
                       <Label>{config.nameLabel}<RequiredIndicator /></Label>

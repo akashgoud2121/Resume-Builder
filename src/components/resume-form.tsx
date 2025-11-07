@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Trash2, Sparkles, Loader2, Copy, ArrowLeft, ArrowRight, X, Info } from 'lucide-react';
+import { PlusCircle, Trash2, Sparkles, Loader2, Copy, X, Info } from 'lucide-react';
 import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink, Other } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import type { GenerateSummaryInput } from '@/ai/schemas';
 import { MonthYearPicker } from './date-picker';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
@@ -176,8 +177,6 @@ export function ResumeForm() {
   const { toast } = useToast();
 
   const [dateErrors, setDateErrors] = React.useState<Record<string, string | null>>({});
-  const [currentStep, setCurrentStep] = React.useState(0);
-
 
   const [aiExperienceState, setAiExperienceState] = React.useState<AiExperienceState>({
     isOpen: false,
@@ -517,704 +516,637 @@ export function ResumeForm() {
     }
   };
 
-  const allSections = [
-    {
-      title: "Contact Info",
-      shortTitle: "Contact",
-      content: (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="name">Full Name<RequiredIndicator /></Label>
-            <Input id="name" name="name" value={resumeData.contact.name} onChange={handleContactChange} placeholder="John Doe" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email">Email<RequiredIndicator /></Label>
-            <Input id="email" name="email" type="email" value={resumeData.contact.email} onChange={handleContactChange} placeholder="john.doe@email.com" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone<RequiredIndicator /></Label>
-            <Input id="phone" name="phone" value={resumeData.contact.phone} onChange={handleContactChange} placeholder="(123) 456-7890" />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="location">Location<RequiredIndicator /></Label>
-            <Input id="location" name="location" value={resumeData.contact.location} onChange={handleContactChange} placeholder="City, Country" />
-          </div>
-          <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="linkedin">LinkedIn URL<RequiredIndicator /></Label>
-            <Input id="linkedin" name="linkedin" value={resumeData.contact.linkedin} onChange={handleContactChange} placeholder="linkedin.com/in/johndoe" />
-          </div>
-          <div className="sm:col-span-2 space-y-2">
-            <Label htmlFor="github">GitHub URL<RequiredIndicator /></Label>
-            <Input id="github" name="github" value={resumeData.contact.github} onChange={handleContactChange} placeholder="github.com/johndoe" />
-          </div>
-           <div className="sm:col-span-2 space-y-4">
-              <Label>Other Links</Label>
-              {resumeData.contact.otherLinks.map((link, index) => (
-                  <div key={link.id} className="flex items-end gap-2 p-2 border rounded-md relative">
-                    <div className="grid grid-cols-2 gap-2 flex-1">
-                        <div className="space-y-1">
-                          <Label htmlFor={`link-label-${index}`} className="text-xs">Label<RequiredIndicator /></Label>
-                          <Input id={`link-label-${index}`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" />
+  return (
+    <div className="w-full">
+      <Tabs defaultValue="contact" className="w-full">
+        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9 h-auto">
+            <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="summary">Summary</TabsTrigger>
+            <TabsTrigger value="skills">Skills</TabsTrigger>
+            <TabsTrigger value="education">Education</TabsTrigger>
+            <TabsTrigger value="experience">Experience</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="certifications">Certifications</TabsTrigger>
+            <TabsTrigger value="achievements">Achievements</TabsTrigger>
+            <TabsTrigger value="other">Other</TabsTrigger>
+        </TabsList>
+
+        <Card className="mt-4">
+            <CardContent className="p-6">
+                <TabsContent value="contact">
+                    <CardTitle className="text-xl mb-4">Contact Information</CardTitle>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Full Name<RequiredIndicator /></Label>
+                            <Input id="name" name="name" value={resumeData.contact.name} onChange={handleContactChange} placeholder="John Doe" />
                         </div>
-                        <div className="space-y-1">
-                          <Label htmlFor={`link-url-${index}`} className="text-xs">URL<RequiredIndicator /></Label>
-                          <Input id={`link-url-${index}`} value={link.url} onChange={(e) => handleOtherLinkChange(index, 'url', e.target.value)} placeholder="your-portfolio.com" />
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email<RequiredIndicator /></Label>
+                            <Input id="email" name="email" type="email" value={resumeData.contact.email} onChange={handleContactChange} placeholder="john.doe@email.com" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="phone">Phone<RequiredIndicator /></Label>
+                            <Input id="phone" name="phone" value={resumeData.contact.phone} onChange={handleContactChange} placeholder="(123) 456-7890" />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="location">Location<RequiredIndicator /></Label>
+                            <Input id="location" name="location" value={resumeData.contact.location} onChange={handleContactChange} placeholder="City, Country" />
+                        </div>
+                        <div className="sm:col-span-2 space-y-2">
+                            <Label htmlFor="linkedin">LinkedIn URL</Label>
+                            <Input id="linkedin" name="linkedin" value={resumeData.contact.linkedin} onChange={handleContactChange} placeholder="linkedin.com/in/johndoe" />
+                        </div>
+                        <div className="sm:col-span-2 space-y-2">
+                            <Label htmlFor="github">GitHub URL</Label>
+                            <Input id="github" name="github" value={resumeData.contact.github} onChange={handleContactChange} placeholder="github.com/johndoe" />
+                        </div>
+                        <div className="sm:col-span-2 space-y-4">
+                            <Label>Other Links</Label>
+                            {resumeData.contact.otherLinks.map((link, index) => (
+                                <div key={link.id} className="flex items-end gap-2 p-2 border rounded-md relative">
+                                    <div className="grid grid-cols-2 gap-2 flex-1">
+                                        <div className="space-y-1">
+                                        <Label htmlFor={`link-label-${index}`} className="text-xs">Label<RequiredIndicator /></Label>
+                                        <Input id={`link-label-${index}`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" />
+                                        </div>
+                                        <div className="space-y-1">
+                                        <Label htmlFor={`link-url-${index}`} className="text-xs">URL<RequiredIndicator /></Label>
+                                        <Input id={`link-url-${index}`} value={link.url} onChange={(e) => handleOtherLinkChange(index, 'url', e.target.value)} placeholder="your-portfolio.com" />
+                                        </div>
+                                    </div>
+                                    <Button variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => removeOtherLink(link.id)}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                            <Button variant="outline" size="sm" onClick={addOtherLink}><PlusCircle className="mr-2 h-4 w-4" /> Add Link</Button>
                         </div>
                     </div>
-                    <Button variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => removeOtherLink(link.id)}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={addOtherLink}><PlusCircle className="mr-2 h-4 w-4" /> Add Link</Button>
-          </div>
-        </div>
-      )
-    },
-    {
-      title: "Professional Summary",
-      shortTitle: "Summary",
-      content: (
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <Label htmlFor="summary">Summary/Objective<RequiredIndicator /></Label>
-            <Dialog open={isSummaryAiDialogOpen} onOpenChange={(isOpen) => { setIsSummaryAiDialogOpen(isOpen); if (!isOpen) setGeneratedSummary(''); }}>
-              <DialogTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Generate with AI
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
-                  <DialogTitle>Generate a Student Resume Objective</DialogTitle>
-                  <DialogDescription>
-                    Provide a few key details, and our AI will craft a professional and personalized objective for you.
-                  </DialogDescription>
-                </DialogHeader>
+                </TabsContent>
+
+                <TabsContent value="summary">
+                    <CardTitle className="text-xl mb-4">Professional Summary</CardTitle>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <Label htmlFor="summary">Summary/Objective<RequiredIndicator /></Label>
+                        <Dialog open={isSummaryAiDialogOpen} onOpenChange={(isOpen) => { setIsSummaryAiDialogOpen(isOpen); if (!isOpen) setGeneratedSummary(''); }}>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Sparkles className="mr-2 h-4 w-4" />
+                              Generate with AI
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="sm:max-w-xl">
+                            <DialogHeader>
+                              <DialogTitle>Generate a Student Resume Objective</DialogTitle>
+                              <DialogDescription>
+                                Provide a few key details, and our AI will craft a professional and personalized objective for you.
+                              </DialogDescription>
+                            </DialogHeader>
+                            
+                            <ScrollArea className="max-h-[60vh] p-1">
+                                <div className="p-4 space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <Label htmlFor="year">Year / Level of Study<RequiredIndicator /></Label>
+                                            <Select
+                                                name="year"
+                                                value={summaryAiState.year}
+                                                onValueChange={(value) => {
+                                                    setSummaryAiState(prev => ({...prev, year: value}));
+                                                }}
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a level" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="First-year">First-year</SelectItem>
+                                                    <SelectItem value="Second-year">Second-year</SelectItem>
+                                                    <SelectItem value="Third-year">Third-year</SelectItem>
+                                                    <SelectItem value="Final-year">Final-year</SelectItem>
+                                                    <SelectItem value="Other">Other</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            {summaryAiState.year === 'Other' && (
+                                                <Input
+                                                    id="otherYear"
+                                                    name="otherYear"
+                                                    value={otherYear}
+                                                    onChange={(e) => setOtherYear(e.target.value)}
+                                                    placeholder="Please specify"
+                                                    className="mt-2"
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="major">Major / Field of Study<RequiredIndicator /></Label>
+                                            <Input id="major" name="major" value={summaryAiState.major} onChange={handleSummaryAiStateChange} placeholder="e.g., Computer Science" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="specialization">Specialization (Optional)</Label>
+                                            <Input id="specialization" name="specialization" value={summaryAiState.specialization} onChange={handleSummaryAiStateChange} placeholder="e.g., AI/ML" />
+                                        </div>
+                                        <div className="space-y-2 sm:col-span-2">
+                                            <Label htmlFor="jobType">Desired Role<RequiredIndicator /></Label>
+                                            <Input id="jobType" name="jobType" value={summaryAiState.jobType} onChange={handleSummaryAiStateChange} placeholder="e.g., Software Internship" />
+                                        </div>
+                                        <div className="sm:col-span-2 space-y-2">
+                                            <Label htmlFor="skills">Top Skills<RequiredIndicator /></Label>
+                                            <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
+                                        </div>
+                                    </div>
+                                    <Button
+                                      onClick={handleGenerateSummary}
+                                      disabled={
+                                        isGeneratingSummary ||
+                                        !summaryAiState.year ||
+                                        (summaryAiState.year === 'Other' && !otherYear.trim()) ||
+                                        !summaryAiState.major.trim() ||
+                                        !summaryAiState.jobType.trim() ||
+                                        !summaryAiState.skills.trim()
+                                      }
+                                      className="w-full"
+                                    >
+                                        {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                        Generate Objective
+                                    </Button>
+                                    {generatedSummary && (
+                                        <div className="space-y-2 rounded-md border bg-muted/50 p-4">
+                                        <Label>Generated Objective:</Label>
+                                        <p className="text-sm">{generatedSummary}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </ScrollArea>
+                            
+                            <DialogFooter className="pr-5">
+                              <Button variant="secondary" onClick={() => {setIsSummaryAiDialogOpen(false); setGeneratedSummary(''); }}>Cancel</Button>
+                              <Button onClick={handleUseSummary} disabled={!generatedSummary}>
+                                Use This Objective
+                              </Button>
+                            </DialogFooter>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                      <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="Write a 2-3 sentence objective. Mention your field of study, key skills, and what you're looking for (e.g., 'a challenging software engineering internship')." rows={5} />
+                    </div>
+                </TabsContent>
                 
-                <ScrollArea className="max-h-[60vh] p-1">
-                    <div className="p-4 space-y-4">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="year">Year / Level of Study<RequiredIndicator /></Label>
+                <TabsContent value="skills">
+                    <CardTitle className="text-xl mb-4">Skills</CardTitle>
+                     <div className="space-y-4">
+                        {resumeData.skills.map((category, index) => {
+                        const suggestions = SUGGESTED_SKILLS[category.name] || [];
+                        const existingSkills = new Set(category.skills.split(',').map(s => s.trim().toLowerCase()));
+
+                        return (
+                            <Card key={category.id} className="p-4 relative bg-background shadow-none border">
+                            <CardContent className="grid grid-cols-1 gap-4 p-2">
+                                <div className="space-y-2">
+                                <Label>Skill Category<RequiredIndicator /></Label>
                                 <Select
-                                    name="year"
-                                    value={summaryAiState.year}
+                                    value={SKILL_CATEGORIES.includes(category.name) ? category.name : 'Other'}
                                     onValueChange={(value) => {
-                                        setSummaryAiState(prev => ({...prev, year: value}));
+                                        if (value !== 'Other') {
+                                            handleGenericChange('skills', index, 'name', value);
+                                        }
                                     }}
                                 >
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Select a level" />
+                                    <SelectValue placeholder="Select a category" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="First-year">First-year</SelectItem>
-                                        <SelectItem value="Second-year">Second-year</SelectItem>
-                                        <SelectItem value="Third-year">Third-year</SelectItem>
-                                        <SelectItem value="Final-year">Final-year</SelectItem>
-                                        <SelectItem value="Other">Other</SelectItem>
+                                    {SKILL_CATEGORIES.map(cat => (
+                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                    ))}
                                     </SelectContent>
                                 </Select>
-                                {summaryAiState.year === 'Other' && (
-                                    <Input
-                                        id="otherYear"
-                                        name="otherYear"
-                                        value={otherYear}
-                                        onChange={(e) => setOtherYear(e.target.value)}
-                                        placeholder="Please specify"
-                                        className="mt-2"
-                                    />
+                                <Input
+                                    value={category.name}
+                                    onChange={e => handleGenericChange('skills', index, 'name', e.target.value)}
+                                    placeholder="Or type a custom category"
+                                    className="mt-2"
+                                />
+                                <p className="text-xs text-muted-foreground">Select a category or type your own if you choose 'Other'.</p>
+                                </div>
+                                <div className="space-y-2">
+                                <Label>Skills<RequiredIndicator /></Label>
+                                <Textarea
+                                    value={category.skills}
+                                    onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)}
+                                    placeholder="e.g., JavaScript, Python, Java"
+                                    rows={3}
+                                />
+                                <p className="text-sm text-muted-foreground">Separate skills with a comma.</p>
+                                {suggestions.length > 0 && (
+                                    <div className="space-y-2 pt-2">
+                                    <Label className="text-xs text-muted-foreground">Suggestions</Label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {suggestions.map(skill => {
+                                            const isAdded = existingSkills.has(skill.toLowerCase());
+                                            return (
+                                            <Button
+                                                key={skill}
+                                                variant={isAdded ? "secondary" : "outline"}
+                                                size="sm"
+                                                className="h-7 text-xs px-2"
+                                                onClick={() => handleSkillAdd(index, skill)}
+                                                disabled={isAdded}
+                                            >
+                                                {skill}
+                                            </Button>
+                                            );
+                                        })}
+                                    </div>
+                                    </div>
                                 )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="major">Major / Field of Study<RequiredIndicator /></Label>
-                                <Input id="major" name="major" value={summaryAiState.major} onChange={handleSummaryAiStateChange} placeholder="e.g., Computer Science" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="specialization">Specialization (Optional)</Label>
-                                <Input id="specialization" name="specialization" value={summaryAiState.specialization} onChange={handleSummaryAiStateChange} placeholder="e.g., AI/ML" />
+                                </div>
+                            </CardContent>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('skills', category.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            </Card>
+                        )})}
+                        <Button variant="outline" onClick={() => addEntry('skills')}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill Category</Button>
+                    </div>
+                </TabsContent>
+                
+                <TabsContent value="education">
+                    <CardTitle className="text-xl mb-4">Education</CardTitle>
+                    <div className="space-y-4">
+                    {resumeData.education.map((edu, index) => {
+                        const config = educationCategoryConfig[edu.category];
+                        if (!config) return null;
+                        const error = dateErrors[edu.id];
+                        return (
+                        <Card key={edu.id} className="p-4 relative bg-background shadow-none border">
+                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                            <div className="sm:col-span-2 space-y-2">
+                                <Label>Education Category<RequiredIndicator /></Label>
+                                <Select
+                                value={edu.category}
+                                onValueChange={(value: EducationCategory) => handleEducationCategoryChange(index, value)}
+                                >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select a category" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="higher">Higher Education (University)</SelectItem>
+                                    <SelectItem value="intermediate">Intermediate/Diploma</SelectItem>
+                                    <SelectItem value="schooling">Schooling (Class X/XII)</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2 sm:col-span-2">
-                                <Label htmlFor="jobType">Desired Role<RequiredIndicator /></Label>
-                                <Input id="jobType" name="jobType" value={summaryAiState.jobType} onChange={handleSummaryAiStateChange} placeholder="e.g., Software Internship" />
+                                <Label>{config.fields.school.label}<RequiredIndicator /></Label>
+                                <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} />
+                            </div>
+                            <div className="space-y-2 sm:col-span-2">
+                                <Label>{config.fields.degree.label}<RequiredIndicator /></Label>
+                                <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} />
+                            </div>
+                            <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>{config.fields.startDate.label}<RequiredIndicator /></Label>
+                                    <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} hasError={!!error} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>{config.fields.endDate.label}<RequiredIndicator /></Label>
+                                    <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} hasError={!!error} />
+                                </div>
+                            </div>
+                            {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
+                            <div className="space-y-2">
+                                <Label>{config.fields.grades.label}</Label>
+                                <Input value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>{config.fields.city.label}<RequiredIndicator /></Label>
+                                <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
+                            </div>
+                            </CardContent>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
+                            <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </Card>
+                        );
+                    })}
+                    <Button variant="outline" onClick={() => addEntry('education')}><PlusCircle className="mr-2 h-4 w-4" /> Add Another Qualification</Button>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="experience">
+                    <CardTitle className="text-xl mb-4">Work Experience</CardTitle>
+                    <div className="space-y-4">
+                        {resumeData.experience.map((exp, index) => {
+                            const error = dateErrors[exp.id];
+                            return (
+                            <Card key={exp.id} className="p-4 relative bg-background shadow-none border">
+                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                                <div className="space-y-2">
+                                    <Label>Job Title/Role<RequiredIndicator /></Label>
+                                    <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Company<RequiredIndicator /></Label>
+                                    <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
+                                </div>
+                                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Start Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error}/>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>End Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error}/>
+                                        </div>
+                                    </div>
+                                    {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
+                                <div className="sm:col-span-2 space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className='flex items-center gap-2'>
+                                        <Label>Description<RequiredIndicator /></Label>
+                                        <BulletPointTooltip />
+                                        </div>
+                                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
+                                        <Sparkles className="mr-2 h-4 w-4" />
+                                        Generate with AI
+                                        </Button>
+                                    </div>
+                                    <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
+                                </div>
+                            </CardContent>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            </Card>
+                        )})}
+                        <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="projects">
+                    <CardTitle className="text-xl mb-4">Projects</CardTitle>
+                    <div className="space-y-4">
+                        {resumeData.projects.map((proj, index) => {
+                            const error = dateErrors[proj.id];
+                             const isOtherSelected = proj.projectType === 'Other' || !PROJECT_TYPES.includes(proj.projectType);
+                            return (
+                            <Card key={proj.id} className="p-4 relative bg-background shadow-none border">
+                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                                <div className="space-y-2">
+                                    <Label>Project Title<RequiredIndicator /></Label>
+                                    <Input value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Project Link (Optional)</Label>
+                                    <Input value={proj.link || ''} onChange={e => handleGenericChange('projects', index, 'link', e.target.value)} placeholder="e.g., github.com/user/repo" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Project Type<RequiredIndicator /></Label>
+                                    <Select
+                                        value={PROJECT_TYPES.includes(proj.projectType) ? proj.projectType : 'Other'}
+                                        onValueChange={(value) => {
+                                            handleGenericChange('projects', index, 'projectType', value);
+                                        }}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {PROJECT_TYPES.map(type => (
+                                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    {isOtherSelected && (
+                                        <Input
+                                            value={proj.projectType === 'Other' ? '' : proj.projectType}
+                                            onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
+                                            placeholder="Please specify type"
+                                            className="mt-2"
+                                        />
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Organization / Affiliation<RequiredIndicator /></Label>
+                                    <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" />
+                                </div>
+                                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Start Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} hasError={!!error}/>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>End Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} hasError={!!error} />
+                                        </div>
+                                    </div>
+                                    {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
+                                <div className="sm:col-span-2 space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className='flex items-center gap-2'>
+                                            <Label>Bullet Points / Description<RequiredIndicator /></Label>
+                                            <BulletPointTooltip />
+                                        </div>
+                                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('projects', index)}>
+                                        <Sparkles className="mr-2 h-4 w-4" />
+                                        Generate with AI
+                                        </Button>
+                                    </div>
+                                    <Textarea value={proj.description} onChange={e => handleGenericChange('projects', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} />
+                                </div>
+                            </CardContent>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('projects', proj.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            </Card>
+                        )})}
+                        <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="certifications">
+                    <CardTitle className="text-xl mb-4">Certifications</CardTitle>
+                    <div className="space-y-4">
+                    {resumeData.certifications.map((cert, index) => (
+                        <Card key={cert.id} className="p-4 relative bg-background shadow-none border">
+                        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                            <div className="space-y-2">
+                            <Label>Certification Name<RequiredIndicator /></Label>
+                            <Input value={cert.name} onChange={e => handleGenericChange('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" />
+                            </div>
+                            <div className="space-y-2">
+                            <Label>Issuing Body<RequiredIndicator /></Label>
+                            <Input value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" />
+                            </div>
+                            <div className="space-y-2">
+                            <Label>Date Issued<RequiredIndicator /></Label>
+                            <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} />
+                            </div>
+                            <div className="space-y-2">
+                            <Label>Certification Link (Optional)</Label>
+                            <Input value={cert.link || ''} onChange={e => handleGenericChange('certifications', index, 'link', e.target.value)} placeholder="e.g., your-credential-link.com" />
                             </div>
                             <div className="sm:col-span-2 space-y-2">
-                                <Label htmlFor="skills">Top Skills<RequiredIndicator /></Label>
-                                <Input id="skills" name="skills" value={summaryAiState.skills} onChange={handleSummaryAiStateChange} placeholder="e.g., React, Python, SQL" />
+                                <div className="flex justify-between items-center">
+                                <div className='flex items-center gap-2'>
+                                    <Label>Description<RequiredIndicator /></Label>
+                                    <BulletPointTooltip />
+                                    </div>
+                                <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('certifications', index)}>
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Generate with AI
+                                    </Button>
+                                </div>
+                                <Textarea value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} />
                             </div>
-                        </div>
-                        <Button
-                          onClick={handleGenerateSummary}
-                          disabled={
-                            isGeneratingSummary ||
-                            !summaryAiState.year ||
-                            (summaryAiState.year === 'Other' && !otherYear.trim()) ||
-                            !summaryAiState.major.trim() ||
-                            !summaryAiState.jobType.trim() ||
-                            !summaryAiState.skills.trim()
-                          }
-                          className="w-full"
-                        >
-                            {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                            Generate Objective
+                            <div className="sm:col-span-2 space-y-2">
+                            <Label>Technologies/Skills Covered<RequiredIndicator /></Label>
+                            <Textarea
+                                value={cert.technologies}
+                                onChange={e => handleGenericChange('certifications', index, 'technologies', e.target.value)}
+                                placeholder="e.g., VPC, IAM, BigQuery, Cloud Functions"
+                                rows={2}
+                            />
+                            <p className="text-sm text-muted-foreground">Separate items with a comma.</p>
+                            </div>
+                        </CardContent>
+                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('certifications', cert.id)}>
+                            <Trash2 className="h-4 w-4" />
                         </Button>
-                        {generatedSummary && (
-                            <div className="space-y-2 rounded-md border bg-muted/50 p-4">
-                            <Label>Generated Objective:</Label>
-                            <p className="text-sm">{generatedSummary}</p>
-                            </div>
-                        )}
+                        </Card>
+                    ))}
+                    <Button variant="outline" onClick={() => addEntry('certifications')}><PlusCircle className="mr-2 h-4 w-4" /> Add Certification</Button>
                     </div>
-                </ScrollArea>
+                </TabsContent>
+
+                <TabsContent value="achievements">
+                    <CardTitle className="text-xl mb-4">Achievements & Activities</CardTitle>
+                    <div className="space-y-4">
+                        {resumeData.achievements.map((ach, index) => {
+                        const config = achievementCategoryConfig[ach.category as AchievementCategory] || achievementCategoryConfig.other;
+                        const isOtherSelected = ach.category === 'other' || !ACHIEVEMENT_CATEGORIES.includes(ach.category as AchievementCategory);
+                        return (
+                            <Card key={ach.id} className="p-4 relative bg-background shadow-none border">
+                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                                <div className="sm:col-span-2 space-y-2">
+                                    <Label>Category<RequiredIndicator /></Label>
+                                    <Select
+                                        value={ACHIEVEMENT_CATEGORIES.includes(ach.category as AchievementCategory) ? ach.category : 'other'}
+                                        onValueChange={(value) => handleAchievementCategoryChange(index, value)}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue placeholder="Select a category" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="hackathon">Hackathon</SelectItem>
+                                            <SelectItem value="workshop">Workshop</SelectItem>
+                                            <SelectItem value="poster">Poster Presentation</SelectItem>
+                                            <SelectItem value="techfest">Techfest Participation</SelectItem>
+                                            <SelectItem value="leadership">Leadership</SelectItem>
+                                            <SelectItem value="volunteering">Volunteering</SelectItem>
+                                            <SelectItem value="publication">Publication</SelectItem>
+                                            <SelectItem value="other">Other</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    {isOtherSelected && (
+                                        <Input
+                                            value={ach.category === 'other' ? '' : ach.category}
+                                            onChange={e => handleAchievementCategoryChange(index, e.target.value)}
+                                            placeholder="Please specify category"
+                                            className="mt-2"
+                                        />
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                <Label>{config.nameLabel}<RequiredIndicator /></Label>
+                                <Input value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} />
+                                </div>
+                                <div className="space-y-2">
+                                <Label>{config.contextLabel}<RequiredIndicator /></Label>
+                                <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" />
+                                </div>
+                                <div className="space-y-2">
+                                <Label>Date<RequiredIndicator /></Label>
+                                <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} />
+                                </div>
+                                <div className="space-y-2">
+                                <Label>Achievement Link (Optional)</Label>
+                                <Input value={ach.link || ''} onChange={e => handleGenericChange('achievements', index, 'link', e.target.value)} placeholder="e.g., your-project-link.com" />
+                                </div>
+                                <div className="sm:col-span-2 space-y-2">
+                                    <div className="flex justify-between items-center">
+                                    <div className='flex items-center gap-2'>
+                                        <Label>Description<RequiredIndicator /></Label>
+                                        <BulletPointTooltip />
+                                    </div>
+                                    <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('achievements', index)}>
+                                        <Sparkles className="mr-2 h-4 w-4" />
+                                        Generate with AI
+                                    </Button>
+                                    </div>
+                                    <Textarea value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} />
+                                </div>
+                            </CardContent>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('achievements', ach.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            </Card>
+                        )
+                        })}
+                        <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
+                    </div>
+                </TabsContent>
                 
-                <DialogFooter className="pr-5">
-                  <Button variant="secondary" onClick={() => {setIsSummaryAiDialogOpen(false); setGeneratedSummary(''); }}>Cancel</Button>
-                  <Button onClick={handleUseSummary} disabled={!generatedSummary}>
-                    Use This Objective
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </div>
-          <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="Write a 2-3 sentence objective. Mention your field of study, key skills, and what you're looking for (e.g., 'a challenging software engineering internship')." rows={5} />
-        </div>
-      )
-    },
-    {
-      title: "Skills",
-      shortTitle: "Skills",
-      content: (
-          <div className="space-y-4">
-            {resumeData.skills.map((category, index) => {
-              const suggestions = SUGGESTED_SKILLS[category.name] || [];
-              const existingSkills = new Set(category.skills.split(',').map(s => s.trim().toLowerCase()));
-
-              return (
-                <Card key={category.id} className="p-4 relative bg-background shadow-none">
-                  <CardContent className="grid grid-cols-1 gap-4 p-2">
-                    <div className="space-y-2">
-                      <Label>Skill Category<RequiredIndicator /></Label>
-                      <Select
-                        value={SKILL_CATEGORIES.includes(category.name) ? category.name : 'Other'}
-                        onValueChange={(value) => {
-                          if (value !== 'Other') {
-                            handleGenericChange('skills', index, 'name', value);
-                          }
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {SKILL_CATEGORIES.map(cat => (
-                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <Input
-                        value={category.name}
-                        onChange={e => handleGenericChange('skills', index, 'name', e.target.value)}
-                        placeholder="Or type a custom category"
-                        className="mt-2"
-                      />
-                       <p className="text-xs text-muted-foreground">Select a category or type your own if you choose 'Other'.</p>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Skills<RequiredIndicator /></Label>
-                      <Textarea
-                        value={category.skills}
-                        onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)}
-                        placeholder="e.g., JavaScript, Python, Java"
-                        rows={3}
-                      />
-                      <p className="text-sm text-muted-foreground">Separate skills with a comma.</p>
-                       {suggestions.length > 0 && (
-                        <div className="space-y-2 pt-2">
-                          <Label className="text-xs text-muted-foreground">Suggestions</Label>
-                           <div className="flex flex-wrap gap-2">
-                             {suggestions.map(skill => {
-                                const isAdded = existingSkills.has(skill.toLowerCase());
-                                return (
-                                  <Button
-                                    key={skill}
-                                    variant={isAdded ? "secondary" : "outline"}
-                                    size="sm"
-                                    className="h-7 text-xs px-2"
-                                    onClick={() => handleSkillAdd(index, skill)}
-                                    disabled={isAdded}
-                                  >
-                                    {skill}
-                                  </Button>
-                                );
-                             })}
-                           </div>
-                        </div>
-                       )}
-                    </div>
-                  </CardContent>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('skills', category.id)}>
-                      <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Card>
-            )})}
-            <Button variant="outline" onClick={() => addEntry('skills')}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill Category</Button>
-          </div>
-      )
-    },
-    {
-      title: "Education",
-      shortTitle: "Education",
-      content: (
-        <div className="space-y-4">
-          {resumeData.education.map((edu, index) => {
-            const config = educationCategoryConfig[edu.category];
-            if (!config) return null;
-            const error = dateErrors[edu.id];
-            return (
-              <Card key={edu.id} className="p-4 relative bg-background shadow-none">
-                <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                  <div className="sm:col-span-2 space-y-2">
-                    <Label>Education Category<RequiredIndicator /></Label>
-                    <Select
-                      value={edu.category}
-                      onValueChange={(value: EducationCategory) => handleEducationCategoryChange(index, value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="higher">Higher Education (University)</SelectItem>
-                        <SelectItem value="intermediate">Intermediate/Diploma</SelectItem>
-                        <SelectItem value="schooling">Schooling (Class X/XII)</SelectItem>
-                        <SelectItem value="other">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label>{config.fields.school.label}<RequiredIndicator /></Label>
-                    <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} />
-                  </div>
-                  <div className="space-y-2 sm:col-span-2">
-                    <Label>{config.fields.degree.label}<RequiredIndicator /></Label>
-                    <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} />
-                  </div>
-                  <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                     <div className="space-y-2">
-                        <Label>{config.fields.startDate.label}<RequiredIndicator /></Label>
-                        <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} hasError={!!error} />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>{config.fields.endDate.label}<RequiredIndicator /></Label>
-                        <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} hasError={!!error} />
-                      </div>
-                  </div>
-                   {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
-                   <div className="space-y-2">
-                    <Label>{config.fields.grades.label}</Label>
-                    <Input value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>{config.fields.city.label}<RequiredIndicator /></Label>
-                    <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
-                  </div>
-                </CardContent>
-                <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </Card>
-            );
-          })}
-          <Button variant="outline" onClick={() => addEntry('education')}><PlusCircle className="mr-2 h-4 w-4" /> Add Another Qualification</Button>
-        </div>
-      )
-    },
-    {
-        title: "Projects",
-        shortTitle: "Projects",
-        content: (
-          <div className="space-y-4">
-            {resumeData.projects.map((proj, index) => {
-                const error = dateErrors[proj.id];
-                const isOtherSelected = proj.projectType === 'Other' || !PROJECT_TYPES.includes(proj.projectType);
-                return (
-                <Card key={proj.id} className="p-4 relative bg-background shadow-none">
-                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                      <div className="space-y-2">
-                          <Label>Project Title<RequiredIndicator /></Label>
-                          <Input value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" />
-                      </div>
-                       <div className="space-y-2">
-                          <Label>Project Link (Optional)</Label>
-                          <Input value={proj.link || ''} onChange={e => handleGenericChange('projects', index, 'link', e.target.value)} placeholder="e.g., github.com/user/repo" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Project Type<RequiredIndicator /></Label>
-                        <Select
-                            value={PROJECT_TYPES.includes(proj.projectType) ? proj.projectType : 'Other'}
-                            onValueChange={(value) => {
-                                handleGenericChange('projects', index, 'projectType', value);
-                            }}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {PROJECT_TYPES.map(type => (
-                                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        {isOtherSelected && (
-                             <Input
-                                value={proj.projectType === 'Other' ? '' : proj.projectType}
-                                onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
-                                placeholder="Please specify type"
-                                className="mt-2"
-                             />
-                        )}
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Organization / Affiliation<RequiredIndicator /></Label>
-                          <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" />
-                      </div>
-                       <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <TabsContent value="other">
+                    <CardTitle className="text-xl mb-4">Other</CardTitle>
+                     <div className="space-y-4">
+                    {resumeData.other.map((item, index) => (
+                        <Card key={item.id} className="p-4 relative bg-background shadow-none border">
+                        <CardContent className="grid grid-cols-1 gap-4 p-2">
                             <div className="space-y-2">
-                                <Label>Start Date<RequiredIndicator /></Label>
-                                <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} hasError={!!error}/>
+                            <Label>Title<RequiredIndicator /></Label>
+                            <Input
+                                value={item.title}
+                                onChange={(e) => handleGenericChange('other', index, 'title', e.target.value)}
+                                placeholder="e.g., Extracurricular Activities, Awards"
+                            />
                             </div>
                             <div className="space-y-2">
-                                <Label>End Date<RequiredIndicator /></Label>
-                                <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} hasError={!!error} />
-                            </div>
-                        </div>
-                        {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
-                      <div className="sm:col-span-2 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <div className='flex items-center gap-2'>
-                                <Label>Bullet Points / Description<RequiredIndicator /></Label>
+                            <div className="flex justify-between items-center">
+                                <div className="flex items-center gap-2">
+                                <Label>Description<RequiredIndicator /></Label>
                                 <BulletPointTooltip />
+                                </div>
+                                <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('other', index)}>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                Generate with AI
+                                </Button>
                             </div>
-                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('projects', index)}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Generate with AI
-                            </Button>
-                          </div>
-                          <Textarea value={proj.description} onChange={e => handleGenericChange('projects', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} />
-                      </div>
-                  </CardContent>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('projects', proj.id)}>
-                      <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Card>
-            )})}
-            <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
-          </div>
-        )
-    },
-    {
-      title: "Certifications",
-      shortTitle: "Cert.",
-      content: (
-        <div className="space-y-4">
-          {resumeData.certifications.map((cert, index) => (
-            <Card key={cert.id} className="p-4 relative bg-background shadow-none">
-              <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                <div className="space-y-2">
-                  <Label>Certification Name<RequiredIndicator /></Label>
-                  <Input value={cert.name} onChange={e => handleGenericChange('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Issuing Body<RequiredIndicator /></Label>
-                  <Input value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Date Issued<RequiredIndicator /></Label>
-                  <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Certification Link (Optional)</Label>
-                  <Input value={cert.link || ''} onChange={e => handleGenericChange('certifications', index, 'link', e.target.value)} placeholder="e.g., your-credential-link.com" />
-                </div>
-                <div className="sm:col-span-2 space-y-2">
-                    <div className="flex justify-between items-center">
-                       <div className='flex items-center gap-2'>
-                          <Label>Description<RequiredIndicator /></Label>
-                          <BulletPointTooltip />
-                        </div>
-                       <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('certifications', index)}>
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Generate with AI
+                            <Textarea
+                                value={item.description}
+                                onChange={(e) => handleGenericChange('other', index, 'description', e.target.value)}
+                                placeholder="- Describe your activity, award, or other information here."
+                                rows={4}
+                            />
+                            </div>
+                        </CardContent>
+                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('other', item.id)}>
+                            <Trash2 className="h-4 w-4" />
                         </Button>
-                    </div>
-                    <Textarea value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} />
-                </div>
-                <div className="sm:col-span-2 space-y-2">
-                  <Label>Technologies/Skills Covered<RequiredIndicator /></Label>
-                  <Textarea
-                    value={cert.technologies}
-                    onChange={e => handleGenericChange('certifications', index, 'technologies', e.target.value)}
-                    placeholder="e.g., VPC, IAM, BigQuery, Cloud Functions"
-                    rows={2}
-                  />
-                  <p className="text-sm text-muted-foreground">Separate items with a comma.</p>
-                </div>
-              </CardContent>
-              <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('certifications', cert.id)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </Card>
-          ))}
-          <Button variant="outline" onClick={() => addEntry('certifications')}><PlusCircle className="mr-2 h-4 w-4" /> Add Certification</Button>
-        </div>
-      ),
-    },
-    {
-        title: "Achievements & Activities",
-        shortTitle: "Achievements",
-        content: (
-          <div className="space-y-4">
-            {resumeData.achievements.map((ach, index) => {
-               const config = achievementCategoryConfig[ach.category as AchievementCategory] || achievementCategoryConfig.other;
-               const isOtherSelected = ach.category === 'other' || !ACHIEVEMENT_CATEGORIES.includes(ach.category as AchievementCategory);
-               return (
-                <Card key={ach.id} className="p-4 relative bg-background shadow-none">
-                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                     <div className="sm:col-span-2 space-y-2">
-                        <Label>Category<RequiredIndicator /></Label>
-                        <Select
-                            value={ACHIEVEMENT_CATEGORIES.includes(ach.category as AchievementCategory) ? ach.category : 'other'}
-                            onValueChange={(value) => handleAchievementCategoryChange(index, value)}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="hackathon">Hackathon</SelectItem>
-                                <SelectItem value="workshop">Workshop</SelectItem>
-                                <SelectItem value="poster">Poster Presentation</SelectItem>
-                                <SelectItem value="techfest">Techfest Participation</SelectItem>
-                                <SelectItem value="leadership">Leadership</SelectItem>
-                                <SelectItem value="volunteering">Volunteering</SelectItem>
-                                <SelectItem value="publication">Publication</SelectItem>
-                                <SelectItem value="other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
-                         {isOtherSelected && (
-                             <Input
-                                value={ach.category === 'other' ? '' : ach.category}
-                                onChange={e => handleAchievementCategoryChange(index, e.target.value)}
-                                placeholder="Please specify category"
-                                className="mt-2"
-                             />
-                        )}
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{config.nameLabel}<RequiredIndicator /></Label>
-                      <Input value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>{config.contextLabel}<RequiredIndicator /></Label>
-                      <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Date<RequiredIndicator /></Label>
-                      <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Achievement Link (Optional)</Label>
-                      <Input value={ach.link || ''} onChange={e => handleGenericChange('achievements', index, 'link', e.target.value)} placeholder="e.g., your-project-link.com" />
-                    </div>
-                    <div className="sm:col-span-2 space-y-2">
-                        <div className="flex justify-between items-center">
-                          <div className='flex items-center gap-2'>
-                            <Label>Description<RequiredIndicator /></Label>
-                            <BulletPointTooltip />
-                          </div>
-                          <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('achievements', index)}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Generate with AI
-                          </Button>
-                        </div>
-                        <Textarea value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} />
-                    </div>
-                  </CardContent>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('achievements', ach.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Card>
-               )
-            })}
-            <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
-          </div>
-        ),
-    },
-    {
-        title: "Work Experience",
-        shortTitle: "Experience",
-        content: (
-          <div className="space-y-4">
-            {resumeData.experience.map((exp, index) => {
-                const error = dateErrors[exp.id];
-                return (
-                <Card key={exp.id} className="p-4 relative bg-background shadow-none">
-                  <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                      <div className="space-y-2">
-                          <Label>Job Title/Role<RequiredIndicator /></Label>
-                          <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
-                      </div>
-                      <div className="space-y-2">
-                          <Label>Company<RequiredIndicator /></Label>
-                          <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
-                      </div>
-                       <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>Start Date<RequiredIndicator /></Label>
-                                <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error}/>
-                            </div>
-                            <div className="space-y-2">
-                                <Label>End Date<RequiredIndicator /></Label>
-                                <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error}/>
-                            </div>
-                        </div>
-                        {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
-                      <div className="sm:col-span-2 space-y-2">
-                          <div className="flex justify-between items-center">
-                            <div className='flex items-center gap-2'>
-                              <Label>Description<RequiredIndicator /></Label>
-                              <BulletPointTooltip />
-                            </div>
-                            <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Generate with AI
-                            </Button>
-                          </div>
-                          <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
-                      </div>
-                  </CardContent>
-                  <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
-                      <Trash2 className="h-4 w-4" />
-                  </Button>
-                </Card>
-            )})}
-            <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
-          </div>
-        )
-    },
-    {
-      title: "Other",
-      shortTitle: "Other",
-      content: (
-        <div className="space-y-4">
-          {resumeData.other.map((item, index) => (
-            <Card key={item.id} className="p-4 relative bg-background shadow-none">
-              <CardContent className="grid grid-cols-1 gap-4 p-2">
-                <div className="space-y-2">
-                  <Label>Title<RequiredIndicator /></Label>
-                  <Input
-                    value={item.title}
-                    onChange={(e) => handleGenericChange('other', index, 'title', e.target.value)}
-                    placeholder="e.g., Extracurricular Activities, Awards"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      <Label>Description<RequiredIndicator /></Label>
-                      <BulletPointTooltip />
-                    </div>
-                    <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('other', index)}>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Generate with AI
+                        </Card>
+                    ))}
+                    <Button variant="outline" onClick={() => addEntry('other')}>
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Section
                     </Button>
-                  </div>
-                  <Textarea
-                    value={item.description}
-                    onChange={(e) => handleGenericChange('other', index, 'description', e.target.value)}
-                    placeholder="- Describe your activity, award, or other information here."
-                    rows={4}
-                  />
-                </div>
-              </CardContent>
-              <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('other', item.id)}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </Card>
-          ))}
-          <Button variant="outline" onClick={() => addEntry('other')}>
-            <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Section
-          </Button>
-        </div>
-      ),
-    },
-  ];
-
-  const handleNext = () => {
-    setCurrentStep((prev) => Math.min(prev + 1, allSections.length - 1));
-  };
-
-  const handlePrev = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
-  };
-  
-  const handleStepClick = (index: number) => {
-    setCurrentStep(index);
-  };
-
-  return (
-    <div className="w-full">
-      <div className="mb-8">
-        <div className="flex items-center justify-between px-1 md:px-2">
-            {allSections.map((section, index) => (
-                <React.Fragment key={index}>
-                    <div
-                      className="flex flex-col items-center text-center cursor-pointer focus:outline-none group"
-                      onClick={() => handleStepClick(index)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleStepClick(index)}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={`Go to step ${index + 1}: ${section.title}`}
-                    >
-                        <div
-                            className={cn(
-                                "h-8 w-8 rounded-full flex items-center justify-center border-2 transition-all group-hover:border-primary",
-                                currentStep === index ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground bg-background text-muted-foreground",
-                                currentStep > index && "bg-primary/80 border-primary/80 text-primary-foreground"
-                            )}
-                        >
-                            {index + 1}
-                        </div>
-                         <p className={cn(
-                            "text-xs mt-1 transition-colors group-hover:text-primary",
-                            currentStep === index ? "font-semibold text-primary" : "text-muted-foreground",
-                            "hidden sm:block"
-                         )}>
-                           {section.shortTitle}
-                        </p>
                     </div>
-                    {index < allSections.length - 1 && (
-                        <div className={cn("flex-1 h-0.5 transition-all mx-1", currentStep > index ? 'bg-primary' : 'bg-muted-foreground/50')} />
-                    )}
-                </React.Fragment>
-            ))}
-        </div>
-      </div>
-      <Card className="shadow-lg transition-all duration-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold">{allSections[currentStep].title}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {allSections[currentStep].content}
-        </CardContent>
-      </Card>
-      <div className="mt-8 flex justify-between">
-        <Button onClick={handlePrev} disabled={currentStep === 0}>
-          <ArrowLeft className="mr-2 h-4 w-4" /> Previous
-        </Button>
-        <Button onClick={handleNext} disabled={currentStep === allSections.length - 1}>
-          Next <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
-      </div>
+                </TabsContent>
+
+            </CardContent>
+        </Card>
+      </Tabs>
       
        <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
            <DialogContent className="sm:max-w-xl">

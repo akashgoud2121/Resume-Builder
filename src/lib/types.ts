@@ -96,8 +96,3 @@ export type ResumeData = {
 };
 
     
-
-
-
-
-

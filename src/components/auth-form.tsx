@@ -11,8 +11,6 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthActions } from '@/firebase/auth/use-auth';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { ConfirmationResult } from 'firebase/auth';
 
 const signupSchema = z
   .object({
@@ -30,14 +28,6 @@ const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
 });
-
-const phoneSchema = z.object({
-    phone: z.string().min(10, 'Please enter a valid phone number including country code.'),
-});
-const otpSchema = z.object({
-    otp: z.string().length(6, 'OTP must be 6 digits.'),
-});
-
 
 type AuthFormProps = {
   mode: 'login' | 'signup';
@@ -83,11 +73,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [isGitHubLoading, setIsGitHubLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { signUp, signIn, signInWithGoogle, signInWithGitHub, sendPhoneNumberOtp, verifyOtp } = useAuthActions();
-
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
+  const { signUp, signIn, signInWithGoogle, signInWithGitHub } = useAuthActions();
 
   const emailSchema = mode === 'signup' ? signupSchema : loginSchema;
   type EmailFormData = z.infer<typeof emailSchema>;
@@ -171,47 +157,6 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
 
-  const handlePhoneSignIn = async () => {
-    try {
-        phoneSchema.parse({ phone });
-    } catch(e: any) {
-        toast({ variant: 'destructive', title: 'Invalid Phone Number', description: e.errors[0].message });
-        return;
-    }
-    setIsLoading(true);
-    try {
-        const result = await sendPhoneNumberOtp(phone);
-        setConfirmationResult(result);
-        toast({ title: 'OTP Sent', description: 'An OTP has been sent to your phone.' });
-    } catch (error: any) {
-        console.error(error);
-        toast({ variant: 'destructive', title: 'Failed to Send OTP', description: error.message });
-    } finally {
-        setIsLoading(false);
-    }
-  };
-  
-  const handleVerifyOtp = async () => {
-    if (!confirmationResult) return;
-     try {
-        otpSchema.parse({ otp });
-    } catch(e: any) {
-        toast({ variant: 'destructive', title: 'Invalid OTP', description: e.errors[0].message });
-        return;
-    }
-    setIsLoading(true);
-    try {
-        await verifyOtp(confirmationResult, otp);
-        toast({ title: 'Logged In', description: "You've been successfully logged in with your phone number!" });
-        router.push('/');
-    } catch (error: any) {
-        toast({ variant: 'destructive', title: 'OTP Verification Failed', description: error.message });
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
-
   return (
     <div className="space-y-6">
         <div className="space-y-2">
@@ -251,92 +196,58 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
         <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
+            Or continue with email
           </span>
         </div>
       </div>
 
-       <Tabs defaultValue="email" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="phone">Phone</TabsTrigger>
-        </TabsList>
-        <TabsContent value="email">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 pt-4">
-                {mode === 'signup' && (
-                <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" {...register('name')} />
-                    {errors.name && (
-                    <p className="text-sm text-destructive">{errors.name.message}</p>
-                    )}
-                </div>
-                )}
-                <div className="space-y-2">
-                <Label htmlFor="email">Email address</Label>
-                <Input id="email" type="email" {...register('email')} />
-                {errors.email && (
-                    <p className="text-sm text-destructive">{errors.email.message}</p>
-                )}
-                </div>
-                <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" {...register('password')} />
-                {errors.password && (
-                    <p className="text-sm text-destructive">{errors.password.message}</p>
-                )}
-                </div>
-                {mode === 'signup' && (
-                <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                    id="confirmPassword"
-                    type="password"
-                    {...register('confirmPassword')}
-                    />
-                    {errors.confirmPassword && (
-                    <p className="text-sm text-destructive">
-                        {errors.confirmPassword.message}
-                    </p>
-                    )}
-                </div>
-                )}
-                <div>
-                <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isGitHubLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {mode === 'signup' ? 'Sign Up with Email' : 'Sign In with Email'}
-                </Button>
-                </div>
-            </form>
-        </TabsContent>
-        <TabsContent value="phone">
-            <div className="space-y-6 pt-4">
-                 {!confirmationResult ? (
-                    <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="phone">Phone Number</Label>
-                            <Input id="phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 123-456-7890" />
-                        </div>
-                        <Button onClick={handlePhoneSignIn} className="w-full" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Send OTP
-                        </Button>
-                    </div>
-                ) : (
-                     <div className="space-y-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="otp">Enter OTP</Label>
-                            <Input id="otp" type="text" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="123456" />
-                        </div>
-                        <Button onClick={handleVerifyOtp} className="w-full" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Verify OTP & {mode === 'signup' ? 'Sign Up' : 'Sign In'}
-                        </Button>
-                     </div>
+       
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {mode === 'signup' && (
+            <div className="space-y-2">
+                <Label htmlFor="name">Full Name</Label>
+                <Input id="name" {...register('name')} />
+                {errors.name && (
+                <p className="text-sm text-destructive">{errors.name.message}</p>
                 )}
             </div>
-        </TabsContent>
-      </Tabs>
+            )}
+            <div className="space-y-2">
+            <Label htmlFor="email">Email address</Label>
+            <Input id="email" type="email" {...register('email')} />
+            {errors.email && (
+                <p className="text-sm text-destructive">{errors.email.message}</p>
+            )}
+            </div>
+            <div className="space-y-2">
+            <Label htmlFor="password">Password</Label>
+            <Input id="password" type="password" {...register('password')} />
+            {errors.password && (
+                <p className="text-sm text-destructive">{errors.password.message}</p>
+            )}
+            </div>
+            {mode === 'signup' && (
+            <div className="space-y-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                id="confirmPassword"
+                type="password"
+                {...register('confirmPassword')}
+                />
+                {errors.confirmPassword && (
+                <p className="text-sm text-destructive">
+                    {errors.confirmPassword.message}
+                </p>
+                )}
+            </div>
+            )}
+            <div>
+            <Button type="submit" className="w-full" disabled={isLoading || isGoogleLoading || isGitHubLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {mode === 'signup' ? 'Sign Up' : 'Sign In'}
+            </Button>
+            </div>
+        </form>
     </div>
   );
 }

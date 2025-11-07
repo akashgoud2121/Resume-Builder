@@ -173,9 +173,9 @@ const formSteps = [
     { id: 'skills', name: 'Skills' },
     { id: 'education', name: 'Education' },
     { id: 'projects', name: 'Projects' },
+    { id: 'experience', name: 'Experience' },
     { id: 'certifications', name: 'Cert.' },
     { id: 'achievements', name: 'Achievements' },
-    { id: 'experience', name: 'Experience' },
     { id: 'other', name: 'Other' },
 ];
 
@@ -190,6 +190,8 @@ export function ResumeForm() {
   const { toast } = useToast();
 
   const [dateErrors, setDateErrors] = React.useState<Record<string, string | null>>({});
+  const [validationErrors, setValidationErrors] = React.useState<Record<string, boolean>>({});
+
 
   const [aiExperienceState, setAiExperienceState] = React.useState<AiExperienceState>({
     isOpen: false,
@@ -204,13 +206,109 @@ export function ResumeForm() {
   
   const [currentStep, setCurrentStep] = useState(0);
 
+  const validateStep = (stepIndex: number): boolean => {
+    const stepId = formSteps[stepIndex].id;
+    const errors: Record<string, boolean> = {};
+    let isValid = true;
+
+    const check = (value: string, fieldId: string) => {
+        if (!value || value.trim() === '') {
+            errors[fieldId] = true;
+            isValid = false;
+        }
+    };
+    
+    if (stepId === 'contact') {
+        check(resumeData.contact.name, 'contact.name');
+        check(resumeData.contact.email, 'contact.email');
+        check(resumeData.contact.phone, 'contact.phone');
+        check(resumeData.contact.location, 'contact.location');
+        resumeData.contact.otherLinks.forEach((link, i) => {
+            check(link.label, `contact.otherLinks.${link.id}.label`);
+            check(link.url, `contact.otherLinks.${link.id}.url`);
+        });
+    } else if (stepId === 'summary') {
+        check(resumeData.summary, 'summary');
+    } else if (stepId === 'education') {
+        resumeData.education.forEach(edu => {
+            check(edu.school, `education.${edu.id}.school`);
+            check(edu.degree, `education.${edu.id}.degree`);
+            check(edu.startDate, `education.${edu.id}.startDate`);
+            check(edu.endDate, `education.${edu.id}.endDate`);
+            check(edu.city, `education.${edu.id}.city`);
+        });
+    } else if (stepId === 'projects') {
+        resumeData.projects.forEach(proj => {
+            check(proj.title, `projects.${proj.id}.title`);
+            check(proj.projectType, `projects.${proj.id}.projectType`);
+            check(proj.organization, `projects.${proj.id}.organization`);
+            check(proj.startDate, `projects.${proj.id}.startDate`);
+            check(proj.endDate, `projects.${proj.id}.endDate`);
+            check(proj.description, `projects.${proj.id}.description`);
+        });
+    } else if (stepId === 'experience') {
+        resumeData.experience.forEach(exp => {
+            check(exp.title, `experience.${exp.id}.title`);
+            check(exp.company, `experience.${exp.id}.company`);
+            check(exp.startDate, `experience.${exp.id}.startDate`);
+            check(exp.endDate, `experience.${exp.id}.endDate`);
+            check(exp.description, `experience.${exp.id}.description`);
+        });
+    } else if (stepId === 'certifications') {
+        resumeData.certifications.forEach(cert => {
+            check(cert.name, `certifications.${cert.id}.name`);
+            check(cert.issuer, `certifications.${cert.id}.issuer`);
+            check(cert.date, `certifications.${cert.id}.date`);
+            check(cert.description, `certifications.${cert.id}.description`);
+            check(cert.technologies, `certifications.${cert.id}.technologies`);
+        });
+    } else if (stepId === 'achievements') {
+        resumeData.achievements.forEach(ach => {
+            check(ach.category, `achievements.${ach.id}.category`);
+            check(ach.name, `achievements.${ach.id}.name`);
+            check(ach.context, `achievements.${ach.id}.context`);
+            check(ach.date, `achievements.${ach.id}.date`);
+            check(ach.description, `achievements.${ach.id}.description`);
+        });
+    } else if (stepId === 'other') {
+        resumeData.other.forEach(item => {
+            check(item.title, `other.${item.id}.title`);
+            check(item.description, `other.${item.id}.description`);
+        });
+    } else if (stepId === 'skills') {
+        resumeData.skills.forEach(skillCat => {
+            check(skillCat.name, `skills.${skillCat.id}.name`);
+            check(skillCat.skills, `skills.${skillCat.id}.skills`);
+        });
+    }
+
+
+    setValidationErrors(errors);
+    return isValid;
+  };
+
   const goToNextStep = () => {
-    setCurrentStep(prev => (prev < formSteps.length - 1 ? prev + 1 : prev));
+    if (validateStep(currentStep)) {
+        setValidationErrors({});
+        setCurrentStep(prev => (prev < formSteps.length - 1 ? prev + 1 : prev));
+    } else {
+        toast({
+            variant: "destructive",
+            title: "Missing Fields",
+            description: "Please fill out all required fields before continuing.",
+        });
+    }
   };
 
   const goToPreviousStep = () => {
+    setValidationErrors({});
     setCurrentStep(prev => (prev > 0 ? prev - 1 : prev));
   };
+  
+  const handleStepClick = (stepIndex: number) => {
+    setValidationErrors({});
+    setCurrentStep(stepIndex);
+  }
 
 
   React.useEffect(() => {
@@ -549,19 +647,19 @@ export function ResumeForm() {
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="name">Full Name<RequiredIndicator /></Label>
-                            <Input id="name" name="name" value={resumeData.contact.name} onChange={handleContactChange} placeholder="John Doe" />
+                            <Input id="contact.name" name="name" value={resumeData.contact.name} onChange={handleContactChange} placeholder="John Doe" className={cn(validationErrors['contact.name'] && 'border-destructive')} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="email">Email<RequiredIndicator /></Label>
-                            <Input id="email" name="email" type="email" value={resumeData.contact.email} onChange={handleContactChange} placeholder="john.doe@email.com" />
+                            <Input id="contact.email" name="email" type="email" value={resumeData.contact.email} onChange={handleContactChange} placeholder="john.doe@email.com" className={cn(validationErrors['contact.email'] && 'border-destructive')}/>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="phone">Phone<RequiredIndicator /></Label>
-                            <Input id="phone" name="phone" value={resumeData.contact.phone} onChange={handleContactChange} placeholder="(123) 456-7890" />
+                            <Input id="contact.phone" name="phone" value={resumeData.contact.phone} onChange={handleContactChange} placeholder="(123) 456-7890" className={cn(validationErrors['contact.phone'] && 'border-destructive')}/>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="location">Location<RequiredIndicator /></Label>
-                            <Input id="location" name="location" value={resumeData.contact.location} onChange={handleContactChange} placeholder="City, Country" />
+                            <Input id="contact.location" name="location" value={resumeData.contact.location} onChange={handleContactChange} placeholder="City, Country" className={cn(validationErrors['contact.location'] && 'border-destructive')}/>
                         </div>
                         <div className="sm:col-span-2 space-y-2">
                             <Label htmlFor="linkedin">LinkedIn URL</Label>
@@ -578,11 +676,11 @@ export function ResumeForm() {
                                     <div className="grid grid-cols-2 gap-2 flex-1">
                                         <div className="space-y-1">
                                         <Label htmlFor={`link-label-${index}`} className="text-xs">Label<RequiredIndicator /></Label>
-                                        <Input id={`link-label-${index}`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" />
+                                        <Input id={`contact.otherLinks.${link.id}.label`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" className={cn(validationErrors[`contact.otherLinks.${link.id}.label`] && 'border-destructive')} />
                                         </div>
                                         <div className="space-y-1">
                                         <Label htmlFor={`link-url-${index}`} className="text-xs">URL<RequiredIndicator /></Label>
-                                        <Input id={`link-url-${index}`} value={link.url} onChange={(e) => handleOtherLinkChange(index, 'url', e.target.value)} placeholder="your-portfolio.com" />
+                                        <Input id={`contact.otherLinks.${link.id}.url`} value={link.url} onChange={(e) => handleOtherLinkChange(index, 'url', e.target.value)} placeholder="your-portfolio.com" className={cn(validationErrors[`contact.otherLinks.${link.id}.url`] && 'border-destructive')} />
                                         </div>
                                     </div>
                                     <Button variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => removeOtherLink(link.id)}>
@@ -701,7 +799,7 @@ export function ResumeForm() {
                           </DialogContent>
                         </Dialog>
                       </div>
-                      <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="Write a 2-3 sentence objective. Mention your field of study, key skills, and what you're looking for (e.g., 'a challenging software engineering internship')." rows={5} />
+                      <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="Write a 2-3 sentence objective. Mention your field of study, key skills, and what you're looking for (e.g., 'a challenging software engineering internship')." rows={5} className={cn(validationErrors['summary'] && 'border-destructive')} />
                     </div>
                 </div>
             );
@@ -727,7 +825,7 @@ export function ResumeForm() {
                                         }
                                     }}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className={cn(validationErrors[`skills.${category.id}.name`] && 'border-destructive')}>
                                     <SelectValue placeholder="Select a category" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -737,20 +835,23 @@ export function ResumeForm() {
                                     </SelectContent>
                                 </Select>
                                 <Input
+                                    id={`skills.${category.id}.name`}
                                     value={category.name}
                                     onChange={e => handleGenericChange('skills', index, 'name', e.target.value)}
                                     placeholder="Or type a custom category"
-                                    className="mt-2"
+                                    className={cn("mt-2", validationErrors[`skills.${category.id}.name`] && 'border-destructive')}
                                 />
                                 <p className="text-xs text-muted-foreground">Select a category or type your own if you choose 'Other'.</p>
                                 </div>
                                 <div className="space-y-2">
                                 <Label>Skills<RequiredIndicator /></Label>
                                 <Textarea
+                                    id={`skills.${category.id}.skills`}
                                     value={category.skills}
                                     onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)}
                                     placeholder="e.g., JavaScript, Python, Java"
                                     rows={3}
+                                    className={cn(validationErrors[`skills.${category.id}.skills`] && 'border-destructive')}
                                 />
                                 <p className="text-sm text-muted-foreground">Separate skills with a comma.</p>
                                 {suggestions.length > 0 && (
@@ -817,30 +918,30 @@ export function ResumeForm() {
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label>{config.fields.school.label}<RequiredIndicator /></Label>
-                                <Input value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} />
+                                <Input id={`education.${edu.id}.school`} value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} className={cn(validationErrors[`education.${edu.id}.school`] && 'border-destructive')} />
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label>{config.fields.degree.label}<RequiredIndicator /></Label>
-                                <Input value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} />
+                                <Input id={`education.${edu.id}.degree`} value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} className={cn(validationErrors[`education.${edu.id}.degree`] && 'border-destructive')} />
                             </div>
                             <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>{config.fields.startDate.label}<RequiredIndicator /></Label>
-                                    <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} hasError={!!error} />
+                                    <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} hasError={!!error || validationErrors[`education.${edu.id}.startDate`]} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>{config.fields.endDate.label}<RequiredIndicator /></Label>
-                                    <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} hasError={!!error} />
+                                    <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} hasError={!!error || validationErrors[`education.${edu.id}.endDate`]} />
                                 </div>
                             </div>
                             {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
                             <div className="space-y-2">
                                 <Label>{config.fields.grades.label}</Label>
-                                <Input value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
+                                <Input id={`education.${edu.id}.grades`} value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
                             </div>
                             <div className="space-y-2">
                                 <Label>{config.fields.city.label}<RequiredIndicator /></Label>
-                                <Input value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} />
+                                <Input id={`education.${edu.id}.city`} value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} className={cn(validationErrors[`education.${edu.id}.city`] && 'border-destructive')} />
                             </div>
                             </CardContent>
                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
@@ -866,7 +967,7 @@ export function ResumeForm() {
                             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                                 <div className="space-y-2">
                                     <Label>Project Title<RequiredIndicator /></Label>
-                                    <Input value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" />
+                                    <Input id={`projects.${proj.id}.title`} value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" className={cn(validationErrors[`projects.${proj.id}.title`] && 'border-destructive')} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Project Link (Optional)</Label>
@@ -880,7 +981,7 @@ export function ResumeForm() {
                                             handleGenericChange('projects', index, 'projectType', value);
                                         }}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className={cn(validationErrors[`projects.${proj.id}.projectType`] && 'border-destructive')}>
                                             <SelectValue placeholder="Select a type" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -891,25 +992,26 @@ export function ResumeForm() {
                                     </Select>
                                     {isOtherSelected && (
                                         <Input
+                                            id={`projects.${proj.id}.projectType`}
                                             value={proj.projectType === 'Other' ? '' : proj.projectType}
                                             onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
                                             placeholder="Please specify type"
-                                            className="mt-2"
+                                            className={cn("mt-2", validationErrors[`projects.${proj.id}.projectType`] && 'border-destructive')}
                                         />
                                     )}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Organization / Affiliation<RequiredIndicator /></Label>
-                                    <Input value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" />
+                                    <Input id={`projects.${proj.id}.organization`} value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" className={cn(validationErrors[`projects.${proj.id}.organization`] && 'border-destructive')}/>
                                 </div>
                                 <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Start Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} hasError={!!error}/>
+                                            <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} hasError={!!error || validationErrors[`projects.${proj.id}.startDate`]}/>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>End Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} hasError={!!error} />
+                                            <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} hasError={!!error || validationErrors[`projects.${proj.id}.endDate`]} />
                                         </div>
                                     </div>
                                     {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
@@ -924,7 +1026,7 @@ export function ResumeForm() {
                                         Generate with AI
                                         </Button>
                                     </div>
-                                    <Textarea value={proj.description} onChange={e => handleGenericChange('projects', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} />
+                                    <Textarea id={`projects.${proj.id}.description`} value={proj.description} onChange={e => handleGenericChange('projects', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} className={cn(validationErrors[`projects.${proj.id}.description`] && 'border-destructive')} />
                                 </div>
                             </CardContent>
                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('projects', proj.id)}>
@@ -939,6 +1041,58 @@ export function ResumeForm() {
         case 5:
             return (
                 <div>
+                    <CardTitle className="text-xl mb-4">Work Experience</CardTitle>
+                    <div className="space-y-4">
+                        {resumeData.experience.map((exp, index) => {
+                            const error = dateErrors[exp.id];
+                            return (
+                            <Card key={exp.id} className="p-4 relative bg-background shadow-none border">
+                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
+                                <div className="space-y-2">
+                                    <Label>Job Title/Role<RequiredIndicator /></Label>
+                                    <Input id={`experience.${exp.id}.title`} value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" className={cn(validationErrors[`experience.${exp.id}.title`] && 'border-destructive')} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Company<RequiredIndicator /></Label>
+                                    <Input id={`experience.${exp.id}.company`} value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" className={cn(validationErrors[`experience.${exp.id}.company`] && 'border-destructive')}/>
+                                </div>
+                                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label>Start Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error || validationErrors[`experience.${exp.id}.startDate`]}/>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>End Date<RequiredIndicator /></Label>
+                                            <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error || validationErrors[`experience.${exp.id}.endDate`]}/>
+                                        </div>
+                                    </div>
+                                    {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
+                                <div className="sm:col-span-2 space-y-2">
+                                    <div className="flex justify-between items-center">
+                                        <div className='flex items-center gap-2'>
+                                        <Label>Description<RequiredIndicator /></Label>
+                                        <BulletPointTooltip />
+                                        </div>
+                                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
+                                        <Sparkles className="mr-2 h-4 w-4" />
+                                        Generate with AI
+                                        </Button>
+                                    </div>
+                                    <Textarea id={`experience.${exp.id}.description`} value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} className={cn(validationErrors[`experience.${exp.id}.description`] && 'border-destructive')} />
+                                </div>
+                            </CardContent>
+                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                            </Card>
+                        )})}
+                        <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
+                    </div>
+                </div>
+            );
+        case 6:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Certifications</CardTitle>
                     <div className="space-y-4">
                     {resumeData.certifications.map((cert, index) => (
@@ -946,15 +1100,15 @@ export function ResumeForm() {
                         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                             <div className="space-y-2">
                             <Label>Certification Name<RequiredIndicator /></Label>
-                            <Input value={cert.name} onChange={e => handleGenericChange('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" />
+                            <Input id={`certifications.${cert.id}.name`} value={cert.name} onChange={e => handleGenericChange('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" className={cn(validationErrors[`certifications.${cert.id}.name`] && 'border-destructive')} />
                             </div>
                             <div className="space-y-2">
                             <Label>Issuing Body<RequiredIndicator /></Label>
-                            <Input value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" />
+                            <Input id={`certifications.${cert.id}.issuer`} value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" className={cn(validationErrors[`certifications.${cert.id}.issuer`] && 'border-destructive')} />
                             </div>
                             <div className="space-y-2">
                             <Label>Date Issued<RequiredIndicator /></Label>
-                            <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} />
+                            <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} hasError={validationErrors[`certifications.${cert.id}.date`]}/>
                             </div>
                             <div className="space-y-2">
                             <Label>Certification Link (Optional)</Label>
@@ -971,15 +1125,17 @@ export function ResumeForm() {
                                     Generate with AI
                                     </Button>
                                 </div>
-                                <Textarea value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} />
+                                <Textarea id={`certifications.${cert.id}.description`} value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} className={cn(validationErrors[`certifications.${cert.id}.description`] && 'border-destructive')}/>
                             </div>
                             <div className="sm:col-span-2 space-y-2">
                             <Label>Technologies/Skills Covered<RequiredIndicator /></Label>
                             <Textarea
+                                id={`certifications.${cert.id}.technologies`}
                                 value={cert.technologies}
                                 onChange={e => handleGenericChange('certifications', index, 'technologies', e.target.value)}
                                 placeholder="e.g., VPC, IAM, BigQuery, Cloud Functions"
                                 rows={2}
+                                className={cn(validationErrors[`certifications.${cert.id}.technologies`] && 'border-destructive')}
                             />
                             <p className="text-sm text-muted-foreground">Separate items with a comma.</p>
                             </div>
@@ -993,7 +1149,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 6:
+        case 7:
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Achievements & Activities</CardTitle>
@@ -1010,7 +1166,7 @@ export function ResumeForm() {
                                         value={ACHIEVEMENT_CATEGORIES.includes(ach.category as AchievementCategory) ? ach.category : 'other'}
                                         onValueChange={(value) => handleAchievementCategoryChange(index, value)}
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className={cn(validationErrors[`achievements.${ach.id}.category`] && 'border-destructive')}>
                                             <SelectValue placeholder="Select a category" />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -1026,24 +1182,25 @@ export function ResumeForm() {
                                     </Select>
                                     {isOtherSelected && (
                                         <Input
+                                            id={`achievements.${ach.id}.category`}
                                             value={ach.category === 'other' ? '' : ach.category}
                                             onChange={e => handleAchievementCategoryChange(index, e.target.value)}
                                             placeholder="Please specify category"
-                                            className="mt-2"
+                                            className={cn("mt-2", validationErrors[`achievements.${ach.id}.category`] && 'border-destructive')}
                                         />
                                     )}
                                 </div>
                                 <div className="space-y-2">
                                 <Label>{config.nameLabel}<RequiredIndicator /></Label>
-                                <Input value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} />
+                                <Input id={`achievements.${ach.id}.name`} value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} className={cn(validationErrors[`achievements.${ach.id}.name`] && 'border-destructive')}/>
                                 </div>
                                 <div className="space-y-2">
                                 <Label>{config.contextLabel}<RequiredIndicator /></Label>
-                                <Input value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" />
+                                <Input id={`achievements.${ach.id}.context`} value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" className={cn(validationErrors[`achievements.${ach.id}.context`] && 'border-destructive')}/>
                                 </div>
                                 <div className="space-y-2">
                                 <Label>Date<RequiredIndicator /></Label>
-                                <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} />
+                                <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} hasError={validationErrors[`achievements.${ach.id}.date`]}/>
                                 </div>
                                 <div className="space-y-2">
                                 <Label>Achievement Link (Optional)</Label>
@@ -1060,7 +1217,7 @@ export function ResumeForm() {
                                         Generate with AI
                                     </Button>
                                     </div>
-                                    <Textarea value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} />
+                                    <Textarea id={`achievements.${ach.id}.description`} value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} className={cn(validationErrors[`achievements.${ach.id}.description`] && 'border-destructive')}/>
                                 </div>
                             </CardContent>
                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('achievements', ach.id)}>
@@ -1070,58 +1227,6 @@ export function ResumeForm() {
                         )
                         })}
                         <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
-                    </div>
-                </div>
-            );
-        case 7:
-            return (
-                <div>
-                    <CardTitle className="text-xl mb-4">Work Experience</CardTitle>
-                    <div className="space-y-4">
-                        {resumeData.experience.map((exp, index) => {
-                            const error = dateErrors[exp.id];
-                            return (
-                            <Card key={exp.id} className="p-4 relative bg-background shadow-none border">
-                            <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
-                                <div className="space-y-2">
-                                    <Label>Job Title/Role<RequiredIndicator /></Label>
-                                    <Input value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Company<RequiredIndicator /></Label>
-                                    <Input value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" />
-                                </div>
-                                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label>Start Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error}/>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label>End Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error}/>
-                                        </div>
-                                    </div>
-                                    {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
-                                <div className="sm:col-span-2 space-y-2">
-                                    <div className="flex justify-between items-center">
-                                        <div className='flex items-center gap-2'>
-                                        <Label>Description<RequiredIndicator /></Label>
-                                        <BulletPointTooltip />
-                                        </div>
-                                        <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('experience', index)}>
-                                        <Sparkles className="mr-2 h-4 w-4" />
-                                        Generate with AI
-                                        </Button>
-                                    </div>
-                                    <Textarea value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} />
-                                </div>
-                            </CardContent>
-                            <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                            </Card>
-                        )})}
-                        <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
                     </div>
                 </div>
             );
@@ -1136,9 +1241,11 @@ export function ResumeForm() {
                             <div className="space-y-2">
                             <Label>Title<RequiredIndicator /></Label>
                             <Input
+                                id={`other.${item.id}.title`}
                                 value={item.title}
                                 onChange={(e) => handleGenericChange('other', index, 'title', e.target.value)}
                                 placeholder="e.g., Extracurricular Activities, Awards"
+                                className={cn(validationErrors[`other.${item.id}.title`] && 'border-destructive')}
                             />
                             </div>
                             <div className="space-y-2">
@@ -1153,10 +1260,12 @@ export function ResumeForm() {
                                 </Button>
                             </div>
                             <Textarea
+                                id={`other.${item.id}.description`}
                                 value={item.description}
                                 onChange={(e) => handleGenericChange('other', index, 'description', e.target.value)}
                                 placeholder="- Describe your activity, award, or other information here."
                                 rows={4}
+                                className={cn(validationErrors[`other.${item.id}.description`] && 'border-destructive')}
                             />
                             </div>
                         </CardContent>
@@ -1182,7 +1291,7 @@ export function ResumeForm() {
         <Stepper
             steps={formSteps}
             currentStep={currentStep}
-            onStepClick={setCurrentStep}
+            onStepClick={handleStepClick}
         />
         <Card className="mt-4">
             <CardContent className="p-6">
@@ -1279,3 +1388,5 @@ export function ResumeForm() {
     </div>
   );
 }
+
+    

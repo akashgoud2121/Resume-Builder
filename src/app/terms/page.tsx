@@ -38,16 +38,16 @@ export default function TermsPage() {
               To use certain features of the Service, you must register for an account. You are responsible for maintaining the confidentiality of your account password and for all activities that occur under your account. You agree to notify us immediately of any unauthorized use of your account.
             </p>
 
-            <h2 className="mt-8 text-2xl font-semibold">2. Data Storage and Privacy</h2>
+            <h2 className="mt-8 text-2xl font-semibold">2. Data Storage and User Experience</h2>
             <p>
-              To provide a seamless user experience and prevent data loss, the resume data you enter is saved automatically.
+              To provide a seamless and reliable user experience, the resume data you create is securely saved to your account profile in our cloud database.
             </p>
             <ul>
               <li>
-                <strong>Local Storage:</strong> Your resume data is primarily stored in your web browser's local storage. This means your data remains on your device and allows you to continue editing your resume even if you close the browser tab. This data persists until you clear your browser's cache and site data.
+                <strong>Cloud Storage:</strong> By saving your data to a secure database, we ensure that you can access and edit your resume from any device, at any time, simply by logging into your account. This prevents the frustrating experience of losing your work if you switch browsers, clear your cache, or use a different computer.
               </li>
               <li>
-                <strong>No Cloud Database for Resume Data:</strong> Please be aware that your detailed resume content (such as your work experience, education, and skills) is NOT currently stored in a cloud database linked to your account. This means if you log in on a different device or a different browser, your resume data will not be automatically available. We recommend downloading a PDF of your completed resume for your records.
+                <strong>Data Portability:</strong> This feature is designed for your convenience, allowing you to pick up where you left off, no matter where you are. Your resume is tied to your account, not to a single device.
               </li>
             </ul>
 

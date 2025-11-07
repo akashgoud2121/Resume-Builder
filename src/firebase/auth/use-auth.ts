@@ -9,6 +9,7 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   GithubAuthProvider,
+  sendPasswordResetEmail as firebaseSendPasswordResetEmail,
 } from 'firebase/auth';
 import { useFirebase } from '../provider';
 
@@ -51,6 +52,10 @@ export function useAuthActions() {
     return updateProfile(auth.currentUser, { displayName });
   };
   
+  const sendPasswordResetEmail = (email: string) => {
+    return firebaseSendPasswordResetEmail(auth, email);
+  };
+  
 
-  return { signUp, signIn, signInWithGoogle, signInWithGitHub, signOut, updateUserProfile };
+  return { signUp, signIn, signInWithGoogle, signInWithGitHub, signOut, updateUserProfile, sendPasswordResetEmail };
 }

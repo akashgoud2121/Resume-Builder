@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthActions } from '@/firebase/auth/use-auth';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
+import Link from 'next/link';
 
 const signupSchema = z
   .object({
@@ -27,6 +29,10 @@ const signupSchema = z
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
+});
+
+const resetPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
 });
 
 type AuthFormProps = {
@@ -71,9 +77,11 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [isGitHubLoading, setIsGitHubLoading] = useState(false);
+  const [isResetLoading, setIsResetLoading] = useState(false);
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
-  const { signUp, signIn, signInWithGoogle, signInWithGitHub } = useAuthActions();
+  const { signUp, signIn, signInWithGoogle, signInWithGitHub, sendPasswordResetEmail } = useAuthActions();
 
   const emailSchema = mode === 'signup' ? signupSchema : loginSchema;
   type EmailFormData = z.infer<typeof emailSchema>;
@@ -84,6 +92,15 @@ export function AuthForm({ mode }: AuthFormProps) {
     formState: { errors },
   } = useForm<EmailFormData>({
     resolver: zodResolver(emailSchema),
+  });
+
+  const {
+    register: registerReset,
+    handleSubmit: handleResetSubmit,
+    formState: { errors: resetErrors },
+    reset,
+  } = useForm<z.infer<typeof resetPasswordSchema>>({
+    resolver: zodResolver(resetPasswordSchema),
   });
 
   const onSubmit = async (data: EmailFormData) => {
@@ -157,6 +174,27 @@ export function AuthForm({ mode }: AuthFormProps) {
     }
   };
 
+  const onPasswordReset = async (data: z.infer<typeof resetPasswordSchema>) => {
+    setIsResetLoading(true);
+    try {
+        await sendPasswordResetEmail(data.email);
+        setIsResetDialogOpen(false);
+        reset();
+        toast({
+            title: 'Password Reset Email Sent',
+            description: `If an account exists for ${data.email}, you will receive an email with instructions to reset your password.`,
+        });
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Password Reset Failed',
+            description: error.message || 'An unexpected error occurred. Please try again.',
+        });
+    } finally {
+        setIsResetLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
         <div className="space-y-2">
@@ -220,11 +258,50 @@ export function AuthForm({ mode }: AuthFormProps) {
             )}
             </div>
             <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" {...register('password')} />
-            {errors.password && (
-                <p className="text-sm text-destructive">{errors.password.message}</p>
-            )}
+                <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {mode === 'login' && (
+                        <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="link" className="p-0 h-auto text-xs">
+                                    Forgot Password?
+                                </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Reset Your Password</DialogTitle>
+                                    <DialogDescription>
+                                        Enter your email address below and we'll send you a link to reset your password.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <form onSubmit={handleResetSubmit(onPasswordReset)} className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="reset-email">Email Address</Label>
+                                        <Input
+                                            id="reset-email"
+                                            type="email"
+                                            {...registerReset('email')}
+                                        />
+                                        {resetErrors.email && <p className="text-sm text-destructive">{resetErrors.email.message}</p>}
+                                    </div>
+                                    <DialogFooter>
+                                        <Button type="button" variant="secondary" onClick={() => setIsResetDialogOpen(false)}>
+                                            Cancel
+                                        </Button>
+                                        <Button type="submit" disabled={isResetLoading}>
+                                            {isResetLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                            Send Reset Link
+                                        </Button>
+                                    </DialogFooter>
+                                </form>
+                            </DialogContent>
+                        </Dialog>
+                    )}
+                </div>
+                <Input id="password" type="password" {...register('password')} />
+                {errors.password && (
+                    <p className="text-sm text-destructive">{errors.password.message}</p>
+                )}
             </div>
             {mode === 'signup' && (
             <div className="space-y-2">

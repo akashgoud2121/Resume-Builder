@@ -1,13 +1,13 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useResume } from '@/lib/store';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { PlusCircle, Trash2, Sparkles, Loader2, Copy, X, Info } from 'lucide-react';
+import { PlusCircle, Trash2, Sparkles, Loader2, Copy, X, Info, ArrowLeft, ArrowRight } from 'lucide-react';
 import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink, Other } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
@@ -20,7 +20,8 @@ import { cn } from '@/lib/utils';
 import type { GenerateSummaryInput } from '@/ai/schemas';
 import { MonthYearPicker } from './date-picker';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from './ui/tooltip';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Stepper } from './stepper';
+
 
 const educationCategoryConfig: Record<EducationCategory, any> = {
   schooling: {
@@ -166,6 +167,18 @@ const BulletPointTooltip = () => (
 
 const RequiredIndicator = () => <span className="text-destructive ml-1">*</span>;
 
+const formSteps = [
+    { id: 'contact', name: 'Contact' },
+    { id: 'summary', name: 'Summary' },
+    { id: 'skills', name: 'Skills' },
+    { id: 'education', name: 'Education' },
+    { id: 'experience', name: 'Experience' },
+    { id: 'projects', name: 'Projects' },
+    { id: 'certifications', name: 'Certifications' },
+    { id: 'achievements', name: 'Achievements' },
+    { id: 'other', name: 'Other' },
+];
+
 export function ResumeForm() {
   const { resumeData, setResumeData } = useResume();
   const [userApiKey, setUserApiKey] = React.useState<string | null>(null);
@@ -188,6 +201,17 @@ export function ResumeForm() {
     targetIndex: null,
     targetType: 'experience',
   });
+  
+  const [currentStep, setCurrentStep] = useState(0);
+
+  const goToNextStep = () => {
+    setCurrentStep(prev => (prev < formSteps.length - 1 ? prev + 1 : prev));
+  };
+
+  const goToPreviousStep = () => {
+    setCurrentStep(prev => (prev > 0 ? prev - 1 : prev));
+  };
+
 
   React.useEffect(() => {
     const key = localStorage.getItem('userApiKey');
@@ -515,25 +539,12 @@ export function ResumeForm() {
         handleGenericChange('skills', index, 'skills', newValue);
     }
   };
-
-  return (
-    <div className="w-full">
-      <Tabs defaultValue="contact" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 lg:grid-cols-9 h-auto">
-            <TabsTrigger value="contact">Contact</TabsTrigger>
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-            <TabsTrigger value="skills">Skills</TabsTrigger>
-            <TabsTrigger value="education">Education</TabsTrigger>
-            <TabsTrigger value="experience">Experience</TabsTrigger>
-            <TabsTrigger value="projects">Projects</TabsTrigger>
-            <TabsTrigger value="certifications">Certifications</TabsTrigger>
-            <TabsTrigger value="achievements">Achievements</TabsTrigger>
-            <TabsTrigger value="other">Other</TabsTrigger>
-        </TabsList>
-
-        <Card className="mt-4">
-            <CardContent className="p-6">
-                <TabsContent value="contact">
+  
+  const renderStepContent = () => {
+    switch (currentStep) {
+        case 0:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Contact Information</CardTitle>
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
@@ -582,9 +593,11 @@ export function ResumeForm() {
                             <Button variant="outline" size="sm" onClick={addOtherLink}><PlusCircle className="mr-2 h-4 w-4" /> Add Link</Button>
                         </div>
                     </div>
-                </TabsContent>
-
-                <TabsContent value="summary">
+                </div>
+            );
+        case 1:
+            return (
+                 <div>
                     <CardTitle className="text-xl mb-4">Professional Summary</CardTitle>
                     <div className="space-y-2">
                       <div className="flex justify-between items-center">
@@ -690,9 +703,11 @@ export function ResumeForm() {
                       </div>
                       <Textarea id="summary" value={resumeData.summary} onChange={handleSummaryChange} placeholder="Write a 2-3 sentence objective. Mention your field of study, key skills, and what you're looking for (e.g., 'a challenging software engineering internship')." rows={5} />
                     </div>
-                </TabsContent>
-                
-                <TabsContent value="skills">
+                </div>
+            );
+        case 2:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Skills</CardTitle>
                      <div className="space-y-4">
                         {resumeData.skills.map((category, index) => {
@@ -769,9 +784,11 @@ export function ResumeForm() {
                         )})}
                         <Button variant="outline" onClick={() => addEntry('skills')}><PlusCircle className="mr-2 h-4 w-4" /> Add Skill Category</Button>
                     </div>
-                </TabsContent>
-                
-                <TabsContent value="education">
+                </div>
+            );
+        case 3:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Education</CardTitle>
                     <div className="space-y-4">
                     {resumeData.education.map((edu, index) => {
@@ -834,9 +851,11 @@ export function ResumeForm() {
                     })}
                     <Button variant="outline" onClick={() => addEntry('education')}><PlusCircle className="mr-2 h-4 w-4" /> Add Another Qualification</Button>
                     </div>
-                </TabsContent>
-
-                <TabsContent value="experience">
+                </div>
+            );
+        case 4:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Work Experience</CardTitle>
                     <div className="space-y-4">
                         {resumeData.experience.map((exp, index) => {
@@ -884,9 +903,11 @@ export function ResumeForm() {
                         )})}
                         <Button variant="outline" onClick={() => addEntry('experience')}><PlusCircle className="mr-2 h-4 w-4" /> Add Experience</Button>
                     </div>
-                </TabsContent>
-
-                <TabsContent value="projects">
+                </div>
+            );
+        case 5:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Projects</CardTitle>
                     <div className="space-y-4">
                         {resumeData.projects.map((proj, index) => {
@@ -965,9 +986,11 @@ export function ResumeForm() {
                         )})}
                         <Button variant="outline" onClick={() => addEntry('projects')}><PlusCircle className="mr-2 h-4 w-4" /> Add Project</Button>
                     </div>
-                </TabsContent>
-
-                <TabsContent value="certifications">
+                </div>
+            );
+        case 6:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Certifications</CardTitle>
                     <div className="space-y-4">
                     {resumeData.certifications.map((cert, index) => (
@@ -1020,9 +1043,11 @@ export function ResumeForm() {
                     ))}
                     <Button variant="outline" onClick={() => addEntry('certifications')}><PlusCircle className="mr-2 h-4 w-4" /> Add Certification</Button>
                     </div>
-                </TabsContent>
-
-                <TabsContent value="achievements">
+                </div>
+            );
+        case 7:
+            return (
+                <div>
                     <CardTitle className="text-xl mb-4">Achievements & Activities</CardTitle>
                     <div className="space-y-4">
                         {resumeData.achievements.map((ach, index) => {
@@ -1098,9 +1123,11 @@ export function ResumeForm() {
                         })}
                         <Button variant="outline" onClick={() => addEntry('achievements')}><PlusCircle className="mr-2 h-4 w-4" /> Add Achievement/Activity</Button>
                     </div>
-                </TabsContent>
-                
-                <TabsContent value="other">
+                </div>
+            );
+        case 8:
+            return (
+                 <div>
                     <CardTitle className="text-xl mb-4">Other</CardTitle>
                      <div className="space-y-4">
                     {resumeData.other.map((item, index) => (
@@ -1142,11 +1169,43 @@ export function ResumeForm() {
                         <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Section
                     </Button>
                     </div>
-                </TabsContent>
+                </div>
+            );
+        default:
+            return null;
+    }
+  };
 
+
+  return (
+    <div className="w-full">
+        <Stepper
+            steps={formSteps}
+            currentStep={currentStep}
+            onStepClick={setCurrentStep}
+        />
+        <Card className="mt-4">
+            <CardContent className="p-6">
+                 {renderStepContent()}
+                 <div className="mt-6 flex justify-between">
+                    <Button
+                        variant="outline"
+                        onClick={goToPreviousStep}
+                        disabled={currentStep === 0}
+                    >
+                        <ArrowLeft className="mr-2 h-4 w-4" />
+                        Previous
+                    </Button>
+                    <Button
+                        onClick={goToNextStep}
+                        disabled={currentStep === formSteps.length - 1}
+                    >
+                        Next
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
             </CardContent>
         </Card>
-      </Tabs>
       
        <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
            <DialogContent className="sm:max-w-xl">

@@ -36,9 +36,11 @@ export default function Home() {
 
 
   useEffect(() => {
-    const storedKey = localStorage.getItem('userApiKey');
-    if (storedKey) {
-      setApiKey(storedKey);
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const storedKey = localStorage.getItem('userApiKey');
+      if (storedKey) {
+        setApiKey(storedKey);
+      }
     }
   }, []);
 
@@ -47,13 +49,17 @@ export default function Home() {
         setDisplayName(user.name);
         
         // Check if user is first-time (no resume data saved yet)
-        const hasVisitedBefore = localStorage.getItem('hasVisitedBuilder');
-        setIsFirstTimeUser(!hasVisitedBefore);
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          const hasVisitedBefore = localStorage.getItem('hasVisitedBuilder');
+          setIsFirstTimeUser(!hasVisitedBefore);
+        }
     }
   }, [user]);
 
   const handleSaveApiKey = () => {
-    localStorage.setItem('userApiKey', apiKey);
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem('userApiKey', apiKey);
+    }
     setIsSettingsOpen(false);
     showNotification({
       title: "API Key Saved",
@@ -65,7 +71,9 @@ export default function Home() {
   };
   
   const handleRemoveApiKey = () => {
-    localStorage.removeItem('userApiKey');
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem('userApiKey');
+    }
     setApiKey('');
     setIsSettingsOpen(false);
     showNotification({
@@ -94,7 +102,9 @@ export default function Home() {
 
   const handleGoToBuilderClick = () => {
     // Mark that user has visited builder
-    localStorage.setItem('hasVisitedBuilder', 'true');
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem('hasVisitedBuilder', 'true');
+    }
     setIsFirstTimeUser(false);
     // Redirect to builder page
     router.push('/build');

@@ -36,6 +36,12 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
 
   // Load encrypted data from localStorage on mount
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      setIsInitialized(true);
+      return;
+    }
+    
     try {
       const encryptedData = localStorage.getItem('resumeData');
       if (encryptedData) {
@@ -85,6 +91,11 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
 
   // Save encrypted data to localStorage when resumeData changes
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+    
     if (isInitialized && !isUndoRedoAction) {
       try {
         const encrypted = encryptData(resumeData);

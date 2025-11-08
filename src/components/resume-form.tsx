@@ -388,6 +388,11 @@ export function ResumeForm() {
 
 
   React.useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return;
+    }
+    
     const key = localStorage.getItem('userApiKey');
     setUserApiKey(key);
 

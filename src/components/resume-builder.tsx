@@ -47,9 +47,11 @@ export function ResumeBuilder() {
   const token = session?.user ? 'authenticated' : null;
 
   useEffect(() => {
-    const storedKey = localStorage.getItem('userApiKey');
-    if (storedKey) {
-      setApiKey(storedKey);
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const storedKey = localStorage.getItem('userApiKey');
+      if (storedKey) {
+        setApiKey(storedKey);
+      }
     }
   }, []);
   
@@ -109,7 +111,9 @@ export function ResumeBuilder() {
   };
 
   const handleSaveApiKey = () => {
-    localStorage.setItem('userApiKey', apiKey);
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem('userApiKey', apiKey);
+    }
     setIsSettingsOpen(false);
     showNotification({
       title: "API Key Saved",
@@ -120,7 +124,9 @@ export function ResumeBuilder() {
   };
   
   const handleRemoveApiKey = () => {
-    localStorage.removeItem('userApiKey');
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem('userApiKey');
+    }
     setApiKey('');
     setIsSettingsOpen(false);
     showNotification({
@@ -138,12 +144,16 @@ export function ResumeBuilder() {
       }
       
       // Clear resume ID from session on logout
-      sessionStorage.removeItem('currentResumeId');
+      if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+        sessionStorage.removeItem('currentResumeId');
+      }
       setResumeId(null);
       
       // Clear encryption key and local storage for security
       clearEncryptionKey();
-      localStorage.removeItem('resumeData');
+      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+        localStorage.removeItem('resumeData');
+      }
       
       await handleSignOut();
       showNotification({
@@ -204,7 +214,9 @@ export function ResumeBuilder() {
       if (resumes && resumes.length > 0) {
         const latestResume = resumes[0];
         setResumeId(latestResume.id);
-        sessionStorage.setItem('currentResumeId', latestResume.id);
+        if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+          sessionStorage.setItem('currentResumeId', latestResume.id);
+        }
         
         const detailResponse = await fetch(`/api/resumes/${latestResume.id}`);
         if (detailResponse.ok) {
@@ -221,9 +233,11 @@ export function ResumeBuilder() {
 
   // Restore resume ID from sessionStorage on mount
   useEffect(() => {
-    const storedResumeId = sessionStorage.getItem('currentResumeId');
-    if (storedResumeId && token) {
-      setResumeId(storedResumeId);
+    if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+      const storedResumeId = sessionStorage.getItem('currentResumeId');
+      if (storedResumeId && token) {
+        setResumeId(storedResumeId);
+      }
     }
   }, [token]);
 
@@ -295,7 +309,9 @@ export function ResumeBuilder() {
         if (response.ok) {
           const { resume } = await response.json();
           setResumeId(resume.id);
-          sessionStorage.setItem('currentResumeId', resume.id);
+          if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('currentResumeId', resume.id);
+          }
         }
       }
 
@@ -331,7 +347,7 @@ export function ResumeBuilder() {
       let response;
       let currentResumeId = resumeId;
 
-      if (!currentResumeId) {
+      if (!currentResumeId && typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
         const storedId = sessionStorage.getItem('currentResumeId');
         if (storedId && storedId.trim()) {
           currentResumeId = storedId;
@@ -348,7 +364,9 @@ export function ResumeBuilder() {
             if (existingId) {
               currentResumeId = existingId;
               setResumeId(existingId);
-              sessionStorage.setItem('currentResumeId', existingId);
+              if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+                sessionStorage.setItem('currentResumeId', existingId);
+              }
             }
           }
         }
@@ -379,7 +397,9 @@ export function ResumeBuilder() {
         if (response.ok) {
           const { resume } = await response.json();
           setResumeId(resume.id);
-          sessionStorage.setItem('currentResumeId', resume.id);
+          if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+            sessionStorage.setItem('currentResumeId', resume.id);
+          }
         }
       }
       

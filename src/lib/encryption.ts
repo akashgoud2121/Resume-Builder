@@ -6,6 +6,12 @@
 
 // Generate a device-specific key (stored in sessionStorage, cleared on tab close)
 function getEncryptionKey(): string {
+  // Check if we're in a browser environment
+  if (typeof window === 'undefined' || typeof sessionStorage === 'undefined') {
+    // Return a fallback key for SSR (this won't be used in practice)
+    return 'fallback-key-for-ssr';
+  }
+  
   let key = sessionStorage.getItem('_ek');
   
   if (!key) {
@@ -88,6 +94,8 @@ export function decryptData<T>(encryptedData: string): T | null {
  * Clear encryption key (call on logout)
  */
 export function clearEncryptionKey(): void {
-  sessionStorage.removeItem('_ek');
+  if (typeof window !== 'undefined' && typeof sessionStorage !== 'undefined') {
+    sessionStorage.removeItem('_ek');
+  }
 }
 

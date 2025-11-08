@@ -9,7 +9,7 @@ export function useAuth() {
     user: session?.user,
     isLoading: status === 'loading',
     isAuthenticated: !!session?.user,
-    signOut: () => signOut({ callbackUrl: '/login' }),
+    signOut: () => signOut({ callbackUrl: '/' }),
   };
 }
 
@@ -17,14 +17,7 @@ export function useAuthActions() {
   return {
     signInWithGoogle: () => signIn('google', { callbackUrl: '/' }),
     signInWithGitHub: () => signIn('github', { callbackUrl: '/' }),
-    signIn: (email: string, password: string) =>
-      signIn('credentials', {
-        email,
-        password,
-        redirect: true,
-        callbackUrl: '/',
-      }),
-    signOut: () => signOut({ callbackUrl: '/login' }),
+    signOut: () => signOut({ callbackUrl: '/' }),
   };
 }
 

@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, Download, FileText, Settings, User, Edit, Loader2, LogOut, Cloud, Save, CheckCircle } from 'lucide-react';
+import { Eye, Download, FileText, Settings, User, Edit, Loader2, LogOut, Cloud, Save, CheckCircle, Undo2, Redo2 } from 'lucide-react';
 import { ResumeForm } from './resume-form';
 import { ResumePreview } from './resume-preview';
 import Link from 'next/link';
@@ -19,6 +19,7 @@ import { debounce } from '@/lib/debounce';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNotification } from '@/lib/notification-context';
 import { NavNotification } from '@/components/nav-notification';
+import { clearEncryptionKey } from '@/lib/encryption';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,8 +38,9 @@ export function ResumeBuilder() {
   const [isSaving, setIsSaving] = useState(false);
   const [showSavedIndicator, setShowSavedIndicator] = useState(false);
   const [resumeId, setResumeId] = useState<string | null>(null);
+  const [showExtensionWarning, setShowExtensionWarning] = useState(false);
   const { showNotification } = useNotification();
-  const { resumeData, setResumeData } = useResume();
+  const { resumeData, setResumeData, undo, redo, canUndo, canRedo } = useResume();
   const { user, signOut: handleSignOut } = useAuth();
   const { data: session } = useSession();
   const router = useRouter();
@@ -57,8 +59,52 @@ export function ResumeBuilder() {
     }
   }, [user]);
 
+  // Keyboard shortcuts for undo/redo
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Z or Cmd+Z for Undo
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        if (canUndo) {
+          undo();
+          showNotification({
+            title: 'Undo',
+            description: 'Action undone successfully.',
+            type: 'info',
+          });
+        }
+      }
+      // Ctrl+Y or Cmd+Shift+Z for Redo
+      else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        if (canRedo) {
+          redo();
+          showNotification({
+            title: 'Redo',
+            description: 'Action redone successfully.',
+            type: 'info',
+          });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [canUndo, canRedo, undo, redo, showNotification]);
+
   const handleDownloadPdf = () => {
-    alert("Your browser's print dialog will now open. Please choose 'Save as PDF' as the destination to download your resume.");
+    // Check for common browser extensions that might interfere
+    const hasExtensions = document.querySelector('grammarly-extension, [data-lastpass-icon-root], com-1password-button, [data-dashlane-root]');
+    
+    if (hasExtensions) {
+      setShowExtensionWarning(true);
+    } else {
+      window.print();
+    }
+  };
+
+  const proceedWithDownload = () => {
+    setShowExtensionWarning(false);
     window.print();
   };
 
@@ -70,6 +116,7 @@ export function ResumeBuilder() {
       description: "Your Google AI API key has been saved locally.",
       type: "success",
     });
+    // User is already on build page, no redirect needed
   };
   
   const handleRemoveApiKey = () => {
@@ -87,13 +134,16 @@ export function ResumeBuilder() {
     try {
       // Save resume before logging out
       if (token && resumeData) {
-        console.log('Saving resume before logout...');
         await performAutoSave();
       }
       
       // Clear resume ID from session on logout
       sessionStorage.removeItem('currentResumeId');
       setResumeId(null);
+      
+      // Clear encryption key and local storage for security
+      clearEncryptionKey();
+      localStorage.removeItem('resumeData');
       
       await handleSignOut();
       showNotification({
@@ -177,6 +227,32 @@ export function ResumeBuilder() {
     }
   }, [token]);
 
+  // Clean up empty sections before saving
+  const cleanResumeData = (data: any) => {
+    const cleanedCustomSections: Record<string, any> = {};
+    
+    if (data.customSections) {
+      Object.entries(data.customSections).forEach(([id, section]: [string, any]) => {
+        const cleanedItems = section.items?.filter((item: any) => item.content?.trim()) || [];
+        if (cleanedItems.length > 0) {
+          cleanedCustomSections[id] = {
+            ...section,
+            items: cleanedItems
+          };
+        }
+      });
+    }
+    
+    // Remove 'other' field completely (no longer used)
+    const { other, ...cleanedData } = data;
+    
+    return {
+      ...cleanedData,
+      // Clean up empty custom section items
+      customSections: cleanedCustomSections
+    };
+  };
+
   // Save resume to cloud (with subtle indicator instead of toast)
   const handleSaveToCloud = async () => {
     if (!token) {
@@ -194,13 +270,16 @@ export function ResumeBuilder() {
     try {
       let response;
       
+      // Clean data before saving
+      const cleanedData = cleanResumeData(resumeData);
+      
       if (resumeId) {
         response = await fetch(`/api/resumes/${resumeId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: `Resume - ${new Date().toLocaleDateString()}`,
-            data: resumeData,
+            data: cleanedData,
           }),
         });
       } else {
@@ -209,7 +288,7 @@ export function ResumeBuilder() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: `Resume - ${new Date().toLocaleDateString()}`,
-            data: resumeData,
+            data: cleanedData,
           }),
         });
         
@@ -275,13 +354,16 @@ export function ResumeBuilder() {
         }
       }
       
+      // Clean data before saving
+      const cleanedData = cleanResumeData(resumeData);
+      
       if (currentResumeId) {
         response = await fetch(`/api/resumes/${currentResumeId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: `Resume - ${new Date().toLocaleDateString()}`,
-            data: resumeData,
+            data: cleanedData,
           }),
         });
       } else {
@@ -290,7 +372,7 @@ export function ResumeBuilder() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: `Resume - ${new Date().toLocaleDateString()}`,
-            data: resumeData,
+            data: cleanedData,
           }),
         });
         
@@ -300,6 +382,7 @@ export function ResumeBuilder() {
           sessionStorage.setItem('currentResumeId', resume.id);
         }
       }
+      
     } catch (error) {
       // Silently fail
     } finally {
@@ -320,6 +403,43 @@ export function ResumeBuilder() {
       hasLoadedRef.current = false;
     }
   }, [token, handleLoadFromCloud]);
+
+  // Track last saved data to prevent unnecessary saves
+  const lastSavedDataRef = useRef<string>('');
+
+  // Debounced autosave when resumeData changes
+  const debouncedAutoSave = useCallback(
+    debounce(() => {
+      if (token && resumeData) {
+        // Only save if data actually changed
+        const currentData = JSON.stringify(resumeData);
+        if (currentData !== lastSavedDataRef.current) {
+          lastSavedDataRef.current = currentData;
+          performAutoSave();
+        }
+      }
+    }, 3000), // Increased to 3 seconds for better debouncing
+    [token, performAutoSave, resumeData]
+  );
+
+  // Trigger autosave when resume data changes
+  useEffect(() => {
+    if (token && resumeData) {
+      debouncedAutoSave();
+    }
+  }, [resumeData, token, debouncedAutoSave]);
+
+  // Listen for force-save events (e.g., when clicking Next button)
+  useEffect(() => {
+    const handleForceSave = () => {
+      if (token && resumeData) {
+        performAutoSave(); // Immediate save, bypassing debounce
+      }
+    };
+
+    window.addEventListener('force-save-resume', handleForceSave);
+    return () => window.removeEventListener('force-save-resume', handleForceSave);
+  }, [token, resumeData, performAutoSave]);
 
   // Save on page unload
   useEffect(() => {
@@ -367,6 +487,30 @@ export function ResumeBuilder() {
           <NavNotification />
           
           <div className="flex items-center gap-2 md:gap-4">
+            {/* Undo/Redo buttons */}
+            <div className="flex items-center gap-1 border-r pr-2 md:pr-4">
+              <Button
+                onClick={undo}
+                disabled={!canUndo}
+                variant="ghost"
+                size="icon"
+                title="Undo (Ctrl+Z)"
+                className="h-8 w-8"
+              >
+                <Undo2 className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={redo}
+                disabled={!canRedo}
+                variant="ghost"
+                size="icon"
+                title="Redo (Ctrl+Y)"
+                className="h-8 w-8"
+              >
+                <Redo2 className="h-4 w-4" />
+              </Button>
+            </div>
+
             {/* Save button with indicator */}
             {token && (
               <Button
@@ -559,6 +703,44 @@ export function ResumeBuilder() {
               </div>
             </main>
         </div>
+
+        {/* Browser Extension Warning Dialog */}
+        <Dialog open={showExtensionWarning} onOpenChange={setShowExtensionWarning}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                Browser Extension Detected
+              </DialogTitle>
+              <DialogDescription className="space-y-3 pt-4">
+                <p>
+                  We've detected a browser extension (like Grammarly, password manager, etc.) that may appear in your PDF.
+                </p>
+                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-2">
+                  <p className="font-semibold text-foreground text-sm">For best results:</p>
+                  <ol className="list-decimal list-inside space-y-1 text-sm">
+                    <li>Temporarily disable browser extensions</li>
+                    <li>Refresh the page</li>
+                    <li>Download your resume again</li>
+                  </ol>
+                </div>
+                <p className="text-sm">
+                  <strong>Or continue anyway:</strong> Our system will automatically attempt to hide extension icons from the PDF.
+                </p>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setShowExtensionWarning(false)}>
+                Cancel
+              </Button>
+              <Button onClick={proceedWithDownload}>
+                Continue Anyway
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
   );
 }

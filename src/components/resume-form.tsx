@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { PlusCircle, Trash2, Sparkles, Loader2, Copy, X, Info, ArrowLeft, ArrowRight } from 'lucide-react';
-import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink, Other } from '@/lib/types';
+import type { Education, Experience, Project, SkillCategory as SkillCategoryType, Certification, Achievement, AchievementCategory, EducationCategory, OtherLink } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from './ui/dialog';
 import { generateSummary } from '@/ai/flows/generate-summary-flow';
@@ -100,7 +100,7 @@ type AiExperienceState = {
   generatedBulletPoints: string;
   isGenerating: boolean;
   targetIndex: number | null;
-  targetType: 'experience' | 'projects' | 'achievements' | 'certifications' | 'other';
+  targetType: 'experience' | 'projects' | 'achievements' | 'certifications';
 };
 
 const initialSummaryAiState: GenerateSummaryInput = {
@@ -167,16 +167,16 @@ const BulletPointTooltip = () => (
 
 const RequiredIndicator = () => <span className="text-destructive ml-1">*</span>;
 
-const formSteps = [
+const baseFormSteps = [
     { id: 'contact', name: 'Contact' },
     { id: 'summary', name: 'Summary' },
     { id: 'skills', name: 'Skills' },
     { id: 'education', name: 'Education' },
     { id: 'projects', name: 'Projects' },
-    { id: 'experience', name: 'Experience' },
-    { id: 'certifications', name: 'Cert.' },
+    { id: 'certifications', name: 'Certifications' },
     { id: 'achievements', name: 'Achievements' },
-    { id: 'other', name: 'Other' },
+    { id: 'experience', name: 'Experience' }, // Last fixed step
+    // 'Other' section removed - users can add custom sections instead
 ];
 
 export function ResumeForm() {
@@ -205,9 +205,20 @@ export function ResumeForm() {
   });
   
   const [currentStep, setCurrentStep] = useState(0);
+  const [customSections, setCustomSections] = useState<Array<{ id: string; name: string }>>([]);
+  const [isAddSectionDialogOpen, setIsAddSectionDialogOpen] = useState(false);
+  const [newSectionName, setNewSectionName] = useState('');
+  
+  // Build dynamic steps list
+  const formSteps = React.useMemo(() => {
+    // Add custom sections AFTER Experience (at the end)
+    return [...baseFormSteps, ...customSections];
+  }, [customSections]);
 
   const validateStep = (stepIndex: number): boolean => {
-    const stepId = formSteps[stepIndex].id;
+    const stepId = formSteps[stepIndex]?.id;
+    if (!stepId) return true;
+    
     const errors: Record<string, boolean> = {};
     let isValid = true;
 
@@ -217,6 +228,11 @@ export function ResumeForm() {
             isValid = false;
         }
     };
+    
+    // Custom sections don't require validation
+    if (stepId.startsWith('custom-')) {
+        return true;
+    }
     
     if (stepId === 'contact') {
         check(resumeData.contact.name, 'contact.name');
@@ -270,11 +286,6 @@ export function ResumeForm() {
             check(ach.date, `achievements.${ach.id}.date`);
             check(ach.description, `achievements.${ach.id}.description`);
         });
-    } else if (stepId === 'other') {
-        resumeData.other.forEach(item => {
-            check(item.title, `other.${item.id}.title`);
-            check(item.description, `other.${item.id}.description`);
-        });
     } else if (stepId === 'skills') {
         resumeData.skills.forEach(skillCat => {
             check(skillCat.name, `skills.${skillCat.id}.name`);
@@ -287,9 +298,15 @@ export function ResumeForm() {
     return isValid;
   };
 
-  const goToNextStep = () => {
+  const goToNextStep = async () => {
     if (validateStep(currentStep)) {
         setValidationErrors({});
+        
+        // Trigger an immediate save when clicking Next (hybrid approach)
+        // This ensures data is saved at section boundaries + auto-save
+        const saveEvent = new CustomEvent('force-save-resume');
+        window.dispatchEvent(saveEvent);
+        
         setCurrentStep(prev => (prev < formSteps.length - 1 ? prev + 1 : prev));
     } else {
         showNotification({
@@ -308,7 +325,66 @@ export function ResumeForm() {
   const handleStepClick = (stepIndex: number) => {
     setValidationErrors({});
     setCurrentStep(stepIndex);
-  }
+  };
+
+  const handleAddCustomSection = () => {
+    setIsAddSectionDialogOpen(true);
+  };
+
+  const confirmAddSection = () => {
+    if (newSectionName.trim()) {
+      const newSection = {
+        id: `custom-${Date.now()}`,
+        name: newSectionName.trim(),
+      };
+      setCustomSections([...customSections, newSection]);
+      
+      // Initialize data for the custom section
+      setResumeData(prev => ({
+        ...prev,
+        customSections: {
+          ...prev.customSections,
+          [newSection.id]: {
+            title: newSectionName.trim(),
+            items: [],
+          }
+        }
+      }));
+      
+      setNewSectionName('');
+      setIsAddSectionDialogOpen(false);
+      showNotification({
+        title: 'Section Added',
+        description: `"${newSectionName}" section has been added.`,
+        type: 'success',
+      });
+    }
+  };
+
+  const handleDeleteCustomSection = (sectionId: string) => {
+    setCustomSections(customSections.filter(s => s.id !== sectionId));
+    
+    // Remove data for this custom section
+    setResumeData(prev => {
+      const newCustomSections = { ...prev.customSections };
+      delete newCustomSections[sectionId];
+      return {
+        ...prev,
+        customSections: newCustomSections
+      };
+    });
+    
+    // Go to previous step if we deleted the current one
+    if (formSteps[currentStep]?.id === sectionId) {
+      setCurrentStep(prev => Math.max(0, prev - 1));
+    }
+    
+    showNotification({
+      title: 'Section Removed',
+      description: 'Custom section has been deleted.',
+      type: 'info',
+    });
+  };
 
 
   React.useEffect(() => {
@@ -437,8 +513,8 @@ export function ResumeForm() {
     return false;
   };
 
-  const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType | Certification | Achievement | Other>(
-    section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements' | 'other',
+  const handleGenericChange = <T extends Education | Experience | Project | SkillCategoryType | Certification | Achievement>(
+    section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements',
     index: number,
     field: keyof T,
     value: string
@@ -481,7 +557,7 @@ export function ResumeForm() {
     });
   };
 
-  const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements' | 'other') => {
+  const addEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements') => {
     setResumeData(prev => {
       let newEntry;
       if (section === 'education') {
@@ -495,18 +571,15 @@ export function ResumeForm() {
       } else if (section === 'certifications') {
         newEntry = { id: `cert_${Date.now()}`, name: '', issuer: '', date: '', description: '', technologies: '', link: '' };
       } else if (section === 'achievements') {
-        newEntry = { id: `ach_${Date.now()}`, category: 'other' as AchievementCategory, name: '', context: '', date: '', description: '', link: '' };
-      } else if (section === 'other') {
-        newEntry = { id: `other_${Date.now()}`, title: '', description: '' };
-      }
-      else {
+        newEntry = { id: `ach_${Date.now()}`, category: 'hackathon' as AchievementCategory, name: '', context: '', date: '', description: '', link: '' };
+      } else {
         return prev;
       }
       return { ...prev, [section]: [...prev[section], newEntry] };
     });
   };
   
-  const removeEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements' | 'other', id: string) => {
+  const removeEntry = (section: 'education' | 'experience' | 'projects' | 'skills' | 'certifications' | 'achievements', id: string) => {
     setResumeData(prev => ({
       ...prev,
       [section]: (prev[section] as any[]).filter(item => item.id !== id),
@@ -642,8 +715,99 @@ export function ResumeForm() {
   };
   
   const renderStepContent = () => {
-    switch (currentStep) {
-        case 0:
+    const currentStepId = formSteps[currentStep]?.id;
+    
+    // Handle custom sections
+    if (currentStepId?.startsWith('custom-')) {
+      const sectionName = formSteps[currentStep].name;
+      const sectionData = resumeData.customSections?.[currentStepId] || { title: sectionName, items: [] };
+      
+      return (
+        <div>
+          <CardTitle className="text-xl mb-4">{sectionName}</CardTitle>
+          <p className="text-sm text-muted-foreground mb-4">
+            Add items to your {sectionName} section.
+          </p>
+          <div className="space-y-4">
+            {sectionData.items.map((item, index) => (
+              <Card key={item.id} className="p-4 relative bg-background shadow-none border">
+                <CardContent className="space-y-4 p-2">
+                  <div className="space-y-2">
+                    <Label>Content<RequiredIndicator /></Label>
+                    <Textarea
+                      value={item.content}
+                      onChange={(e) => {
+                        setResumeData(prev => {
+                          const section = prev.customSections?.[currentStepId];
+                          if (!section) return prev;
+                          const newItems = [...section.items];
+                          newItems[index] = { ...newItems[index], content: e.target.value };
+                          return {
+                            ...prev,
+                            customSections: {
+                              ...prev.customSections,
+                              [currentStepId]: { ...section, items: newItems }
+                            }
+                          };
+                        });
+                      }}
+                      placeholder={`Enter content for ${sectionName}...`}
+                      rows={4}
+                    />
+                  </div>
+                </CardContent>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="absolute top-2 right-2 text-destructive" 
+                  onClick={() => {
+                    setResumeData(prev => {
+                      const section = prev.customSections?.[currentStepId];
+                      if (!section) return prev;
+                      return {
+                        ...prev,
+                        customSections: {
+                          ...prev.customSections,
+                          [currentStepId]: {
+                            ...section,
+                            items: section.items.filter(i => i.id !== item.id)
+                          }
+                        }
+                      };
+                    });
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </Card>
+            ))}
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setResumeData(prev => {
+                  const section = prev.customSections?.[currentStepId] || { title: sectionName, items: [] };
+                  return {
+                    ...prev,
+                    customSections: {
+                      ...prev.customSections,
+                      [currentStepId]: {
+                        ...section,
+                        items: [...section.items, { id: `item_${Date.now()}`, content: '' }]
+                      }
+                    }
+                  };
+                });
+              }}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Item
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    switch (currentStepId) {
+        case 'contact':
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Contact Information</CardTitle>
@@ -696,7 +860,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 1:
+        case 'summary':
             return (
                  <div>
                     <CardTitle className="text-xl mb-4">Professional Summary</CardTitle>
@@ -806,7 +970,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 2:
+        case 'skills':
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Skills</CardTitle>
@@ -890,7 +1054,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 3:
+        case 'education':
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Education</CardTitle>
@@ -957,7 +1121,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 4:
+        case 'projects':
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Projects</CardTitle>
@@ -1041,7 +1205,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 5:
+        case 'experience':
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Work Experience</CardTitle>
@@ -1093,7 +1257,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 6:
+        case 'certifications':
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Certifications</CardTitle>
@@ -1152,7 +1316,7 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 7:
+        case 'achievements':
             return (
                 <div>
                     <CardTitle className="text-xl mb-4">Achievements & Activities</CardTitle>
@@ -1233,56 +1397,6 @@ export function ResumeForm() {
                     </div>
                 </div>
             );
-        case 8:
-            return (
-                 <div>
-                    <CardTitle className="text-xl mb-4">Other</CardTitle>
-                     <div className="space-y-4">
-                    {resumeData.other.map((item, index) => (
-                        <Card key={item.id} className="p-4 relative bg-background shadow-none border">
-                        <CardContent className="grid grid-cols-1 gap-4 p-2">
-                            <div className="space-y-2">
-                            <Label>Title<RequiredIndicator /></Label>
-                            <Input
-                                id={`other.${item.id}.title`}
-                                value={item.title}
-                                onChange={(e) => handleGenericChange('other', index, 'title', e.target.value)}
-                                placeholder="e.g., Extracurricular Activities, Awards"
-                                className={cn(validationErrors[`other.${item.id}.title`] && 'border-destructive')}
-                            />
-                            </div>
-                            <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                                <div className="flex items-center gap-2">
-                                <Label>Description<RequiredIndicator /></Label>
-                                <BulletPointTooltip />
-                                </div>
-                                <Button variant="outline" size="sm" onClick={() => openExperienceAiDialog('other', index)}>
-                                <Sparkles className="mr-2 h-4 w-4" />
-                                Generate with AI
-                                </Button>
-                            </div>
-                            <Textarea
-                                id={`other.${item.id}.description`}
-                                value={item.description}
-                                onChange={(e) => handleGenericChange('other', index, 'description', e.target.value)}
-                                placeholder="- Describe your activity, award, or other information here."
-                                rows={4}
-                                className={cn(validationErrors[`other.${item.id}.description`] && 'border-destructive')}
-                            />
-                            </div>
-                        </CardContent>
-                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('other', item.id)}>
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                        </Card>
-                    ))}
-                    <Button variant="outline" onClick={() => addEntry('other')}>
-                        <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Section
-                    </Button>
-                    </div>
-                </div>
-            );
         default:
             return null;
     }
@@ -1295,6 +1409,8 @@ export function ResumeForm() {
             steps={formSteps}
             currentStep={currentStep}
             onStepClick={handleStepClick}
+            onAddSection={handleAddCustomSection}
+            onDeleteSection={handleDeleteCustomSection}
         />
         <Card className="mt-4">
             <CardContent className="p-6">
@@ -1319,6 +1435,38 @@ export function ResumeForm() {
             </CardContent>
         </Card>
       
+       {/* Add Custom Section Dialog */}
+       <Dialog open={isAddSectionDialogOpen} onOpenChange={setIsAddSectionDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Custom Section</DialogTitle>
+              <DialogDescription>
+                Add a custom section to your resume (e.g., Publications, Languages, Volunteer Work, etc.)
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="section-name">Section Name</Label>
+                <Input
+                  id="section-name"
+                  value={newSectionName}
+                  onChange={(e) => setNewSectionName(e.target.value)}
+                  placeholder="e.g., Publications, Languages, Awards"
+                  onKeyDown={(e) => e.key === 'Enter' && confirmAddSection()}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsAddSectionDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={confirmAddSection} disabled={!newSectionName.trim()}>
+                Add Section
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
        <Dialog open={aiExperienceState.isOpen} onOpenChange={(isOpen) => setAiExperienceState(prev => ({ ...prev, isOpen }))}>
            <DialogContent className="sm:max-w-xl">
               <DialogHeader>

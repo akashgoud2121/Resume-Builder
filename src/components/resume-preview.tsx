@@ -5,7 +5,7 @@
 import React, { forwardRef } from 'react';
 import { useResume } from '@/lib/store';
 import { cn } from '@/lib/utils';
-import type { Education, EducationCategory, Achievement, AchievementCategory, Certification, Project, Other } from '@/lib/types';
+import type { Education, EducationCategory, Achievement, AchievementCategory, Certification, Project } from '@/lib/types';
 import { Github, Linkedin, Mail, Phone, Link as LinkIcon, MapPin } from 'lucide-react';
 
 
@@ -71,11 +71,10 @@ const parseDate = (dateString: string): Date | null => {
 
 export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
   const { resumeData } = useResume();
-  const { contact, summary, education, experience, projects, skills, certifications, achievements, other } = resumeData;
+  const { contact, summary, education, experience, projects, skills, certifications, achievements, customSections } = resumeData;
   
   const hasSkills = skills && skills.some(cat => cat.name && cat.skills);
   const hasExperience = experience.length > 0 && experience.some(e => e.title);
-  const hasOther = other.length > 0 && other.some(o => o.title);
 
   const sortedEducation = [...education]
     .filter(edu => edu.school)
@@ -319,11 +318,23 @@ export const ResumePreview = forwardRef<HTMLDivElement>((props, ref) => {
           })}
       </Section>
       
-      {other.map((item: Other) => (item.title && item.description) && (
-        <Section key={item.id} title={item.title} hasData={true}>
-          {renderDescription(item.description)}
-        </Section>
-      ))}
+      {/* Custom Sections - dynamically added by user */}
+      {customSections && Object.entries(customSections).map(([sectionId, section]) => {
+        const hasContent = section.items && section.items.length > 0 && section.items.some(item => item.content.trim());
+        if (!hasContent) return null;
+        
+        return (
+          <Section key={sectionId} title={section.title} hasData={true}>
+            <div className="space-y-2">
+              {section.items.map(item => item.content.trim() && (
+                <div key={item.id} className="break-inside-avoid">
+                  {renderDescription(item.content)}
+                </div>
+              ))}
+            </div>
+          </Section>
+        );
+      })}
 
       {!hasExperience && ExperienceSection}
 

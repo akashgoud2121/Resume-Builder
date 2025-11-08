@@ -77,11 +77,15 @@ export type Achievement = {
   link?: string;
 };
 
-export type Other = {
+export type CustomSectionItem = {
   id: string;
+  content: string;
+};
+
+export type CustomSection = {
   title: string;
-  description: string;
-}
+  items: CustomSectionItem[];
+};
 
 export type ResumeData = {
   contact: ContactInfo;
@@ -92,7 +96,7 @@ export type ResumeData = {
   skills: SkillCategory[];
   certifications: Certification[];
   achievements: Achievement[];
-  other: Other[];
+  customSections?: Record<string, CustomSection>;
 };
 
     

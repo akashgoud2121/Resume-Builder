@@ -11,12 +11,18 @@ import { Label } from '@/components/ui/label';
 import { Loader2, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthActions } from '@/hooks/use-auth';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 
 const signupStepOneSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+    .regex(/[0-9]/, 'Password must contain at least one number')
+    .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
@@ -76,9 +82,25 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [showOtpStep, setShowOtpStep] = useState(false);
   const [signupData, setSignupData] = useState<any>(null);
   const [isResending, setIsResending] = useState(false);
+  const [passwordValue, setPasswordValue] = useState('');
   const { toast } = useToast();
   const router = useRouter();
-  const { signInWithGoogle, signInWithGitHub, signIn } = useAuthActions();
+  const { signInWithGoogle, signInWithGitHub } = useAuthActions();
+
+  // Password strength checker
+  const getPasswordStrength = (password: string) => {
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[a-z]/.test(password)) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    return strength;
+  };
+
+  const passwordStrength = mode === 'signup' ? getPasswordStrength(passwordValue) : 0;
+  const strengthLabels = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong'];
+  const strengthColors = ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-blue-500', 'bg-green-500'];
 
   const emailSchema = mode === 'signup' ? signupStepOneSchema : loginSchema;
   type EmailFormData = z.infer<typeof emailSchema>;
@@ -126,15 +148,30 @@ export function AuthForm({ mode }: AuthFormProps) {
           description: 'Please check your email for the verification code.',
         });
       } else {
-        // Login with credentials
-        const result = await signIn(data.email, data.password);
+        // Login with credentials - don't use redirect: true, handle it manually
+        const result = await signIn('credentials', {
+          email: data.email,
+          password: data.password,
+          redirect: false, // Handle redirect manually
+        });
         
         if (result?.error) {
           throw new Error(result.error);
         }
 
-        // NextAuth will handle the redirect automatically to /build
-        // No need to manually redirect or show toast here
+        if (result?.ok) {
+          // Login successful
+          toast({
+            variant: 'success',
+            title: 'Login Successful!',
+            description: 'Welcome back!',
+          });
+          
+          // Wait for session to be established, then redirect
+          setTimeout(() => {
+            window.location.href = '/'; // Hard redirect to ensure session is picked up
+          }, 1000);
+        }
       }
     } catch (error: any) {
       toast({
@@ -169,12 +206,15 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       toast({
         variant: 'success',
-        title: 'Account Created',
-        description: "You've been successfully signed up! Please log in.",
+        title: 'Account Created Successfully!',
+        description: "Please sign in with your credentials to continue.",
       });
       
-      // Redirect to login
-      router.push('/login');
+      // Redirect to login page
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500); // Small delay to show success message
+      
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -220,6 +260,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const handleGoogleSignIn = async () => {
     setIsGoogleLoading(true);
     try {
+      // OAuth will handle redirect automatically
       await signInWithGoogle();
     } catch (error: any) {
       setIsGoogleLoading(false);
@@ -234,6 +275,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const handleGitHubSignIn = async () => {
     setIsGitHubLoading(true);
     try {
+      // OAuth will handle redirect automatically
       await signInWithGitHub();
     } catch (error: any) {
       setIsGitHubLoading(false);
@@ -377,9 +419,54 @@ export function AuthForm({ mode }: AuthFormProps) {
               </Link>
             )}
           </div>
-          <Input id="password" type="password" {...register('password')} />
+          <Input 
+            id="password" 
+            type="password" 
+            {...register('password')} 
+            onChange={(e) => {
+              register('password').onChange(e);
+              if (mode === 'signup') {
+                setPasswordValue(e.target.value);
+              }
+            }}
+          />
           {errors.password && (
             <p className="text-sm text-destructive">{errors.password.message}</p>
+          )}
+          {mode === 'signup' && passwordValue && (
+            <div className="space-y-1">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <div
+                    key={level}
+                    className={`h-1 flex-1 rounded-full transition-all ${
+                      level <= passwordStrength ? strengthColors[passwordStrength - 1] : 'bg-gray-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Password strength: {strengthLabels[passwordStrength - 1] || 'Very Weak'}
+              </p>
+              <div className="text-xs text-muted-foreground space-y-0.5">
+                <p className="font-semibold">Password must contain:</p>
+                <p className={passwordValue.length >= 8 ? 'text-green-600' : ''}>
+                  {passwordValue.length >= 8 ? '✓' : '○'} At least 8 characters
+                </p>
+                <p className={/[a-z]/.test(passwordValue) ? 'text-green-600' : ''}>
+                  {/[a-z]/.test(passwordValue) ? '✓' : '○'} One lowercase letter
+                </p>
+                <p className={/[A-Z]/.test(passwordValue) ? 'text-green-600' : ''}>
+                  {/[A-Z]/.test(passwordValue) ? '✓' : '○'} One uppercase letter
+                </p>
+                <p className={/[0-9]/.test(passwordValue) ? 'text-green-600' : ''}>
+                  {/[0-9]/.test(passwordValue) ? '✓' : '○'} One number
+                </p>
+                <p className={/[^a-zA-Z0-9]/.test(passwordValue) ? 'text-green-600' : ''}>
+                  {/[^a-zA-Z0-9]/.test(passwordValue) ? '✓' : '○'} One special character (!@#$%^&*)
+                </p>
+              </div>
+            </div>
           )}
         </div>
         {mode === 'signup' && (

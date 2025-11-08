@@ -7,14 +7,16 @@ export default withAuth(
     const isAuth = !!token;
     const isAuthPage = req.nextUrl.pathname.startsWith('/login') || 
                        req.nextUrl.pathname.startsWith('/signup');
+    const isPublicPage = req.nextUrl.pathname === '/' || 
+                         req.nextUrl.pathname.startsWith('/terms');
     
     // If user is authenticated and trying to access auth pages, redirect to homepage
     if (isAuthPage && isAuth) {
       return NextResponse.redirect(new URL('/', req.url));
     }
 
-    // If user is not authenticated and trying to access protected pages, redirect to /login
-    if (!isAuth && !isAuthPage) {
+    // If user is not authenticated and trying to access protected pages (not public pages), redirect to /login
+    if (!isAuth && !isAuthPage && !isPublicPage) {
       let from = req.nextUrl.pathname;
       if (req.nextUrl.search) {
         from += req.nextUrl.search;

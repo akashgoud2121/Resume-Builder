@@ -32,14 +32,15 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
 // Always add Credentials provider (email/password with OTP)
 providers.push(
   CredentialsProvider({
-      name: 'credentials',
+      id: 'credentials',
+      name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error('Invalid credentials');
+          throw new Error('Please provide email and password');
         }
 
         const user = await prisma.user.findUnique({
@@ -65,7 +66,13 @@ providers.push(
           throw new Error('Invalid password');
         }
 
-        return user;
+        // Return user object for JWT
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+        };
       },
     })
 );
@@ -79,14 +86,14 @@ export const authOptions: NextAuthOptions = {
   },
   debug: process.env.NODE_ENV === 'development',
   session: {
-    strategy: 'database', // Changed from 'jwt' to 'database' for OAuth persistence
+    strategy: 'jwt', // Use JWT for reliable session handling
     maxAge: 30 * 24 * 60 * 60, // 30 days
     updateAge: 24 * 60 * 60, // 24 hours
   },
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // After successful login, redirect to homepage first
+      // After successful login, redirect to home page
       if (url.startsWith(baseUrl)) {
         return url;
       }
@@ -94,13 +101,26 @@ export const authOptions: NextAuthOptions = {
       else if (url.startsWith('/')) {
         return `${baseUrl}${url}`;
       }
-      // Default redirect to homepage after login (for API key setup)
+      // Default redirect to home page after login
       return `${baseUrl}/`;
     },
-    async session({ session, user }) {
-      // With database strategy, we get the user from the database
-      if (session?.user) {
-        session.user.id = user.id;
+    async jwt({ token, user, account }) {
+      // Initial sign in
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+        token.image = user.image;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Send user ID and info to the client
+      if (token && session.user) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+        session.user.image = token.image as string;
       }
       return session;
     },

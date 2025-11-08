@@ -29,9 +29,11 @@ export default function Home() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
   const [displayName, setDisplayName] = useState('');
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   const { showNotification } = useNotification();
   const { user, signOut: handleSignOut, isLoading } = useAuth();
   const router = useRouter();
+
 
   useEffect(() => {
     const storedKey = localStorage.getItem('userApiKey');
@@ -43,6 +45,10 @@ export default function Home() {
   useEffect(() => {
     if (user?.name) {
         setDisplayName(user.name);
+        
+        // Check if user is first-time (no resume data saved yet)
+        const hasVisitedBefore = localStorage.getItem('hasVisitedBuilder');
+        setIsFirstTimeUser(!hasVisitedBefore);
     }
   }, [user]);
 
@@ -54,6 +60,8 @@ export default function Home() {
       description: "Your Google AI API key has been saved locally.",
       type: "success",
     });
+    // Redirect to build page after saving API key
+    router.push('/build');
   };
   
   const handleRemoveApiKey = () => {
@@ -85,12 +93,11 @@ export default function Home() {
   };
 
   const handleGoToBuilderClick = () => {
-    const storedKey = localStorage.getItem('userApiKey');
-    if (storedKey) {
-        router.push('/build');
-    } else {
-        setIsSettingsOpen(true);
-    }
+    // Mark that user has visited builder
+    localStorage.setItem('hasVisitedBuilder', 'true');
+    setIsFirstTimeUser(false);
+    // Redirect to builder page
+    router.push('/build');
   };
 
   const handleProfileUpdate = async () => {
@@ -269,75 +276,88 @@ export default function Home() {
                   </Button>
                 </div>
             ) : (
-              <>
-                <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-                    <DialogTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label="Settings">
-                            <Settings className="h-5 w-5" />
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader>
-                            <DialogTitle>AI Generation Settings</DialogTitle>
-                            <DialogDescription>
-                                To use the AI features, you need a Google AI API key. Your key is stored securely in your browser's local storage and is never sent to our servers.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                           <div className="space-y-2">
-                            <Label htmlFor="apiKey-loggedout">Your Google AI API Key</Label>
-                            <Input 
-                                id="apiKey-loggedout" 
-                                type="password" 
-                                value={apiKey} 
-                                onChange={(e) => setApiKey(e.target.value)}
-                                placeholder="Enter your API key"
-                            />
-                           </div>
-                           <div className="text-xs text-muted-foreground space-y-2 p-3 bg-muted/50 rounded-md border">
-                              <p className="font-semibold text-foreground">How to get your API key:</p>
-                              <ol className="list-decimal list-inside space-y-1">
-                                  <li>Go to{' '}
-                                      <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="underline font-medium">
-                                          Google AI Studio
-                                      </a>.
-                                  </li>
-                                  <li>Click <span className="font-bold">"Create API key in new project"</span>. It's free.</li>
-                                  <li>Copy the generated API key.</li>
-                                  <li>Paste it into the input box above and click "Save".</li>
-                                  </ol>
-                              </div>
-                        </div>
-                        <DialogFooter className='sm:justify-between pt-4'>
-                           <Button variant="destructive" onClick={handleRemoveApiKey} disabled={!apiKey}>
-                               Remove Key
-                           </Button>
-                           <div className="flex gap-2">
-                               <Button variant="secondary" onClick={() => setIsSettingsOpen(false)}>Cancel</Button>
-                               <Button onClick={handleSaveApiKey} disabled={!apiKey}>Save</Button>
-                           </div>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-                <Button asChild>
-                    <Link href="/login">Get Started</Link>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" asChild>
+                  <Link href="/login">Sign In</Link>
                 </Button>
-              </>
+                <Button asChild>
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </div>
             )}
         </div>
       </header>
       <main className="flex-1 flex flex-col items-center justify-center text-center">
         <div className="container max-w-4xl">
            <GraduationCap className="h-16 w-16 mx-auto text-primary mb-4" />
-          <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-            Your Career Journey Starts Here
-          </h1>
-          <p className="mt-4 text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
-            Build a standout resume for internships, part-time jobs, and your first career step. It's fast, easy, and completely free.
-          </p>
-          <Button onClick={handleGoToBuilderClick} size="lg" className="mt-8">
-            Create My Resume
-          </Button>
+          {isLoading ? (
+            <>
+              <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                Loading...
+              </h1>
+              <div className="mt-8">
+                <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
+              </div>
+            </>
+          ) : (
+            <>
+              <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+                {user 
+                  ? (isFirstTimeUser ? 'Welcome to Resume Builder!' : 'Welcome Back!')
+                  : 'Your Career Journey Starts Here'
+                }
+              </h1>
+              <p className="mt-4 text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
+                {user 
+                  ? (isFirstTimeUser 
+                      ? "Let's create your first professional resume! Click below to get started with our easy-to-use builder."
+                      : "Ready to continue building your professional resume? Your work is saved and waiting for you."
+                    )
+                  : "Build a standout resume for internships, part-time jobs, and your first career step. It's fast, easy, and completely free."
+                }
+              </p>
+              {user ? (
+                <div className="mt-8">
+                  <Button onClick={handleGoToBuilderClick} size="lg" className="px-8">
+                    {isFirstTimeUser ? 'Start Building Your Resume' : 'Continue Building'}
+                  </Button>
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    Logged in as: {user.email}
+                  </p>
+                </div>
+              ) : (
+                <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                  <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1">AI-Powered</h3>
+                    <p className="text-sm text-muted-foreground">Generate professional content instantly</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/10 text-purple-600 mb-3">
+                      <FileText className="h-6 w-6" />
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1">Professional</h3>
+                    <p className="text-sm text-muted-foreground">ATS-friendly resume formats</p>
+                  </div>
+                  
+                  <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 text-green-600 mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <h3 className="font-semibold text-lg mb-1">100% Free</h3>
+                    <p className="text-sm text-muted-foreground">No hidden charges, ever</p>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
       <Footer />

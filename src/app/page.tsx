@@ -161,7 +161,7 @@ export default function Home() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" className="flex items-center gap-2">
-                        <span>Welcome, {user.name || 'User'}</span>
+                        <span className="hidden sm:inline">Welcome, {user.name || 'User'}</span>
                         <Avatar className="h-8 w-8">
                           <AvatarImage src={user.image || undefined} alt={user.name || 'User'} />
                           <AvatarFallback className="bg-primary text-primary-foreground">
@@ -297,12 +297,12 @@ export default function Home() {
             )}
         </div>
       </header>
-      <main className="flex-1 flex flex-col items-center justify-center text-center">
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-4 py-8">
         <div className="container max-w-4xl">
-           <GraduationCap className="h-16 w-16 mx-auto text-primary mb-4" />
+           <GraduationCap className="h-12 w-12 sm:h-16 sm:w-16 mx-auto text-primary mb-4" />
           {isLoading ? (
             <>
-              <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+              <h1 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
                 Loading...
               </h1>
               <div className="mt-8">
@@ -311,13 +311,13 @@ export default function Home() {
             </>
           ) : (
             <>
-              <h1 className="font-headline text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
+              <h1 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl px-2">
                 {user 
                   ? (isFirstTimeUser ? 'Welcome to Resume Builder!' : 'Welcome Back!')
                   : 'Your Career Journey Starts Here'
                 }
               </h1>
-              <p className="mt-4 text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto">
+              <p className="mt-4 text-base sm:text-lg text-muted-foreground md:text-xl max-w-2xl mx-auto px-4">
                 {user 
                   ? (isFirstTimeUser 
                       ? "Let's create your first professional resume! Click below to get started with our easy-to-use builder."
@@ -328,41 +328,41 @@ export default function Home() {
               </p>
               {user ? (
                 <div className="mt-8">
-                  <Button onClick={handleGoToBuilderClick} size="lg" className="px-8">
+                  <Button onClick={handleGoToBuilderClick} size="lg" className="px-6 sm:px-8 w-full sm:w-auto">
                     {isFirstTimeUser ? 'Start Building Your Resume' : 'Continue Building'}
                   </Button>
-                  <p className="mt-4 text-sm text-muted-foreground">
+                  <p className="mt-4 text-sm text-muted-foreground break-all px-4">
                     Logged in as: {user.email}
                   </p>
                 </div>
               ) : (
-                <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                  <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 mb-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="mt-12 sm:mt-16 grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto px-2">
+                  <div className="flex flex-col items-center text-center p-4 sm:p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 mb-2 sm:mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
                     </div>
-                    <h3 className="font-semibold text-lg mb-1">AI-Powered</h3>
-                    <p className="text-sm text-muted-foreground">Generate professional content instantly</p>
+                    <h3 className="font-semibold text-base sm:text-lg mb-1">AI-Powered</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Generate professional content instantly</p>
                   </div>
                   
-                  <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-500/10 text-purple-600 mb-3">
-                      <FileText className="h-6 w-6" />
+                  <div className="flex flex-col items-center text-center p-4 sm:p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-purple-500/10 text-purple-600 mb-2 sm:mb-3">
+                      <FileText className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
-                    <h3 className="font-semibold text-lg mb-1">Professional</h3>
-                    <p className="text-sm text-muted-foreground">ATS-friendly resume formats</p>
+                    <h3 className="font-semibold text-base sm:text-lg mb-1">Professional</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">ATS-friendly resume formats</p>
                   </div>
                   
-                  <div className="flex flex-col items-center text-center p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-500/10 text-green-600 mb-3">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex flex-col items-center text-center p-4 sm:p-6 rounded-lg border bg-card hover:shadow-md transition-shadow">
+                    <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-green-500/10 text-green-600 mb-2 sm:mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     </div>
-                    <h3 className="font-semibold text-lg mb-1">100% Free</h3>
-                    <p className="text-sm text-muted-foreground">No hidden charges, ever</p>
+                    <h3 className="font-semibold text-base sm:text-lg mb-1">100% Free</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">No hidden charges, ever</p>
                   </div>
                 </div>
               )}

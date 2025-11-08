@@ -493,22 +493,22 @@ export function ResumeBuilder() {
       <div className="flex h-screen w-full flex-col bg-background">
         <header className="no-print flex h-16 shrink-0 items-center justify-between border-b-2 px-4 md:px-6 sticky top-0 z-30 bg-background">
           <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
+            <Link href="/" className="flex items-center gap-2">
               <img 
                 src="/images/cognisys-logo.svg" 
                 alt="Cognisys AI Logo" 
-                className="h-8 w-8 object-contain"
+                className="h-6 w-6 sm:h-8 sm:w-8 object-contain"
               />
-              <span className="font-headline text-xl font-bold">Resume Builder</span>
+              <span className="font-headline text-lg sm:text-xl font-bold">Resume Builder</span>
             </Link>
           </div>
 
           {/* Notification indicator in nav */}
           <NavNotification />
           
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
             {/* Undo/Redo buttons */}
-            <div className="flex items-center gap-1 border-r pr-2 md:pr-4">
+            <div className="hidden sm:flex items-center gap-1 border-r pr-2 md:pr-4">
               <Button
                 onClick={undo}
                 disabled={!canUndo}
@@ -710,12 +710,12 @@ export function ResumeBuilder() {
         </header>
 
         <div className="grid flex-1 md:grid-cols-2 overflow-hidden">
-            <div className="overflow-y-auto p-4 md:p-6 no-scrollbar no-print resume-form-column">
+            <div className="overflow-y-auto p-3 sm:p-4 md:p-6 no-scrollbar no-print resume-form-column">
                 <ResumeForm />
             </div>
 
             <main id="resume-preview-container" className="hidden md:block bg-muted/30 overflow-y-auto no-scrollbar">
-              <div className="flex flex-col items-center py-8 h-full">
+              <div className="flex flex-col items-center py-6 lg:py-8 h-full">
                 <p className="text-sm text-muted-foreground mb-4 font-semibold no-print">Live Preview</p>
                 <div id="resume-preview-wrapper" className="origin-top" style={{ transform: 'scale(0.75)' }}>
                     <ResumePreview />

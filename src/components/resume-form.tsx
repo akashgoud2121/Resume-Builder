@@ -187,6 +187,7 @@ export function ResumeForm() {
   const [otherYear, setOtherYear] = React.useState('');
   const [generatedSummary, setGeneratedSummary] = React.useState('');
   const [isGeneratingSummary, setIsGeneratingSummary] = React.useState(false);
+  const isGeneratingRef = React.useRef(false); // Prevent double calls
   const { showNotification } = useNotification();
 
   const [dateErrors, setDateErrors] = React.useState<Record<string, string | null>>({});
@@ -208,6 +209,17 @@ export function ResumeForm() {
   const [customSections, setCustomSections] = useState<Array<{ id: string; name: string }>>([]);
   const [isAddSectionDialogOpen, setIsAddSectionDialogOpen] = useState(false);
   const [newSectionName, setNewSectionName] = useState('');
+  
+  // Initialize custom sections from resumeData when it loads
+  React.useEffect(() => {
+    if (resumeData.customSections && Object.keys(resumeData.customSections).length > 0) {
+      const sectionsArray = Object.entries(resumeData.customSections).map(([id, section]) => ({
+        id,
+        name: section.title,
+      }));
+      setCustomSections(sectionsArray);
+    }
+  }, [resumeData.customSections]);
   
   // Build dynamic steps list
   const formSteps = React.useMemo(() => {
@@ -466,8 +478,69 @@ export function ResumeForm() {
   };
 
 
+  // Validate LinkedIn URL format
+  const isValidLinkedInUrl = (url: string): boolean => {
+    if (!url || url.trim() === '') return true; // Empty is valid (optional field)
+    const trimmedUrl = url.trim();
+    // LinkedIn pattern: linkedin.com/in/username or linkedin.com/company/companyname
+    const linkedinPattern = /^(https?:\/\/)?(www\.)?(linkedin\.com\/in\/[\w-]+|linkedin\.com\/company\/[\w-]+)\/?$/i;
+    return linkedinPattern.test(trimmedUrl);
+  };
+
+  // Validate GitHub URL format
+  const isValidGitHubUrl = (url: string): boolean => {
+    if (!url || url.trim() === '') return true; // Empty is valid (optional field)
+    const trimmedUrl = url.trim();
+    // GitHub pattern: github.com/username
+    const githubPattern = /^(https?:\/\/)?(www\.)?(github\.com\/[\w-]+)\/?$/i;
+    return githubPattern.test(trimmedUrl);
+  };
+
   const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [e.target.name]: e.target.value } }));
+    const fieldName = e.target.name;
+    const value = e.target.value;
+    
+    setResumeData(prev => ({ ...prev, contact: { ...prev.contact, [fieldName]: value } }));
+    
+    // Validate LinkedIn and GitHub URLs if they have values
+    if (fieldName === 'linkedin' && value.trim()) {
+      if (!isValidLinkedInUrl(value)) {
+        // Set validation error
+        setValidationErrors(prev => ({
+          ...prev,
+          [`contact.${fieldName}`]: true
+        }));
+      } else {
+        // Clear validation error if URL is valid
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[`contact.${fieldName}`];
+          return newErrors;
+        });
+      }
+    } else if (fieldName === 'github' && value.trim()) {
+      if (!isValidGitHubUrl(value)) {
+        // Set validation error
+        setValidationErrors(prev => ({
+          ...prev,
+          [`contact.${fieldName}`]: true
+        }));
+      } else {
+        // Clear validation error if URL is valid
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[`contact.${fieldName}`];
+          return newErrors;
+        });
+      }
+    } else if ((fieldName === 'linkedin' || fieldName === 'github') && !value.trim()) {
+      // Clear validation error if field is empty (optional fields)
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[`contact.${fieldName}`];
+        return newErrors;
+      });
+    }
   };
 
   const handleOtherLinkChange = (index: number, field: 'label' | 'url', value: string) => {
@@ -476,9 +549,131 @@ export function ResumeForm() {
         newLinks[index] = {...newLinks[index], [field]: value};
         return {...prev, contact: {...prev.contact, otherLinks: newLinks}};
     });
+    
+    // Validate URL in real-time
+    if (field === 'url' && value.trim()) {
+      const link = resumeData.contact.otherLinks[index];
+      const fieldId = `contact.otherLinks.${link.id}.url`;
+      
+      if (!isValidUrl(value)) {
+        // Set validation error
+        setValidationErrors(prev => ({
+          ...prev,
+          [fieldId]: true
+        }));
+      } else {
+        // Clear validation error if URL is valid
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldId];
+          return newErrors;
+        });
+      }
+    } else if (field === 'url' && !value.trim()) {
+      // Clear validation error if field is empty
+      const link = resumeData.contact.otherLinks[index];
+      const fieldId = `contact.otherLinks.${link.id}.url`;
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[fieldId];
+        return newErrors;
+      });
+    }
+    
+    // Clear validation errors when user starts typing in label field
+    if (field === 'label') {
+      const link = resumeData.contact.otherLinks[index];
+      const fieldId = `contact.otherLinks.${link.id}.label`;
+      if (validationErrors[fieldId]) {
+        setValidationErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldId];
+          return newErrors;
+        });
+      }
+    }
+  };
+
+  const isValidUrl = (url: string): boolean => {
+    if (!url || url.trim() === '') return false;
+    const trimmedUrl = url.trim();
+    
+    // Allow URLs with or without protocol (http://, https://)
+    // Pattern: (optional protocol) + domain + optional path
+    // Examples: example.com, https://example.com, www.example.com/path, subdomain.example.com
+    const urlPattern = /^(https?:\/\/)?(www\.)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+    
+    // Also allow localhost and IP addresses for development
+    const localPattern = /^(https?:\/\/)?(localhost|[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})(:\d+)?([\/\w \.-]*)*\/?$/i;
+    
+    return urlPattern.test(trimmedUrl) || localPattern.test(trimmedUrl);
   };
 
   const addOtherLink = () => {
+    // Validate all existing links before adding a new one
+    const existingLinks = resumeData.contact.otherLinks;
+    
+    // Check if any existing link has empty label or URL (partial completion not allowed)
+    const incompleteLinks = existingLinks.filter(link => {
+      const hasLabel = link.label?.trim();
+      const hasUrl = link.url?.trim();
+      // Incomplete means: has one but not both, or has neither (empty link)
+      return (hasLabel && !hasUrl) || (!hasLabel && hasUrl) || (!hasLabel && !hasUrl);
+    });
+    
+    if (incompleteLinks.length > 0) {
+      showNotification({
+        title: 'Validation Error',
+        description: 'Please fill in both Label and URL for all existing links before adding a new one. You cannot leave any link partially filled.',
+        type: 'error',
+      });
+      // Set validation errors for incomplete links
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        incompleteLinks.forEach(link => {
+          if (!link.label?.trim()) {
+            newErrors[`contact.otherLinks.${link.id}.label`] = true;
+          }
+          if (!link.url?.trim()) {
+            newErrors[`contact.otherLinks.${link.id}.url`] = true;
+          }
+        });
+        return newErrors;
+      });
+      return;
+    }
+
+    // Validate URL format for all existing links that have URLs
+    const linksWithUrls = existingLinks.filter(link => link.url?.trim());
+    const invalidUrls = linksWithUrls.filter(link => !isValidUrl(link.url));
+    if (invalidUrls.length > 0) {
+      showNotification({
+        title: 'Invalid URL Format',
+        description: 'Please enter a valid URL format (e.g., example.com or https://example.com) for all existing links.',
+        type: 'error',
+      });
+      // Set validation errors for invalid URLs
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        invalidUrls.forEach(link => {
+          newErrors[`contact.otherLinks.${link.id}.url`] = true;
+        });
+        return newErrors;
+      });
+      return;
+    }
+
+    // Clear any validation errors since all links are valid
+    setValidationErrors(prev => {
+      const newErrors = { ...prev };
+      existingLinks.forEach(link => {
+        delete newErrors[`contact.otherLinks.${link.id}.label`];
+        delete newErrors[`contact.otherLinks.${link.id}.url`];
+      });
+      return newErrors;
+    });
+
+    // All validations passed, add new link
     setResumeData(prev => ({
       ...prev,
       contact: {
@@ -532,6 +727,49 @@ export function ResumeForm() {
       ...prev,
       [section]: newSectionData,
     }));
+    
+    // Validate URL fields (link) in real-time
+    if (field === 'link' && value.trim()) {
+      const itemWithId = updatedItem as any;
+      const fieldId = `${section}.${itemWithId.id}.link`;
+      
+      if (!isValidUrl(value)) {
+        // Set validation error
+        setValidationErrors(prevErrors => ({
+          ...prevErrors,
+          [fieldId]: true
+        }));
+      } else {
+        // Clear validation error if URL is valid
+        setValidationErrors(prevErrors => {
+          const newErrors = { ...prevErrors };
+          delete newErrors[fieldId];
+          return newErrors;
+        });
+      }
+    } else if (field === 'link' && !value.trim()) {
+      // Clear validation error if field is empty (optional fields)
+      const itemWithId = updatedItem as any;
+      const fieldId = `${section}.${itemWithId.id}.link`;
+      setValidationErrors(prevErrors => {
+        const newErrors = { ...prevErrors };
+        delete newErrors[fieldId];
+        return newErrors;
+      });
+    }
+    
+    // Clear validation errors when user starts typing (for non-link fields)
+    if (field !== 'link') {
+      const itemWithId = updatedItem as any;
+      const fieldId = `${section}.${itemWithId.id}.${String(field)}`;
+      if (validationErrors[fieldId]) {
+        setValidationErrors(prevErrors => {
+          const newErrors = { ...prevErrors };
+          delete newErrors[fieldId];
+          return newErrors;
+        });
+      }
+    }
     
     if (field === 'startDate' || field === 'endDate') {
         const itemWithId = updatedItem as any;
@@ -597,38 +835,82 @@ export function ResumeForm() {
   };
 
   const handleGenerateSummary = async () => {
+    // Prevent double calls
+    if (isGeneratingRef.current || isGeneratingSummary) {
+      return;
+    }
+    
+    isGeneratingRef.current = true;
     setIsGeneratingSummary(true);
     setGeneratedSummary('');
+    
     try {
       const year = summaryAiState.year === 'Other' ? otherYear : summaryAiState.year;
       const result = await generateSummary({ ...summaryAiState, year, userApiKey });
       if (result.summary) {
         setGeneratedSummary(result.summary);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (error: any) {
+      const errorMessage = error?.message || 'Unknown error occurred';
       showNotification({
         title: "Generation Failed",
-        description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
+        description: errorMessage.includes('overloaded') 
+          ? "The AI service is currently overloaded. Please try again in a few moments."
+          : errorMessage.includes('API key') || errorMessage.includes('key')
+          ? "API key error. Please check your API key in settings."
+          : "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
         type: "error",
       });
     } finally {
       setIsGeneratingSummary(false);
+      isGeneratingRef.current = false;
     }
   };
 
   const handleUseSummary = () => {
-    setResumeData(prev => ({ ...prev, summary: generatedSummary }));
+    if (!generatedSummary?.trim()) {
+      return;
+    }
+    
+    const summaryText = generatedSummary.trim();
+    
+    // Signal that user is actively editing (prevent data overwrite from cloud load)
+    // Dispatch event BEFORE updating data to ensure flag is set
+    const editingEvent = new CustomEvent('user-editing-resume', {
+      detail: { isEditing: true, reason: 'ai-summary' }
+    });
+    window.dispatchEvent(editingEvent);
+    
+    // Update resume data with the generated summary
+    setResumeData(prev => ({ ...prev, summary: summaryText }));
+    
+    // Close dialog and clear generated summary
     setIsSummaryAiDialogOpen(false);
+    setGeneratedSummary('');
+    
+    // Small delay to ensure state update is processed, then trigger immediate save
+    setTimeout(() => {
+      // Trigger immediate save (bypass debounce) to prevent data loss
+      // Dispatch event that resume-builder will listen to for immediate save
+      const saveEvent = new CustomEvent('force-save-resume-immediate', {
+        detail: { summary: summaryText }
+      });
+      window.dispatchEvent(saveEvent);
+    }, 100);
+    
     showNotification({
       title: "Summary Updated!",
-      description: "The AI-generated summary has been added to your resume.",
+      description: "The AI-generated summary has been added to your resume and saved.",
       type: "success",
     });
   };
   
-  const openExperienceAiDialog = (type: 'experience' | 'projects' | 'achievements' | 'certifications' | 'other', index: number) => {
-    const entry = resumeData[type][index] as Experience | Project | Achievement | Certification | Other; // Assertion for correct type
+  const openExperienceAiDialog = (type: 'experience' | 'projects' | 'achievements' | 'certifications', index: number) => {
+    // Type guard to ensure type is valid
+    if (type !== 'experience' && type !== 'projects' && type !== 'achievements' && type !== 'certifications') {
+      return;
+    }
+    const entry = resumeData[type][index] as Experience | Project | Achievement | Certification; // Assertion for correct type
     let title = '';
     if ('title' in entry) title = entry.title;
     if ('name' in entry) title = entry.name;
@@ -670,9 +952,8 @@ export function ResumeForm() {
       } else {
         setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
       }
-    } catch (error) {
-       console.error(error);
-       setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
+    } catch {
+      setAiExperienceState(prev => ({ ...prev, isGenerating: false }));
       showNotification({
         title: "Generation Failed",
         description: "Something went wrong. If you're using your own API key, please ensure it's correct and has access to the Gemini API.",
@@ -684,7 +965,17 @@ export function ResumeForm() {
   const handleUseExperience = () => {
     if (aiExperienceState.targetIndex === null || !aiExperienceState.generatedBulletPoints) return;
     
-    handleGenericChange(aiExperienceState.targetType, aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
+    // Type-safe call based on targetType
+    const type = aiExperienceState.targetType;
+    if (type === 'experience') {
+      handleGenericChange<Experience>(type, aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
+    } else if (type === 'projects') {
+      handleGenericChange<Project>(type, aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
+    } else if (type === 'achievements') {
+      handleGenericChange<Achievement>(type, aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
+    } else if (type === 'certifications') {
+      handleGenericChange<Certification>(type, aiExperienceState.targetIndex, 'description', aiExperienceState.generatedBulletPoints);
+    }
     
     setAiExperienceState(prev => ({ ...prev, isOpen: false }));
     showNotification({
@@ -715,7 +1006,7 @@ export function ResumeForm() {
 
     if (!skillsArray.includes(skillToAdd)) {
         const newValue = currentSkills ? `${currentSkills}, ${skillToAdd}` : skillToAdd;
-        handleGenericChange('skills', index, 'skills', newValue);
+        handleGenericChange<SkillCategoryType>('skills', index, 'skills', newValue);
     }
   };
   
@@ -835,31 +1126,56 @@ export function ResumeForm() {
                         </div>
                         <div className="sm:col-span-2 space-y-2">
                             <Label htmlFor="linkedin">LinkedIn URL</Label>
-                            <Input id="linkedin" name="linkedin" value={resumeData.contact.linkedin} onChange={handleContactChange} placeholder="linkedin.com/in/johndoe" />
+                            <Input 
+                                id="linkedin" 
+                                name="linkedin" 
+                                value={resumeData.contact.linkedin} 
+                                onChange={handleContactChange} 
+                                placeholder="linkedin.com/in/johndoe"
+                                className={cn(validationErrors['contact.linkedin'] && 'border-destructive')}
+                            />
+                            {validationErrors['contact.linkedin'] && (
+                                <p className="text-sm text-destructive">Please enter a valid LinkedIn URL (e.g., linkedin.com/in/johndoe or https://linkedin.com/in/johndoe)</p>
+                            )}
                         </div>
                         <div className="sm:col-span-2 space-y-2">
                             <Label htmlFor="github">GitHub URL</Label>
-                            <Input id="github" name="github" value={resumeData.contact.github} onChange={handleContactChange} placeholder="github.com/johndoe" />
+                            <Input 
+                                id="github" 
+                                name="github" 
+                                value={resumeData.contact.github} 
+                                onChange={handleContactChange} 
+                                placeholder="github.com/johndoe"
+                                className={cn(validationErrors['contact.github'] && 'border-destructive')}
+                            />
+                            {validationErrors['contact.github'] && (
+                                <p className="text-sm text-destructive">Please enter a valid GitHub URL (e.g., github.com/johndoe or https://github.com/johndoe)</p>
+                            )}
                         </div>
                         <div className="sm:col-span-2 space-y-4">
                             <Label>Other Links</Label>
-                            {resumeData.contact.otherLinks.map((link, index) => (
-                                <div key={link.id} className="flex items-end gap-2 p-2 border rounded-md relative">
-                                    <div className="grid grid-cols-2 gap-2 flex-1">
-                                        <div className="space-y-1">
-                                        <Label htmlFor={`link-label-${index}`} className="text-xs">Label<RequiredIndicator /></Label>
-                                        <Input id={`contact.otherLinks.${link.id}.label`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" className={cn(validationErrors[`contact.otherLinks.${link.id}.label`] && 'border-destructive')} />
-                                        </div>
+                            <div className="space-y-2">
+                                {resumeData.contact.otherLinks.map((link, index) => (
+                                    <div key={link.id} className="flex items-end gap-2 p-2 border rounded-md relative">
+                                        <div className="grid grid-cols-2 gap-2 flex-1">
+                                            <div className="space-y-1">
+                                            <Label htmlFor={`link-label-${index}`} className="text-xs">Label<RequiredIndicator /></Label>
+                                            <Input id={`contact.otherLinks.${link.id}.label`} value={link.label} onChange={(e) => handleOtherLinkChange(index, 'label', e.target.value)} placeholder="e.g., Portfolio" className={cn(validationErrors[`contact.otherLinks.${link.id}.label`] && 'border-destructive')} />
+                                            </div>
                                         <div className="space-y-1">
                                         <Label htmlFor={`link-url-${index}`} className="text-xs">URL<RequiredIndicator /></Label>
                                         <Input id={`contact.otherLinks.${link.id}.url`} value={link.url} onChange={(e) => handleOtherLinkChange(index, 'url', e.target.value)} placeholder="your-portfolio.com" className={cn(validationErrors[`contact.otherLinks.${link.id}.url`] && 'border-destructive')} />
+                                        {validationErrors[`contact.otherLinks.${link.id}.url`] && (
+                                            <p className="text-xs text-destructive">Please enter a valid URL (e.g., example.com or https://example.com)</p>
+                                        )}
                                         </div>
+                                        </div>
+                                        <Button variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => removeOtherLink(link.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
                                     </div>
-                                    <Button variant="ghost" size="icon" className="shrink-0 text-destructive" onClick={() => removeOtherLink(link.id)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                             <Button variant="outline" size="sm" onClick={addOtherLink}><PlusCircle className="mr-2 h-4 w-4" /> Add Link</Button>
                         </div>
                     </div>
@@ -939,8 +1255,13 @@ export function ResumeForm() {
                                         </div>
                                     </div>
                                     <Button
-                                      onClick={handleGenerateSummary}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleGenerateSummary();
+                                      }}
                                       disabled={
+                                        isGeneratingRef.current ||
                                         isGeneratingSummary ||
                                         !summaryAiState.year ||
                                         (summaryAiState.year === 'Other' && !otherYear.trim()) ||
@@ -949,9 +1270,10 @@ export function ResumeForm() {
                                         !summaryAiState.skills.trim()
                                       }
                                       className="w-full"
+                                      type="button"
                                     >
                                         {isGeneratingSummary ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                        Generate Objective
+                                        {isGeneratingSummary ? 'Generating...' : 'Generate Objective'}
                                     </Button>
                                     {generatedSummary && (
                                         <div className="space-y-2 rounded-md border bg-muted/50 p-4">
@@ -991,9 +1313,9 @@ export function ResumeForm() {
                                 <Label>Skill Category<RequiredIndicator /></Label>
                                 <Select
                                     value={SKILL_CATEGORIES.includes(category.name) ? category.name : 'Other'}
-                                    onValueChange={(value) => {
-                                        if (value !== 'Other') {
-                                            handleGenericChange('skills', index, 'name', value);
+                                    onValueChange={(value) => {        
+                                        if (value !== 'Other') {       
+                                            handleGenericChange<SkillCategoryType>('skills', index, 'name', value);
                                         }
                                     }}
                                 >
@@ -1009,7 +1331,7 @@ export function ResumeForm() {
                                 <Input
                                     id={`skills.${category.id}.name`}
                                     value={category.name}
-                                    onChange={e => handleGenericChange('skills', index, 'name', e.target.value)}
+                                    onChange={e => handleGenericChange<SkillCategoryType>('skills', index, 'name', e.target.value)}
                                     placeholder="Or type a custom category"
                                     className={cn("mt-2", validationErrors[`skills.${category.id}.name`] && 'border-destructive')}
                                 />
@@ -1020,7 +1342,7 @@ export function ResumeForm() {
                                 <Textarea
                                     id={`skills.${category.id}.skills`}
                                     value={category.skills}
-                                    onChange={e => handleGenericChange('skills', index, 'skills', e.target.value)}
+                                    onChange={e => handleGenericChange<SkillCategoryType>('skills', index, 'skills', e.target.value)}
                                     placeholder="e.g., JavaScript, Python, Java"
                                     rows={3}
                                     className={cn(validationErrors[`skills.${category.id}.skills`] && 'border-destructive')}
@@ -1090,30 +1412,30 @@ export function ResumeForm() {
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label>{config.fields.school.label}<RequiredIndicator /></Label>
-                                <Input id={`education.${edu.id}.school`} value={edu.school} onChange={e => handleGenericChange('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} className={cn(validationErrors[`education.${edu.id}.school`] && 'border-destructive')} />
+                                <Input id={`education.${edu.id}.school`} value={edu.school} onChange={e => handleGenericChange<Education>('education', index, 'school', e.target.value)} placeholder={config.fields.school.placeholder} className={cn(validationErrors[`education.${edu.id}.school`] && 'border-destructive')} />
                             </div>
                             <div className="space-y-2 sm:col-span-2">
                                 <Label>{config.fields.degree.label}<RequiredIndicator /></Label>
-                                <Input id={`education.${edu.id}.degree`} value={edu.degree} onChange={e => handleGenericChange('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} className={cn(validationErrors[`education.${edu.id}.degree`] && 'border-destructive')} />
+                                <Input id={`education.${edu.id}.degree`} value={edu.degree} onChange={e => handleGenericChange<Education>('education', index, 'degree', e.target.value)} placeholder={config.fields.degree.placeholder} className={cn(validationErrors[`education.${edu.id}.degree`] && 'border-destructive')} />
                             </div>
                             <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>{config.fields.startDate.label}<RequiredIndicator /></Label>
-                                    <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange('education', index, 'startDate', value)} hasError={!!error || validationErrors[`education.${edu.id}.startDate`]} />
+                                    <MonthYearPicker value={edu.startDate} onChange={value => handleGenericChange<Education>('education', index, 'startDate', value)} hasError={!!error || validationErrors[`education.${edu.id}.startDate`]} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>{config.fields.endDate.label}<RequiredIndicator /></Label>
-                                    <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange('education', index, 'endDate', value)} hasError={!!error || validationErrors[`education.${edu.id}.endDate`]} />
+                                    <MonthYearPicker value={edu.endDate} onChange={value => handleGenericChange<Education>('education', index, 'endDate', value)} hasError={!!error || validationErrors[`education.${edu.id}.endDate`]} />
                                 </div>
                             </div>
                             {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
                             <div className="space-y-2">
                                 <Label>{config.fields.grades.label}</Label>
-                                <Input id={`education.${edu.id}.grades`} value={edu.grades} onChange={e => handleGenericChange('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
+                                <Input id={`education.${edu.id}.grades`} value={edu.grades} onChange={e => handleGenericChange<Education>('education', index, 'grades', e.target.value)} placeholder={config.fields.grades.placeholder} />
                             </div>
                             <div className="space-y-2">
                                 <Label>{config.fields.city.label}<RequiredIndicator /></Label>
-                                <Input id={`education.${edu.id}.city`} value={edu.city} onChange={e => handleGenericChange('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} className={cn(validationErrors[`education.${edu.id}.city`] && 'border-destructive')} />
+                                <Input id={`education.${edu.id}.city`} value={edu.city} onChange={e => handleGenericChange<Education>('education', index, 'city', e.target.value)} placeholder={config.fields.city.placeholder} className={cn(validationErrors[`education.${edu.id}.city`] && 'border-destructive')} />
                             </div>
                             </CardContent>
                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('education', edu.id)}>
@@ -1139,18 +1461,26 @@ export function ResumeForm() {
                             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                                 <div className="space-y-2">
                                     <Label>Project Title<RequiredIndicator /></Label>
-                                    <Input id={`projects.${proj.id}.title`} value={proj.title} onChange={e => handleGenericChange('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" className={cn(validationErrors[`projects.${proj.id}.title`] && 'border-destructive')} />
+                                    <Input id={`projects.${proj.id}.title`} value={proj.title} onChange={e => handleGenericChange<Project>('projects', index, 'title', e.target.value)} placeholder="e.g., Personal Portfolio Website" className={cn(validationErrors[`projects.${proj.id}.title`] && 'border-destructive')} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Project Link (Optional)</Label>
-                                    <Input value={proj.link || ''} onChange={e => handleGenericChange('projects', index, 'link', e.target.value)} placeholder="e.g., github.com/user/repo" />
+                                    <Input 
+                                        value={proj.link || ''} 
+                                        onChange={e => handleGenericChange<Project>('projects', index, 'link', e.target.value)} 
+                                        placeholder="e.g., github.com/user/repo"
+                                        className={cn(validationErrors[`projects.${proj.id}.link`] && 'border-destructive')}
+                                    />
+                                    {validationErrors[`projects.${proj.id}.link`] && (
+                                        <p className="text-sm text-destructive">Please enter a valid URL (e.g., github.com/user/repo or https://example.com)</p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Project Type<RequiredIndicator /></Label>
                                     <Select
                                         value={PROJECT_TYPES.includes(proj.projectType) ? proj.projectType : 'Other'}
                                         onValueChange={(value) => {
-                                            handleGenericChange('projects', index, 'projectType', value);
+                                            handleGenericChange<Project>('projects', index, 'projectType', value);
                                         }}
                                     >
                                         <SelectTrigger className={cn(validationErrors[`projects.${proj.id}.projectType`] && 'border-destructive')}>
@@ -1166,7 +1496,7 @@ export function ResumeForm() {
                                         <Input
                                             id={`projects.${proj.id}.projectType`}
                                             value={proj.projectType === 'Other' ? '' : proj.projectType}
-                                            onChange={e => handleGenericChange('projects', index, 'projectType', e.target.value)}
+                                            onChange={e => handleGenericChange<Project>('projects', index, 'projectType', e.target.value)}
                                             placeholder="Please specify type"
                                             className={cn("mt-2", validationErrors[`projects.${proj.id}.projectType`] && 'border-destructive')}
                                         />
@@ -1174,16 +1504,16 @@ export function ResumeForm() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Organization / Affiliation<RequiredIndicator /></Label>
-                                    <Input id={`projects.${proj.id}.organization`} value={proj.organization} onChange={e => handleGenericChange('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" className={cn(validationErrors[`projects.${proj.id}.organization`] && 'border-destructive')}/>
+                                    <Input id={`projects.${proj.id}.organization`} value={proj.organization} onChange={e => handleGenericChange<Project>('projects', index, 'organization', e.target.value)} placeholder="e.g., University Name" className={cn(validationErrors[`projects.${proj.id}.organization`] && 'border-destructive')}/>
                                 </div>
                                 <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Start Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange('projects', index, 'startDate', value)} hasError={!!error || validationErrors[`projects.${proj.id}.startDate`]}/>
+                                            <MonthYearPicker value={proj.startDate} onChange={value => handleGenericChange<Project>('projects', index, 'startDate', value)} hasError={!!error || validationErrors[`projects.${proj.id}.startDate`]}/>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>End Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange('projects', index, 'endDate', value)} hasError={!!error || validationErrors[`projects.${proj.id}.endDate`]} />
+                                            <MonthYearPicker value={proj.endDate} onChange={value => handleGenericChange<Project>('projects', index, 'endDate', value)} hasError={!!error || validationErrors[`projects.${proj.id}.endDate`]} />
                                         </div>
                                     </div>
                                     {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
@@ -1198,7 +1528,7 @@ export function ResumeForm() {
                                         Generate with AI
                                         </Button>
                                     </div>
-                                    <Textarea id={`projects.${proj.id}.description`} value={proj.description} onChange={e => handleGenericChange('projects', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} className={cn(validationErrors[`projects.${proj.id}.description`] && 'border-destructive')} />
+                                    <Textarea id={`projects.${proj.id}.description`} value={proj.description} onChange={e => handleGenericChange<Project>('projects', index, 'description', e.target.value)} placeholder="- Developed a feature that improved performance by 15%.&#10;- Built a full-stack application using React and Node.js." rows={5} className={cn(validationErrors[`projects.${proj.id}.description`] && 'border-destructive')} />
                                 </div>
                             </CardContent>
                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('projects', proj.id)}>
@@ -1222,20 +1552,20 @@ export function ResumeForm() {
                             <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                                 <div className="space-y-2">
                                     <Label>Job Title/Role<RequiredIndicator /></Label>
-                                    <Input id={`experience.${exp.id}.title`} value={exp.title} onChange={e => handleGenericChange('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" className={cn(validationErrors[`experience.${exp.id}.title`] && 'border-destructive')} />
+                                    <Input id={`experience.${exp.id}.title`} value={exp.title} onChange={e => handleGenericChange<Experience>('experience', index, 'title', e.target.value)} placeholder="e.g., Software Engineering Intern" className={cn(validationErrors[`experience.${exp.id}.title`] && 'border-destructive')} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Company<RequiredIndicator /></Label>
-                                    <Input id={`experience.${exp.id}.company`} value={exp.company} onChange={e => handleGenericChange('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" className={cn(validationErrors[`experience.${exp.id}.company`] && 'border-destructive')}/>
+                                    <Input id={`experience.${exp.id}.company`} value={exp.company} onChange={e => handleGenericChange<Experience>('experience', index, 'company', e.target.value)} placeholder="e.g., Tech Corp" className={cn(validationErrors[`experience.${exp.id}.company`] && 'border-destructive')}/>
                                 </div>
                                 <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label>Start Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange('experience', index, 'startDate', value)} hasError={!!error || validationErrors[`experience.${exp.id}.startDate`]}/>
+                                            <MonthYearPicker value={exp.startDate} onChange={value => handleGenericChange<Experience>('experience', index, 'startDate', value)} hasError={!!error || validationErrors[`experience.${exp.id}.startDate`]}/>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>End Date<RequiredIndicator /></Label>
-                                            <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange('experience', index, 'endDate', value)} hasError={!!error || validationErrors[`experience.${exp.id}.endDate`]}/>
+                                            <MonthYearPicker value={exp.endDate} onChange={value => handleGenericChange<Experience>('experience', index, 'endDate', value)} hasError={!!error || validationErrors[`experience.${exp.id}.endDate`]}/>
                                         </div>
                                     </div>
                                     {error && <p className="text-sm text-destructive sm:col-span-2">{error}</p>}
@@ -1250,7 +1580,7 @@ export function ResumeForm() {
                                         Generate with AI
                                         </Button>
                                     </div>
-                                    <Textarea id={`experience.${exp.id}.description`} value={exp.description} onChange={e => handleGenericChange('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} className={cn(validationErrors[`experience.${exp.id}.description`] && 'border-destructive')} />
+                                    <Textarea id={`experience.${exp.id}.description`} value={exp.description} onChange={e => handleGenericChange<Experience>('experience', index, 'description', e.target.value)} placeholder="- Responsible for developing feature X, which led to a 15% increase in user engagement." rows={5} className={cn(validationErrors[`experience.${exp.id}.description`] && 'border-destructive')} />
                                 </div>
                             </CardContent>
                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('experience', exp.id)}>
@@ -1272,19 +1602,27 @@ export function ResumeForm() {
                         <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 p-2">
                             <div className="space-y-2">
                             <Label>Certification Name<RequiredIndicator /></Label>
-                            <Input id={`certifications.${cert.id}.name`} value={cert.name} onChange={e => handleGenericChange('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" className={cn(validationErrors[`certifications.${cert.id}.name`] && 'border-destructive')} />
+                            <Input id={`certifications.${cert.id}.name`} value={cert.name} onChange={e => handleGenericChange<Certification>('certifications', index, 'name', e.target.value)} placeholder="e.g., Google Cloud Certified" className={cn(validationErrors[`certifications.${cert.id}.name`] && 'border-destructive')} />
                             </div>
                             <div className="space-y-2">
                             <Label>Issuing Body<RequiredIndicator /></Label>
-                            <Input id={`certifications.${cert.id}.issuer`} value={cert.issuer} onChange={e => handleGenericChange('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" className={cn(validationErrors[`certifications.${cert.id}.issuer`] && 'border-destructive')} />
+                            <Input id={`certifications.${cert.id}.issuer`} value={cert.issuer} onChange={e => handleGenericChange<Certification>('certifications', index, 'issuer', e.target.value)} placeholder="e.g., Google" className={cn(validationErrors[`certifications.${cert.id}.issuer`] && 'border-destructive')} />
                             </div>
                             <div className="space-y-2">
                             <Label>Date Issued<RequiredIndicator /></Label>
-                            <MonthYearPicker value={cert.date} onChange={value => handleGenericChange('certifications', index, 'date', value)} hasError={validationErrors[`certifications.${cert.id}.date`]}/>
+                            <MonthYearPicker value={cert.date} onChange={value => handleGenericChange<Certification>('certifications', index, 'date', value)} hasError={validationErrors[`certifications.${cert.id}.date`]}/>
                             </div>
                             <div className="space-y-2">
                             <Label>Certification Link (Optional)</Label>
-                            <Input value={cert.link || ''} onChange={e => handleGenericChange('certifications', index, 'link', e.target.value)} placeholder="e.g., your-credential-link.com" />
+                            <Input 
+                                value={cert.link || ''} 
+                                onChange={e => handleGenericChange<Certification>('certifications', index, 'link', e.target.value)} 
+                                placeholder="e.g., your-credential-link.com"
+                                className={cn(validationErrors[`certifications.${cert.id}.link`] && 'border-destructive')}
+                            />
+                            {validationErrors[`certifications.${cert.id}.link`] && (
+                                <p className="text-sm text-destructive">Please enter a valid URL (e.g., example.com or https://example.com)</p>
+                            )}
                             </div>
                             <div className="sm:col-span-2 space-y-2">
                                 <div className="flex justify-between items-center">
@@ -1297,14 +1635,14 @@ export function ResumeForm() {
                                     Generate with AI
                                     </Button>
                                 </div>
-                                <Textarea id={`certifications.${cert.id}.description`} value={cert.description} onChange={e => handleGenericChange('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} className={cn(validationErrors[`certifications.${cert.id}.description`] && 'border-destructive')}/>
+                                <Textarea id={`certifications.${cert.id}.description`} value={cert.description} onChange={e => handleGenericChange<Certification>('certifications', index, 'description', e.target.value)} placeholder="- Briefly describe what you learned or achieved." rows={3} className={cn(validationErrors[`certifications.${cert.id}.description`] && 'border-destructive')}/>
                             </div>
                             <div className="sm:col-span-2 space-y-2">
                             <Label>Technologies/Skills Covered<RequiredIndicator /></Label>
                             <Textarea
                                 id={`certifications.${cert.id}.technologies`}
                                 value={cert.technologies}
-                                onChange={e => handleGenericChange('certifications', index, 'technologies', e.target.value)}
+                                onChange={e => handleGenericChange<Certification>('certifications', index, 'technologies', e.target.value)}
                                 placeholder="e.g., VPC, IAM, BigQuery, Cloud Functions"
                                 rows={2}
                                 className={cn(validationErrors[`certifications.${cert.id}.technologies`] && 'border-destructive')}
@@ -1364,19 +1702,27 @@ export function ResumeForm() {
                                 </div>
                                 <div className="space-y-2">
                                 <Label>{config.nameLabel}<RequiredIndicator /></Label>
-                                <Input id={`achievements.${ach.id}.name`} value={ach.name} onChange={e => handleGenericChange('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} className={cn(validationErrors[`achievements.${ach.id}.name`] && 'border-destructive')}/>
+                                <Input id={`achievements.${ach.id}.name`} value={ach.name} onChange={e => handleGenericChange<Achievement>('achievements', index, 'name', e.target.value)} placeholder={`e.g., ${config.title} Name`} className={cn(validationErrors[`achievements.${ach.id}.name`] && 'border-destructive')}/>
                                 </div>
                                 <div className="space-y-2">
                                 <Label>{config.contextLabel}<RequiredIndicator /></Label>
-                                <Input id={`achievements.${ach.id}.context`} value={ach.context} onChange={e => handleGenericChange('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" className={cn(validationErrors[`achievements.${ach.id}.context`] && 'border-destructive')}/>
+                                <Input id={`achievements.${ach.id}.context`} value={ach.context} onChange={e => handleGenericChange<Achievement>('achievements', index, 'context', e.target.value)} placeholder="e.g., National Level" className={cn(validationErrors[`achievements.${ach.id}.context`] && 'border-destructive')}/>
                                 </div>
                                 <div className="space-y-2">
                                 <Label>Date<RequiredIndicator /></Label>
-                                <MonthYearPicker value={ach.date} onChange={value => handleGenericChange('achievements', index, 'date', value)} hasError={validationErrors[`achievements.${ach.id}.date`]}/>
+                                <MonthYearPicker value={ach.date} onChange={value => handleGenericChange<Achievement>('achievements', index, 'date', value)} hasError={validationErrors[`achievements.${ach.id}.date`]}/>
                                 </div>
                                 <div className="space-y-2">
                                 <Label>Achievement Link (Optional)</Label>
-                                <Input value={ach.link || ''} onChange={e => handleGenericChange('achievements', index, 'link', e.target.value)} placeholder="e.g., your-project-link.com" />
+                                <Input 
+                                    value={ach.link || ''} 
+                                    onChange={e => handleGenericChange<Achievement>('achievements', index, 'link', e.target.value)} 
+                                    placeholder="e.g., your-project-link.com"
+                                    className={cn(validationErrors[`achievements.${ach.id}.link`] && 'border-destructive')}
+                                />
+                                {validationErrors[`achievements.${ach.id}.link`] && (
+                                    <p className="text-sm text-destructive">Please enter a valid URL (e.g., example.com or https://example.com)</p>
+                                )}
                                 </div>
                                 <div className="sm:col-span-2 space-y-2">
                                     <div className="flex justify-between items-center">
@@ -1389,7 +1735,7 @@ export function ResumeForm() {
                                         Generate with AI
                                     </Button>
                                     </div>
-                                    <Textarea id={`achievements.${ach.id}.description`} value={ach.description} onChange={e => handleGenericChange('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} className={cn(validationErrors[`achievements.${ach.id}.description`] && 'border-destructive')}/>
+                                    <Textarea id={`achievements.${ach.id}.description`} value={ach.description} onChange={e => handleGenericChange<Achievement>('achievements', index, 'description', e.target.value)} placeholder="- Describe the achievement, e.g., 'Developed a solution for urban waste management that won 1st place out of 500+ teams.'" rows={3} className={cn(validationErrors[`achievements.${ach.id}.description`] && 'border-destructive')}/>
                                 </div>
                             </CardContent>
                             <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeEntry('achievements', ach.id)}>

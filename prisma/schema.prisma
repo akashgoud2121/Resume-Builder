@@ -73,12 +73,11 @@ model OTPVerification {
 
 model Resume {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId    String   @db.ObjectId
+  userId    String   @unique @db.ObjectId
   title     String   @default("Untitled Resume")
   data      Json     // Store the entire ResumeData object as JSON
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  @@index([userId])
   @@index([updatedAt])
 }

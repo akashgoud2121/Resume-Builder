@@ -43,7 +43,6 @@ export async function GET(
 
     return NextResponse.json({ resume });
   } catch (error) {
-    console.error('Error fetching resume:', error);
     return NextResponse.json(
       { error: 'Failed to fetch resume' },
       { status: 500 }
@@ -114,7 +113,6 @@ export async function PUT(
       resume: updatedResume,
     });
   } catch (error) {
-    console.error('Error updating resume:', error);
     return NextResponse.json(
       { error: 'Failed to update resume' },
       { status: 500 }
@@ -168,7 +166,6 @@ export async function DELETE(
       message: 'Resume deleted successfully',
     });
   } catch (error) {
-    console.error('Error deleting resume:', error);
     return NextResponse.json(
       { error: 'Failed to delete resume' },
       { status: 500 }

@@ -15,7 +15,6 @@ let lastApiKey: string | null = null;
 export function getAiClient(userApiKey: string | null): Genkit {
   if (userApiKey) {
     if (userApiKey !== lastApiKey) {
-      console.log('Initializing user-specific AI client.');
       userClient = genkit({
         plugins: [googleAI({apiKey: userApiKey})],
         model: 'googleai/gemini-2.5-flash',

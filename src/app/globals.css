@@ -70,60 +70,8 @@
 /* Print-specific styles */
 @media print {
   /* Hide everything that shouldn't be printed by default */
-  .no-print, [data-radix-toast-viewport], .print-hide, .resume-form-column, nav, button {
+  .no-print, [data-radix-toast-viewport] {
     display: none !important;
-  }
-  
-  /* Hide common browser extension elements */
-  /* Grammarly */
-  grammarly-extension,
-  grammarly-desktop-integration,
-  grammarly-popups,
-  [data-grammarly-shadow-root],
-  .grammarly-extension,
-  /* Password Managers - LastPass */
-  [data-lastpass-icon-root],
-  [data-lastpass-root],
-  .lastpass-icon,
-  /* 1Password */
-  [data-1p-ignore],
-  com-1password-button,
-  /* Dashlane */
-  [data-dashlane-root],
-  /* Honey */
-  [data-honey-extension],
-  /* Other common extensions */
-  [data-extension-root],
-  /* Chrome extension elements */
-  [data-react-beautiful-dnd-droppable],
-  [data-kwimpalastatus] {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-  }
-  
-  /* Hide extension iframes */
-  iframe[src*="extension"] {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  
-  /* Hide elements with extremely high z-index (often used by extensions) */
-  div[style*="z-index: 2147483647"],
-  div[style*="z-index:2147483647"] {
-    display: none !important;
-    visibility: hidden !important;
-  }
-  
-  /* Hide the app navigation header, but NOT the resume contact header */
-  header:not([data-section="contact"]) {
-    display: none !important;
-  }
-  
-  /* Ensure contact header IS visible */
-  header[data-section="contact"] {
-    display: block !important;
-    visibility: visible !important;
   }
   
   /* Reset body styles for printing */
@@ -131,8 +79,8 @@
     background: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0;
+    padding: 0;
   }
 
   /* Isolate and style the print container */
@@ -163,15 +111,11 @@
     margin: 0 !important;
     border: none !important;
     width: 100% !important;
-    max-width: 100% !important;
     min-height: auto !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    box-sizing: border-box !important;
+    padding-top: 0 !important; /* Fix for extra top gap */
+    padding-bottom: 0 !important; /* Fix for extra bottom gap */
   }
   
   .page-container:not(:first-child) {
@@ -181,7 +125,8 @@
   /* Page layout rules for printing */
   @page {
     size: A4;
-    margin: 0.5in; /* Consistent margin for all pages to prevent content loss */
+    /* Optimized margins for Microsoft Print to PDF - similar to "Save as PDF" */
+    margin: 0.25in;
     
     /* Remove browser-added headers and footers */
     @top-left { content: '' }
@@ -191,32 +136,28 @@
     @bottom-center { content: '' }
     @bottom-right { content: '' }
   }
+  
+  /* Increase margins for page 2 and subsequent pages to prevent content overflow */
+  @page :left {
+    margin: 0.35in;
+  }
+  
+  @page :right {
+    margin: 0.35in;
+  }
 
-  /* Avoid breaking elements across pages - only for individual items */
+  /* Avoid breaking elements across pages */
   .break-inside-avoid {
     break-inside: avoid;
-    page-break-inside: avoid;
   }
 
-  /* Prevent headers from being orphaned at bottom of page */
-  h2 {
+  h1, h2, h3, h4, h5, h6 {
     break-after: avoid;
-    page-break-after: avoid;
-  }
-  
-  /* Allow other headings to break more freely */
-  h3, h4, h5, h6 {
-    break-after: auto;
   }
 
-  /* Prevent orphans and widows but be less aggressive */
-  p {
-    orphans: 2;
-    widows: 2;
-  }
-  
-  ul, ol {
-    break-inside: auto;
+  p, ul, ol {
+    orphans: 3;
+    widows: 3;
   }
 }
 

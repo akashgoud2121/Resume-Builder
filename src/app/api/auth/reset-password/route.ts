@@ -4,11 +4,19 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, otp, password, name } = await request.json();
+    const { email, otp, newPassword } = await request.json();
 
-    if (!email || !otp || !password || !name) {
+    if (!email || !otp || !newPassword) {
       return NextResponse.json(
-        { error: 'Email, OTP, password, and name are required' },
+        { error: 'Email, OTP, and new password are required' },
+        { status: 400 }
+      );
+    }
+
+    // Validate password strength
+    if (newPassword.length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters long' },
         { status: 400 }
       );
     }
@@ -43,17 +51,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
 
-    // Create the user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name,
-        password: hashedPassword,
-        emailVerified: new Date(),
-      },
+    if (!user) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update user's password
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedPassword },
     });
 
     // Mark OTP as verified
@@ -72,31 +88,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Account created successfully',
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      },
+      message: 'Password has been reset successfully',
     });
   } catch (error: any) {
-    
-    if (error.code === 'P2002') {
-      return NextResponse.json(
-        { error: 'An account with this email already exists' },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json(
-      { error: 'An error occurred while verifying OTP' },
+      { error: 'An error occurred while resetting password' },
       { status: 500 }
     );
   }
 }
-
-
-
-
 
 

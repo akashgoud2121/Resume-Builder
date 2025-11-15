@@ -117,8 +117,10 @@ export function AuthForm({ mode }: AuthFormProps) {
     register: registerOtp,
     handleSubmit: handleOtpSubmit,
     formState: { errors: otpErrors },
+    reset: resetOtp,
   } = useForm<z.infer<typeof otpSchema>>({
     resolver: zodResolver(otpSchema),
+    defaultValues: { otp: '' },
   });
 
   const onSubmit = async (data: EmailFormData) => {
@@ -141,6 +143,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         }
 
         setSignupData(signupFormData);
+        resetOtp(); // Clear any pre-filled values
         setShowOtpStep(true);
         toast({
           variant: 'success',
@@ -292,7 +295,10 @@ export function AuthForm({ mode }: AuthFormProps) {
       <div className="space-y-6">
         <Button
           variant="ghost"
-          onClick={() => setShowOtpStep(false)}
+          onClick={() => {
+            resetOtp(); // Clear OTP field when going back
+            setShowOtpStep(false);
+          }}
           className="mb-4"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
@@ -302,20 +308,23 @@ export function AuthForm({ mode }: AuthFormProps) {
         <div className="text-center space-y-2">
           <h3 className="text-lg font-semibold">Verify Your Email</h3>
           <p className="text-sm text-muted-foreground">
-            We've sent a 6-digit code to <strong>{signupData?.email}</strong>
+            We've sent a 6-digit code to your email address. Please enter it below.
           </p>
         </div>
 
         <form onSubmit={handleOtpSubmit(onOtpSubmit)} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="otp">Enter OTP Code</Label>
-            <Input
-              id="otp"
-              {...registerOtp('otp')}
-              placeholder="000000"
-              maxLength={6}
-              className="text-center text-2xl tracking-widest"
-            />
+              <Input
+                id="otp"
+                type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
+                {...registerOtp('otp')}
+                placeholder="000000"
+                maxLength={6}
+                className="text-center text-2xl tracking-widest"
+              />
             {otpErrors.otp && (
               <p className="text-sm text-destructive">{otpErrors.otp.message}</p>
             )}
@@ -398,7 +407,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           <div className="space-y-2">
             <Label htmlFor="name">Full Name</Label>
             <Input id="name" {...register('name')} />
-            {errors.name && (
+            {'name' in errors && errors.name && (
               <p className="text-sm text-destructive">{errors.name.message}</p>
             )}
           </div>
@@ -477,7 +486,7 @@ export function AuthForm({ mode }: AuthFormProps) {
               type="password"
               {...register('confirmPassword')}
             />
-            {errors.confirmPassword && (
+            {'confirmPassword' in errors && errors.confirmPassword && (
               <p className="text-sm text-destructive">
                 {errors.confirmPassword.message}
               </p>

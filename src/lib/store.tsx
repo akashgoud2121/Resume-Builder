@@ -45,44 +45,56 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
     try {
       const encryptedData = localStorage.getItem('resumeData');
       if (encryptedData) {
-        try {
+        // Check if data looks like encrypted (base64-like) or plain JSON
+        const looksLikeEncrypted = /^[A-Za-z0-9+/=]+$/.test(encryptedData) && 
+                                   !encryptedData.trim().startsWith('{') && 
+                                   !encryptedData.trim().startsWith('[');
+        
+        if (looksLikeEncrypted) {
           // Try to decrypt (new format)
           const decrypted = decryptData<ResumeData>(encryptedData);
-          if (decrypted && typeof decrypted === 'object') {
+          if (decrypted && typeof decrypted === 'object' && decrypted !== null) {
             // Merge with defaults to ensure all fields exist
             const merged = defaultsDeep(decrypted, initialResumeData);
             setHistory(createHistoryState(merged));
             setIsInitialized(true);
             return;
           }
-        } catch (decryptError) {
-          // Try fallback to plain JSON
-        }
-        
-        // Fallback: try to parse as plain JSON (old format)
-        try {
-          const plainData = JSON.parse(encryptedData);
-          if (plainData && typeof plainData === 'object') {
-            const merged = defaultsDeep(plainData, initialResumeData);
-            setHistory(createHistoryState(merged));
-            // Re-save as encrypted
-            const encrypted = encryptData(merged);
-            if (encrypted) {
-              localStorage.setItem('resumeData', encrypted);
+          // If decryption failed, data is corrupted - clear it
+          localStorage.removeItem('resumeData');
+        } else {
+          // Fallback: try to parse as plain JSON (old format)
+          try {
+            const trimmed = encryptedData.trim();
+            if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+              const plainData = JSON.parse(encryptedData);
+              if (plainData && typeof plainData === 'object' && plainData !== null) {
+                const merged = defaultsDeep(plainData, initialResumeData);
+                setHistory(createHistoryState(merged));
+                // Re-save as encrypted
+                const encrypted = encryptData(merged);
+                if (encrypted) {
+                  localStorage.setItem('resumeData', encrypted);
+                }
+                setIsInitialized(true);
+                return;
+              }
             }
-            setIsInitialized(true);
-            return;
+          } catch (parseError) {
+            // Silently handle parse errors - data is corrupted
           }
-        } catch (parseError) {
-          console.error('Failed to parse localStorage data:', parseError);
+          
+          // If all parsing failed, clear corrupted data
+          localStorage.removeItem('resumeData');
         }
-        
-        // If all parsing failed, clear corrupted data
-        localStorage.removeItem('resumeData');
       }
     } catch (error) {
-      console.error('Failed to load resume data from localStorage:', error);
-      localStorage.removeItem('resumeData');
+      // Silently handle errors - clear corrupted data
+      try {
+        localStorage.removeItem('resumeData');
+      } catch {
+        // Ignore errors when clearing
+      }
     }
     
     // Always set initialized to true, even if data load failed
@@ -102,8 +114,8 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
         if (encrypted) {
           localStorage.setItem('resumeData', encrypted);
         }
-      } catch (error) {
-        console.error('Failed to save resume data to localStorage:', error);
+      } catch {
+        // Silently fail - don't break the app if storage is unavailable
       }
     }
     // Reset the flag

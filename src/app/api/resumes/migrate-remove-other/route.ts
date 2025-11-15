@@ -52,7 +52,6 @@ export async function POST(request: NextRequest) {
       updatedCount,
     });
   } catch (error: any) {
-    console.error('Migration error:', error);
     return NextResponse.json(
       { error: 'Failed to migrate data', details: error.message },
       { status: 500 }

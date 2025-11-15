@@ -101,8 +101,22 @@ export default function Home() {
   };
 
   const handleGoToBuilderClick = () => {
-    // Mark that user has visited builder
+    // Check if API key exists before redirecting
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const storedKey = localStorage.getItem('userApiKey');
+      
+      if (!storedKey || storedKey.trim() === '') {
+        // No API key found, show settings dialog instead
+        showNotification({
+          title: 'API Key Required',
+          description: 'Please set your Google AI API key in settings before accessing the builder.',
+          type: 'warning',
+        });
+        setIsSettingsOpen(true);
+        return;
+      }
+      
+      // Mark that user has visited builder
       localStorage.setItem('hasVisitedBuilder', 'true');
     }
     setIsFirstTimeUser(false);

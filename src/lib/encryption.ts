@@ -41,6 +41,17 @@ function xorEncrypt(text: string, key: string): string {
 
 function xorDecrypt(encrypted: string, key: string): string {
   try {
+    // Validate that the encrypted string is valid base64
+    if (!encrypted || typeof encrypted !== 'string') {
+      return '';
+    }
+    
+    // Check if it looks like base64 (basic validation)
+    const base64Pattern = /^[A-Za-z0-9+/=]+$/;
+    if (!base64Pattern.test(encrypted)) {
+      return '';
+    }
+    
     // Decode from base64
     const encryptedBytes = Uint8Array.from(atob(encrypted), c => c.charCodeAt(0));
     const keyBytes = new TextEncoder().encode(key);
@@ -52,7 +63,7 @@ function xorDecrypt(encrypted: string, key: string): string {
     
     return new TextDecoder().decode(decrypted);
   } catch (error) {
-    console.error('Decryption failed:', error);
+    // Silently fail - corrupted data will be handled by caller
     return '';
   }
 }
@@ -65,8 +76,7 @@ export function encryptData(data: any): string {
     const jsonString = JSON.stringify(data);
     const key = getEncryptionKey();
     return xorEncrypt(jsonString, key);
-  } catch (error) {
-    console.error('Encryption error:', error);
+  } catch {
     return '';
   }
 }
@@ -76,16 +86,22 @@ export function encryptData(data: any): string {
  */
 export function decryptData<T>(encryptedData: string): T | null {
   try {
-    if (!encryptedData) return null;
+    if (!encryptedData || typeof encryptedData !== 'string') return null;
     
     const key = getEncryptionKey();
     const decrypted = xorDecrypt(encryptedData, key);
     
     if (!decrypted) return null;
     
+    // Validate that decrypted string looks like JSON before parsing
+    const trimmed = decrypted.trim();
+    if (!trimmed || (!trimmed.startsWith('{') && !trimmed.startsWith('['))) {
+      return null;
+    }
+    
     return JSON.parse(decrypted) as T;
   } catch (error) {
-    console.error('Decryption error:', error);
+    // Silently fail - corrupted data will be handled by caller
     return null;
   }
 }

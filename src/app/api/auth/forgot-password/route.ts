@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { sendOTPEmail } from '@/lib/email';
+import { sendPasswordResetOTPEmail } from '@/lib/email';
 
 // Generate a 6-digit OTP
 function generateOTP(): string {
@@ -16,6 +16,19 @@ export async function POST(request: NextRequest) {
         { error: 'Valid email is required' },
         { status: 400 }
       );
+    }
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!existingUser) {
+      // Don't reveal if user exists or not for security
+      return NextResponse.json({
+        success: true,
+        message: 'If an account exists with this email, a password reset code has been sent.',
+      });
     }
 
     // Delete any existing OTP for this email
@@ -37,7 +50,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Send OTP email
-    const emailSent = await sendOTPEmail(email, otp);
+    const emailSent = await sendPasswordResetOTPEmail(email, otp);
 
     if (!emailSent) {
       return NextResponse.json(
@@ -48,18 +61,14 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'OTP resent successfully to your email',
+      message: 'If an account exists with this email, a password reset code has been sent.',
     });
   } catch (error) {
     return NextResponse.json(
-      { error: 'An error occurred while resending OTP' },
+      { error: 'An error occurred while sending OTP' },
       { status: 500 }
     );
   }
 }
-
-
-
-
 
 

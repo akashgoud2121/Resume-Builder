@@ -10,10 +10,12 @@ const nextConfig: NextConfig = {
     } : false,
   },
   typescript: {
-    ignoreBuildErrors: true,
+    // In production, you may want to set this to false for stricter type checking
+    ignoreBuildErrors: process.env.NODE_ENV === 'production' ? false : true,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    // In production, you may want to set this to false for stricter linting
+    ignoreDuringBuilds: process.env.NODE_ENV === 'production' ? false : true,
   },
   images: {
     remotePatterns: [

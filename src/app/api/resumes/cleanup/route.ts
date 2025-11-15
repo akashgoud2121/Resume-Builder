@@ -73,7 +73,6 @@ export async function POST() {
       deletedResumeIds: duplicatesToDelete.map(r => r.id),
     });
   } catch (error) {
-    console.error('Error cleaning up resumes:', error);
     return NextResponse.json(
       { error: 'Failed to cleanup resumes' },
       { status: 500 }
@@ -122,7 +121,6 @@ export async function GET() {
         : 'No duplicates found. You have the correct number of resumes.',
     });
   } catch (error) {
-    console.error('Error checking resumes:', error);
     return NextResponse.json(
       { error: 'Failed to check resumes' },
       { status: 500 }

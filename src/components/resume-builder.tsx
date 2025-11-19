@@ -103,43 +103,70 @@ export function ResumeBuilder() {
   const validateResumeForDownload = (): { isValid: boolean; errors: string[] } => {
     const errors: string[] = [];
     
-    // Check required contact fields
-    if (!resumeData.contact.name?.trim()) {
-      errors.push('Full Name is required');
-    }
-    if (!resumeData.contact.email?.trim()) {
-      errors.push('Email is required');
-    }
-    if (!resumeData.contact.phone?.trim()) {
-      errors.push('Phone is required');
-    }
-    if (!resumeData.contact.location?.trim()) {
-      errors.push('Location is required');
+    // Ensure resumeData exists
+    if (!resumeData) {
+      errors.push('Resume data is missing');
+      return { isValid: false, errors };
     }
     
-    // Check summary
-    if (!resumeData.summary?.trim()) {
+    // Check required contact fields - be more defensive
+    if (!resumeData.contact || typeof resumeData.contact !== 'object') {
+      errors.push('Contact information is required');
+    } else {
+      const name = resumeData.contact.name;
+      const email = resumeData.contact.email;
+      const phone = resumeData.contact.phone;
+      const location = resumeData.contact.location;
+      
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        errors.push('Full Name is required');
+      }
+      if (!email || typeof email !== 'string' || !email.trim()) {
+        errors.push('Email is required');
+      }
+      if (!phone || typeof phone !== 'string' || !phone.trim()) {
+        errors.push('Phone is required');
+      }
+      if (!location || typeof location !== 'string' || !location.trim()) {
+        errors.push('Location is required');
+      }
+    }
+    
+    // Check summary - be more defensive
+    if (!resumeData.summary || typeof resumeData.summary !== 'string' || !resumeData.summary.trim()) {
       errors.push('Summary is required');
     }
     
-    // Check at least one education entry
-    const hasValidEducation = resumeData.education.some(edu => 
-      edu.school?.trim() && edu.degree?.trim() && edu.startDate?.trim() && edu.endDate?.trim() && edu.city?.trim()
-    );
-    if (!hasValidEducation) {
-      errors.push('At least one complete Education entry is required');
+    // Check at least one education entry - be more defensive
+    if (!Array.isArray(resumeData.education) || resumeData.education.length === 0) {
+      errors.push('At least one Education entry is required');
+    } else {
+      const hasValidEducation = resumeData.education.some(edu => 
+        edu && 
+        typeof edu === 'object' &&
+        edu.school?.trim() && 
+        edu.degree?.trim() && 
+        edu.startDate?.trim() && 
+        edu.endDate?.trim() && 
+        edu.city?.trim()
+      );
+      if (!hasValidEducation) {
+        errors.push('At least one complete Education entry is required (all fields must be filled)');
+      }
     }
     
     // Check other links - if any link exists, both label and URL must be filled
-    const incompleteLinks = resumeData.contact.otherLinks.filter(link => 
-      (link.label?.trim() && !link.url?.trim()) || (!link.label?.trim() && link.url?.trim())
-    );
-    if (incompleteLinks.length > 0) {
-      errors.push('All Other Links must have both Label and URL filled');
+    if (resumeData.contact && Array.isArray(resumeData.contact.otherLinks)) {
+      const incompleteLinks = resumeData.contact.otherLinks.filter(link => 
+        (link.label?.trim() && !link.url?.trim()) || (!link.label?.trim() && link.url?.trim())
+      );
+      if (incompleteLinks.length > 0) {
+        errors.push('All Other Links must have both Label and URL filled');
+      }
     }
     
     // Validate LinkedIn URL if provided
-    if (resumeData.contact.linkedin?.trim()) {
+    if (resumeData.contact?.linkedin?.trim()) {
       const linkedinPattern = /^(https?:\/\/)?(www\.)?(linkedin\.com\/in\/[\w-]+|linkedin\.com\/company\/[\w-]+)\/?$/i;
       if (!linkedinPattern.test(resumeData.contact.linkedin.trim())) {
         errors.push('LinkedIn URL must be in valid format (e.g., linkedin.com/in/johndoe or https://linkedin.com/in/johndoe)');
@@ -147,7 +174,7 @@ export function ResumeBuilder() {
     }
     
     // Validate GitHub URL if provided
-    if (resumeData.contact.github?.trim()) {
+    if (resumeData.contact?.github?.trim()) {
       const githubPattern = /^(https?:\/\/)?(www\.)?(github\.com\/[\w-]+)\/?$/i;
       if (!githubPattern.test(resumeData.contact.github.trim())) {
         errors.push('GitHub URL must be in valid format (e.g., github.com/johndoe or https://github.com/johndoe)');
@@ -159,35 +186,135 @@ export function ResumeBuilder() {
     const localPattern = /^(https?:\/\/)?(localhost|[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3}\.[\d]{1,3})(:\d+)?([\/\w \.-]*)*\/?$/i;
     
     // Validate project links
-    const invalidProjectLinks = resumeData.projects.filter(proj => 
-      proj.link?.trim() && !urlPattern.test(proj.link.trim()) && !localPattern.test(proj.link.trim())
-    );
-    if (invalidProjectLinks.length > 0) {
-      errors.push('All Project Links must have valid URL format (e.g., example.com or https://example.com)');
+    if (Array.isArray(resumeData.projects)) {
+      const invalidProjectLinks = resumeData.projects.filter(proj => 
+        proj && proj.link?.trim() && !urlPattern.test(proj.link.trim()) && !localPattern.test(proj.link.trim())
+      );
+      if (invalidProjectLinks.length > 0) {
+        errors.push('All Project Links must have valid URL format (e.g., example.com or https://example.com)');
+      }
     }
     
     // Validate certification links
-    const invalidCertLinks = resumeData.certifications.filter(cert => 
-      cert.link?.trim() && !urlPattern.test(cert.link.trim()) && !localPattern.test(cert.link.trim())
-    );
-    if (invalidCertLinks.length > 0) {
-      errors.push('All Certification Links must have valid URL format (e.g., example.com or https://example.com)');
+    if (Array.isArray(resumeData.certifications)) {
+      const invalidCertLinks = resumeData.certifications.filter(cert => 
+        cert && cert.link?.trim() && !urlPattern.test(cert.link.trim()) && !localPattern.test(cert.link.trim())
+      );
+      if (invalidCertLinks.length > 0) {
+        errors.push('All Certification Links must have valid URL format (e.g., example.com or https://example.com)');
+      }
     }
     
     // Validate achievement links
-    const invalidAchievementLinks = resumeData.achievements.filter(ach => 
-      ach.link?.trim() && !urlPattern.test(ach.link.trim()) && !localPattern.test(ach.link.trim())
-    );
-    if (invalidAchievementLinks.length > 0) {
-      errors.push('All Achievement Links must have valid URL format (e.g., example.com or https://example.com)');
+    if (Array.isArray(resumeData.achievements)) {
+      const invalidAchievementLinks = resumeData.achievements.filter(ach => 
+        ach && ach.link?.trim() && !urlPattern.test(ach.link.trim()) && !localPattern.test(ach.link.trim())
+      );
+      if (invalidAchievementLinks.length > 0) {
+        errors.push('All Achievement Links must have valid URL format (e.g., example.com or https://example.com)');
+      }
     }
     
     // Validate URL format for other links
-    const invalidUrls = resumeData.contact.otherLinks.filter(link => 
-      link.url?.trim() && !urlPattern.test(link.url.trim()) && !localPattern.test(link.url.trim())
-    );
-    if (invalidUrls.length > 0) {
-      errors.push('All Other Links must have valid URL format (e.g., example.com or https://example.com)');
+    if (resumeData.contact && Array.isArray(resumeData.contact.otherLinks)) {
+      const invalidUrls = resumeData.contact.otherLinks.filter(link => 
+        link.url?.trim() && !urlPattern.test(link.url.trim()) && !localPattern.test(link.url.trim())
+      );
+      if (invalidUrls.length > 0) {
+        errors.push('All Other Links must have valid URL format (e.g., example.com or https://example.com)');
+      }
+    }
+    
+    // Validate certifications - if any certification exists, all required fields must be filled
+    if (Array.isArray(resumeData.certifications) && resumeData.certifications.length > 0) {
+      const incompleteCertifications = resumeData.certifications.filter(cert => 
+        !cert || 
+        !cert.name?.trim() || 
+        !cert.issuer?.trim() || 
+        !cert.date?.trim() || 
+        !cert.description?.trim() || 
+        !cert.technologies?.trim()
+      );
+      if (incompleteCertifications.length > 0) {
+        errors.push('All Certifications must have all required fields filled (Name, Issuing Body, Date, Description, and Technologies)');
+      }
+    }
+    
+    // Validate achievements - if any achievement exists, all required fields must be filled
+    if (Array.isArray(resumeData.achievements) && resumeData.achievements.length > 0) {
+      const incompleteAchievements = resumeData.achievements.filter(ach => 
+        !ach || 
+        !ach.category?.trim() || 
+        !ach.name?.trim() || 
+        !ach.context?.trim() || 
+        !ach.date?.trim() || 
+        !ach.description?.trim()
+      );
+      if (incompleteAchievements.length > 0) {
+        errors.push('All Achievements must have all required fields filled (Category, Name, Context, Date, and Description)');
+      }
+    }
+    
+    // Validate skills - if any skill category exists, all required fields must be filled
+    if (Array.isArray(resumeData.skills) && resumeData.skills.length > 0) {
+      const incompleteSkills = resumeData.skills.filter(skill => 
+        !skill || 
+        !skill.name?.trim() || 
+        !skill.skills?.trim()
+      );
+      if (incompleteSkills.length > 0) {
+        errors.push('All Skills must have both Category and Skills filled');
+      }
+    }
+    
+    // Validate projects - if any project exists, all required fields must be filled
+    if (Array.isArray(resumeData.projects) && resumeData.projects.length > 0) {
+      const incompleteProjects = resumeData.projects.filter(proj => 
+        !proj || 
+        !proj.title?.trim() || 
+        !proj.projectType?.trim() || 
+        !proj.organization?.trim() || 
+        !proj.startDate?.trim() || 
+        !proj.endDate?.trim() || 
+        !proj.description?.trim()
+      );
+      if (incompleteProjects.length > 0) {
+        errors.push('All Projects must have all required fields filled (Title, Project Type, Organization, Start Date, End Date, and Description)');
+      }
+    }
+    
+    // Validate experience - if any experience exists, all required fields must be filled
+    if (Array.isArray(resumeData.experience) && resumeData.experience.length > 0) {
+      const incompleteExperience = resumeData.experience.filter(exp => 
+        !exp || 
+        !exp.title?.trim() || 
+        !exp.company?.trim() || 
+        !exp.startDate?.trim() || 
+        !exp.endDate?.trim() || 
+        !exp.description?.trim()
+      );
+      if (incompleteExperience.length > 0) {
+        errors.push('All Experience entries must have all required fields filled (Title, Company, Start Date, End Date, and Description)');
+      }
+    }
+    
+    // Validate custom sections - if any custom section exists, all items must have content
+    if (resumeData.customSections && typeof resumeData.customSections === 'object') {
+      const customSectionEntries = Object.entries(resumeData.customSections);
+      for (const [sectionId, section] of customSectionEntries) {
+        if (section && section.items && Array.isArray(section.items)) {
+          const incompleteItems = section.items.filter(item => 
+            !item || 
+            !item.content || 
+            typeof item.content !== 'string' || 
+            !item.content.trim()
+          );
+          if (incompleteItems.length > 0) {
+            const sectionTitle = section.title || sectionId;
+            errors.push(`Custom section "${sectionTitle}" has items with empty content. All items must have content filled.`);
+          }
+        }
+      }
     }
     
     return {
@@ -1148,11 +1275,11 @@ export function ResumeBuilder() {
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
               <img 
-                src="/images/cognisys-logo.svg" 
-                alt="Cognisys AI Logo" 
+                src="/images/Career_Copilot.svg" 
+                alt="Career Copilot Logo" 
                 className="h-6 w-6 sm:h-8 sm:w-8 object-contain"
               />
-              <span className="font-headline text-lg sm:text-xl font-bold">Resume Builder</span>
+              <span className="font-headline text-lg sm:text-xl font-bold">Career Copilot</span>
             </Link>
           </div>
 

@@ -159,11 +159,11 @@ export default function Home() {
       <header className="flex h-16 shrink-0 items-center justify-between border-b px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <img 
-            src="/images/cognisys-logo.svg" 
-            alt="Cognisys AI Logo" 
+            src="/images/Career_Copilot.svg" 
+            alt="Career Copilot Logo" 
             className="h-8 w-8 object-contain"
           />
-          <span className="font-headline text-xl">Resume Builder</span>
+          <span className="font-headline text-xl">Career Copilot</span>
         </Link>
         
         {/* Notification indicator in nav */}
@@ -327,7 +327,7 @@ export default function Home() {
             <>
               <h1 className="font-headline text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl px-2">
                 {user 
-                  ? (isFirstTimeUser ? 'Welcome to Resume Builder!' : 'Welcome Back!')
+                  ? (isFirstTimeUser ? 'Welcome to Career Copilot!' : 'Welcome Back!')
                   : 'Your Career Journey Starts Here'
                 }
               </h1>

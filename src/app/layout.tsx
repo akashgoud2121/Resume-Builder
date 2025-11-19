@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { StorageCleanup } from '@/components/storage-cleanup';
 
 export const metadata: Metadata = {
-  title: 'Resume Builder',
+  title: 'Career Copilot',
   description: 'Simple input forms. Instant PDF download.',
 };
 

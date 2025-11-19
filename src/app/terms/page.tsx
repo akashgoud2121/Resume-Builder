@@ -10,7 +10,7 @@ export default function TermsPage() {
       <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center justify-between border-b bg-background px-4 md:px-6">
         <Link href="/" className="flex items-center gap-2 text-lg font-semibold md:text-base">
           <FileText className="h-6 w-6 text-primary" />
-          <span className="font-headline text-xl">Resume Builder</span>
+          <span className="font-headline text-xl">Career Copilot</span>
         </Link>
         <Button asChild variant="outline">
           <Link href="/">
@@ -30,7 +30,7 @@ export default function TermsPage() {
 
           <div className="prose prose-blue max-w-none text-foreground">
             <p>
-              Welcome to the Cognisys AI Resume Builder. These Terms and Conditions ("Terms") govern your use of our website and services (the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
+              Welcome to the Cognisys AI Career Copilot. These Terms and Conditions ("Terms") govern your use of our website and services (the "Service"). By accessing or using the Service, you agree to be bound by these Terms.
             </p>
 
             <h2 className="mt-8 text-2xl font-semibold">1. Your Account</h2>

@@ -221,11 +221,11 @@ export default function ForgotPasswordPage() {
         <div>
           <Link href="/" className="flex items-center justify-center gap-3">
             <img
-              src="/images/cognisys-logo.svg"
-              alt="Cognisys AI Logo"
+              src="/images/Career_Copilot.svg"
+              alt="Career Copilot Logo"
               className="h-10 w-10 object-contain rounded-md"
             />
-            <h1 className="text-2xl font-bold font-headline">Cognisys AI Resume Builder</h1>
+            <h1 className="text-2xl font-bold font-headline">Career Copilot</h1>
           </Link>
           <h2 className="mt-6 text-center text-2xl font-bold tracking-tight text-foreground">
             Reset Your Password

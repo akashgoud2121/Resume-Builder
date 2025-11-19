@@ -2,7 +2,7 @@
 
 ## Current Logo
 
-The application currently uses a placeholder SVG logo (`cognisys-logo.svg`).
+The primary application logo is `Career_Copilot.svg`. This file powers the header logos across the marketing and auth screens. The Cognisys brand lockup (`cognisys-logo.svg`) still appears in the "Powered by" footer section.
 
 ## How to Replace with Your Actual Logo
 
@@ -16,11 +16,13 @@ The application currently uses a placeholder SVG logo (`cognisys-logo.svg`).
 ### Option 2: Use Your Own Logo File
 
 1. Place your logo file in this folder (`public/images/`)
-2. Rename it to `cognisys-logo.svg` (or keep the extension you prefer)
+2. Rename it to `Career_Copilot.svg` (or keep the extension you prefer)
 3. If you change the extension, update these files:
+   - `src/app/page.tsx`
    - `src/app/login/page.tsx`
    - `src/app/signup/page.tsx`
-   - `src/components/footer.tsx`
+   - `src/app/forgot-password/page.tsx`
+   - `src/components/resume-builder.tsx`
 
 ### Option 3: Use the Placeholder
 
@@ -56,10 +58,10 @@ Always use local images for your application!
 ## Example: Replacing the Logo
 
 ```typescript
-// If you want to use a PNG instead of SVG:
+// If you want to use a PNG instead of the default SVG:
 <Image
-  src="/images/cognisys-logo.png"  // Change extension here
-  alt="Cognisys AI Logo"
+  src="/images/Career_Copilot.png"  // Change extension here
+  alt="Career Copilot Logo"
   width={40}
   height={40}
   className="rounded-md"

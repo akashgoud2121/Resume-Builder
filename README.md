@@ -1,4 +1,4 @@
-# Cognisys AI Resume Builder
+# Cognisys AI Career Copilot
 
 A modern, full-featured resume builder application built with Next.js 15, featuring OAuth authentication, cloud storage, and AI-powered content generation.
 
@@ -14,7 +14,7 @@ A modern, full-featured resume builder application built with Next.js 15, featur
   - Auto-save functionality
   - Cross-device synchronization
   
-- **Resume Builder**
+- **Career Copilot**
   - Multi-step form interface
   - Live preview
   - PDF download

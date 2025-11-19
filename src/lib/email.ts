@@ -15,7 +15,7 @@ export async function sendOTPEmail(email: string, otp: string) {
     await transporter.sendMail({
       from: process.env.EMAIL_FROM || 'noreply@resumebuilder.com',
       to: email,
-      subject: 'Your OTP Code - Resume Builder',
+      subject: 'Your OTP Code - Career Copilot',
       html: `
         <!DOCTYPE html>
         <html>
@@ -33,7 +33,7 @@ export async function sendOTPEmail(email: string, otp: string) {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Resume Builder</h1>
+                <h1>Career Copilot</h1>
               </div>
               <div class="content">
                 <h2>Verify Your Email</h2>
@@ -45,7 +45,7 @@ export async function sendOTPEmail(email: string, otp: string) {
                 <p>If you didn't request this code, please ignore this email.</p>
               </div>
               <div class="footer">
-                <p>© ${new Date().getFullYear()} Resume Builder. All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} Career Copilot. All rights reserved.</p>
               </div>
             </div>
           </body>
@@ -64,7 +64,7 @@ export async function sendPasswordResetOTPEmail(email: string, otp: string) {
     await transporter.sendMail({
       from: process.env.EMAIL_FROM || 'noreply@resumebuilder.com',
       to: email,
-      subject: 'Password Reset OTP - Resume Builder',
+      subject: 'Password Reset OTP - Career Copilot',
       html: `
         <!DOCTYPE html>
         <html>
@@ -82,7 +82,7 @@ export async function sendPasswordResetOTPEmail(email: string, otp: string) {
           <body>
             <div class="container">
               <div class="header">
-                <h1>Resume Builder</h1>
+                <h1>Career Copilot</h1>
               </div>
               <div class="content">
                 <h2>Password Reset Request</h2>
@@ -94,7 +94,7 @@ export async function sendPasswordResetOTPEmail(email: string, otp: string) {
                 <p>If you didn't request this password reset, please ignore this email and your password will remain unchanged.</p>
               </div>
               <div class="footer">
-                <p>© ${new Date().getFullYear()} Resume Builder. All rights reserved.</p>
+                <p>© ${new Date().getFullYear()} Career Copilot. All rights reserved.</p>
               </div>
             </div>
           </body>

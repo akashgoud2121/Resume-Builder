@@ -1305,6 +1305,18 @@ export function ResumeForm() {
                         {resumeData.skills.map((category, index) => {
                         const suggestions = SUGGESTED_SKILLS[category.name] || [];
                         const existingSkills = new Set(category.skills.split(',').map(s => s.trim().toLowerCase()));
+                        
+                        // Get categories already used by other skill entries (excluding current one)
+                        const usedCategories = new Set(
+                            resumeData.skills
+                                .filter((_, idx) => idx !== index)
+                                .map(cat => cat.name.trim().toLowerCase())
+                        );
+                        
+                        // Filter available categories to exclude already used ones (case-insensitive)
+                        const availableCategories = SKILL_CATEGORIES.filter(cat => 
+                            !usedCategories.has(cat.toLowerCase()) || cat.toLowerCase() === category.name.trim().toLowerCase()
+                        );
 
                         return (
                             <Card key={category.id} className="p-4 relative bg-background shadow-none border">
@@ -1314,7 +1326,21 @@ export function ResumeForm() {
                                 <Select
                                     value={SKILL_CATEGORIES.includes(category.name) ? category.name : 'Other'}
                                     onValueChange={(value) => {        
-                                        if (value !== 'Other') {       
+                                        if (value !== 'Other') {
+                                            // Check if this category is already used by another skill entry (case-insensitive)
+                                            const isDuplicate = resumeData.skills.some((cat, idx) => 
+                                                idx !== index && cat.name.trim().toLowerCase() === value.toLowerCase()
+                                            );
+                                            
+                                            if (isDuplicate) {
+                                                showNotification({
+                                                    title: "Duplicate Category",
+                                                    description: `"${value}" is already selected. Please choose a different category.`,
+                                                    type: "error",
+                                                });
+                                                return;
+                                            }
+                                            
                                             handleGenericChange<SkillCategoryType>('skills', index, 'name', value);
                                         }
                                     }}
@@ -1323,7 +1349,7 @@ export function ResumeForm() {
                                     <SelectValue placeholder="Select a category" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                    {SKILL_CATEGORIES.map(cat => (
+                                    {availableCategories.map(cat => (
                                         <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                     ))}
                                     </SelectContent>
@@ -1331,7 +1357,24 @@ export function ResumeForm() {
                                 <Input
                                     id={`skills.${category.id}.name`}
                                     value={category.name}
-                                    onChange={e => handleGenericChange<SkillCategoryType>('skills', index, 'name', e.target.value)}
+                                    onChange={e => {
+                                        const newValue = e.target.value;
+                                        // Check if this category name is already used by another skill entry
+                                        const isDuplicate = resumeData.skills.some((cat, idx) => 
+                                            idx !== index && cat.name.trim().toLowerCase() === newValue.trim().toLowerCase()
+                                        );
+                                        
+                                        if (isDuplicate && newValue.trim() !== '') {
+                                            showNotification({
+                                                title: "Duplicate Category",
+                                                description: `"${newValue.trim()}" is already selected. Please choose a different category name.`,
+                                                type: "error",
+                                            });
+                                            return;
+                                        }
+                                        
+                                        handleGenericChange<SkillCategoryType>('skills', index, 'name', newValue);
+                                    }}
                                     placeholder="Or type a custom category"
                                     className={cn("mt-2", validationErrors[`skills.${category.id}.name`] && 'border-destructive')}
                                 />
